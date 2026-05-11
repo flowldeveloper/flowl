@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#edf7ef">
+  <title>Flowl</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">Study pet tracker</p>
+        <h1>Flowl</h1>
+      </div>
+      <div class="coin-pill" aria-label="所持コイン">
+        <span>coin</span>
+        <strong id="coinCount">0</strong>
+      </div>
+    </header>
+
+    <section id="timerScreen" class="screen active" aria-label="タイマーと動物">
+      <article class="timer panel">
+        <div class="section-title">
+          <p>Focus timer</p>
+          <span id="timerStatus">待機中</span>
+        </div>
+        <h2 id="time">25:00</h2>
+        <div class="timer-controls">
+          <button id="startBtn">スタート</button>
+          <button id="pauseBtn">一時停止</button>
+          <button id="resetBtn">リセット</button>
+        </div>
+        <form id="timerRecordForm" class="timer-record">
+          <label>
+            タイマー科目
+            <input id="timerSubjectInput" type="text" placeholder="英語、数学など" maxlength="24">
+          </label>
+          <button id="recordTimerBtn" type="submit">記録して終了</button>
+        </form>
+      </article>
+
+      <article class="pet-panel panel">
+        <div class="section-title">
+          <p>Flowlet</p>
+          <span id="petLevel">Lv. 1</span>
+        </div>
+        <div class="pet-stage" aria-label="育成中の動物">
+          <div id="petActionProp" class="pet-action-prop" aria-hidden="true"></div>
+          <div class="pet-shadow"></div>
+          <div class="pet" id="pet">
+            <div class="pet-ear left"></div>
+            <div class="pet-ear right"></div>
+            <div class="pet-wing left"></div>
+            <div class="pet-wing right"></div>
+            <div class="pet-face">
+              <span class="eye left"></span>
+              <span class="eye right"></span>
+              <span class="owl-beak"></span>
+              <span class="owl-foot left"></span>
+              <span class="owl-foot right"></span>
+            </div>
+          </div>
+        </div>
+        <div class="stats">
+          <label>
+            <span>まんぷく</span>
+            <meter id="hungerMeter" min="0" max="100" value="60"></meter>
+          </label>
+          <label>
+            <span>ごきげん</span>
+            <meter id="happyMeter" min="0" max="100" value="60"></meter>
+          </label>
+          <label>
+            <span>エネルギー</span>
+            <meter id="energyMeter" min="0" max="100" value="60"></meter>
+          </label>
+        </div>
+      </article>
+    </section>
+
+    <section id="logScreen" class="screen" aria-label="記録ログ">
+      <article class="panel record-panel">
+        <div class="section-title">
+          <p>Study log</p>
+          <span id="todayTotal">今日 0分</span>
+        </div>
+        <form id="studyForm" class="study-form">
+          <label>
+            科目
+            <input id="subjectInput" type="text" placeholder="英語、数学など" maxlength="24">
+          </label>
+          <label>
+            分
+            <input id="minutesInput" type="number" min="1" max="600" value="25">
+          </label>
+          <button type="submit">記録</button>
+        </form>
+      </article>
+
+      <article class="panel history-panel">
+        <div class="section-title">
+          <p>Recent sessions</p>
+          <span id="totalStudy">累計 0分</span>
+        </div>
+        <ul id="historyList" class="history-list"></ul>
+      </article>
+
+      <article class="panel weekly-panel">
+        <div class="section-title">
+          <p>Weekly graph</p>
+          <span id="weekTotal">週合計 0分</span>
+        </div>
+        <div class="week-controls">
+          <button id="prevWeekBtn" type="button">前の週</button>
+          <strong id="weekLabel">今週</strong>
+          <button id="nextWeekBtn" type="button">次の週</button>
+        </div>
+        <div id="weekChart" class="week-chart" aria-label="一週間の学習時間グラフ"></div>
+        <p id="weekCompare" class="week-compare">前週との差 0分</p>
+      </article>
+    </section>
+
+    <section id="careScreen" class="screen" aria-label="動物のお世話">
+      <article class="pet-panel panel">
+        <div class="section-title">
+          <p>Care</p>
+          <span id="petCareLevel">Lv. 1</span>
+        </div>
+        <div class="pet-stage" aria-label="お世話中の動物">
+          <div id="petCareActionProp" class="pet-action-prop" aria-hidden="true"></div>
+          <div class="pet-shadow"></div>
+          <div class="pet" id="petCare">
+            <div class="pet-ear left"></div>
+            <div class="pet-ear right"></div>
+            <div class="pet-wing left"></div>
+            <div class="pet-wing right"></div>
+            <div class="pet-face">
+              <span class="eye left"></span>
+              <span class="eye right"></span>
+              <span class="owl-beak"></span>
+              <span class="owl-foot left"></span>
+              <span class="owl-foot right"></span>
+            </div>
+          </div>
+        </div>
+        <div class="stats">
+          <label>
+            <span>まんぷく</span>
+            <meter id="hungerCareMeter" min="0" max="100" value="60"></meter>
+          </label>
+          <label>
+            <span>ごきげん</span>
+            <meter id="happyCareMeter" min="0" max="100" value="60"></meter>
+          </label>
+          <label>
+            <span>エネルギー</span>
+            <meter id="energyCareMeter" min="0" max="100" value="60"></meter>
+          </label>
+        </div>
+        <div class="care-actions">
+          <button class="care-btn" data-action="feed">
+            <span class="mini-icon bowl-icon" aria-hidden="true"></span>
+            ごはん 8
+          </button>
+          <button class="care-btn" data-action="play">
+            <span class="mini-icon ball-icon" aria-hidden="true"></span>
+            あそぶ 6
+          </button>
+          <button class="care-btn" data-action="rest">
+            <span class="mini-icon cushion-icon" aria-hidden="true"></span>
+            休む 5
+          </button>
+        </div>
+        <div class="inventory">
+          <div class="section-title compact">
+            <p>Items</p>
+            <span>もちもの</span>
+          </div>
+          <div id="inventoryList" class="item-list"></div>
+        </div>
+      </article>
+    </section>
+
+    <section id="shopScreen" class="screen" aria-label="ショップ">
+      <article class="panel shop-panel">
+        <div class="section-title">
+          <p>Pet shop</p>
+          <span>1分 = 1 coin</span>
+        </div>
+        <div id="shopList" class="shop-list"></div>
+      </article>
+    </section>
+  </main>
+
+  <nav class="bottom-nav" aria-label="画面切り替え">
+    <button class="nav-btn active" type="button" data-screen="timerScreen">
+      <span>Timer</span>
+      タイマー
+    </button>
+    <button class="nav-btn" type="button" data-screen="logScreen">
+      <span>Log</span>
+      記録
+    </button>
+    <button class="nav-btn" type="button" data-screen="careScreen">
+      <span>Care</span>
+      お世話
+    </button>
+    <button class="nav-btn" type="button" data-screen="shopScreen">
+      <span>Shop</span>
+      ショップ
+    </button>
+  </nav>
+
+  <script src="app.js"></script>
+</body>
+</html>
