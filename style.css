@@ -2282,6 +2282,7 @@ input:focus {
   width: auto;
   height: auto;
   fill: #263126;
+  transform: scale(1);
   transform-origin: 50% 50%;
   transition: transform 160ms ease;
 }
@@ -2350,7 +2351,6 @@ input:focus {
 }
 
 /* mood-* は育成ステータス用、happy/sadなどはボタンやJSのモーション用です。 */
-.pet[data-asset="flowl-owl"].mood-happy:not(.happy):not(.angry):not(.sad):not(.sleep) .eye,
 .pet[data-asset="flowl-owl"].happy .eye {
   transform: translateY(2px) scaleY(0.24);
 }
