@@ -2105,3 +2105,485 @@ input:focus {
     height: 44px;
   }
 }
+
+/* SVG mascot component
+   HTMLのclassだけを切り替えれば動くように、体・顔・羽・くちばしを別パーツにしています。 */
+.pet-stage {
+  background:
+    radial-gradient(circle at 50% 84%, rgba(93, 140, 83, 0.18) 0 16%, transparent 17%),
+    linear-gradient(#f5fbf6 0 58%, #e1efd9 58% 100%);
+}
+
+.pet-shadow {
+  bottom: 22px;
+  width: 144px;
+  height: 22px;
+}
+
+.pet[data-asset="flowl-owl"] {
+  display: grid;
+  place-items: center;
+  width: 158px;
+  height: 168px;
+  margin-top: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  animation: flowl-owl-idle 2.8s ease-in-out infinite;
+  transform-origin: 50% 88%;
+}
+
+.pet[data-asset="flowl-owl"]::before,
+.pet[data-asset="flowl-owl"]::after {
+  display: none;
+}
+
+.owl-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.owl-root,
+.owl-head,
+.pet[data-asset="flowl-owl"] .pet-wing,
+.pet[data-asset="flowl-owl"] .eye,
+.pet[data-asset="flowl-owl"] .owl-beak {
+  transform-box: fill-box;
+}
+
+.owl-root {
+  transform-origin: 50% 88%;
+}
+
+.owl-head {
+  transform-origin: 50% 50%;
+}
+
+.owl-body,
+.owl-ear,
+.owl-belly,
+.pet[data-asset="flowl-owl"] .pet-wing,
+.pet[data-asset="flowl-owl"] .owl-foot {
+  stroke: #6f5430;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.owl-body,
+.owl-ear {
+  fill: #eec783;
+}
+
+.owl-belly {
+  fill: #fffdf7;
+}
+
+.pet[data-asset="flowl-owl"] .pet-wing {
+  position: static;
+  width: auto;
+  height: auto;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  fill: #cfe5be;
+  transform: none;
+}
+
+.pet[data-asset="flowl-owl"] .pet-wing.left {
+  transform-origin: 85% 18%;
+}
+
+.pet[data-asset="flowl-owl"] .pet-wing.right {
+  transform-origin: 15% 18%;
+}
+
+.pet[data-asset="flowl-owl"] .eye {
+  position: static;
+  width: auto;
+  height: auto;
+  fill: #263126;
+  transform-origin: 50% 50%;
+  transition: transform 160ms ease;
+}
+
+.pet[data-asset="flowl-owl"] .owl-beak {
+  position: static;
+  width: auto;
+  height: auto;
+  border: 0;
+  fill: #f1b84b;
+  stroke: #6f5430;
+  stroke-width: 3;
+  transform: none;
+  transform-origin: 50% 10%;
+}
+
+.pet[data-asset="flowl-owl"] .owl-foot {
+  position: static;
+  width: auto;
+  height: auto;
+  border: 0;
+  fill: #f1b84b;
+  transform: none;
+}
+
+.owl-cheek {
+  fill: #eaf4db;
+  opacity: 0.92;
+}
+
+.owl-brow {
+  fill: none;
+  stroke: #6f5430;
+  stroke-width: 4;
+  stroke-linecap: round;
+  opacity: 0;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.motion-lab {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.motion-controls {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.motion-btn {
+  min-height: 42px;
+  padding: 9px 7px;
+  border: 1px solid var(--line);
+  background: #fbfdfb;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.motion-btn.active {
+  border-color: rgba(243, 182, 63, 0.72);
+  background: #ffe2a3;
+  color: #553f18;
+}
+
+/* mood-* は育成ステータス用、happy/sadなどはボタンやJSのモーション用です。 */
+.pet[data-asset="flowl-owl"].mood-happy:not(.happy):not(.angry):not(.sad):not(.sleep) .eye,
+.pet[data-asset="flowl-owl"].happy .eye {
+  transform: translateY(2px) scaleY(0.24);
+}
+
+.pet[data-asset="flowl-owl"].mood-tired:not(.sad):not(.sleep) .eye,
+.pet[data-asset="flowl-owl"].tired:not(.sad):not(.sleep) .eye {
+  transform: translateY(5px) scaleY(0.38);
+}
+
+.pet[data-asset="flowl-owl"].idle {
+  animation: flowl-owl-idle 2.8s ease-in-out infinite;
+}
+
+.pet[data-asset="flowl-owl"].headTilt {
+  animation: flowl-owl-idle 2.8s ease-in-out infinite;
+}
+
+.pet[data-asset="flowl-owl"].headTilt .owl-head {
+  animation: flowl-head-tilt 1.2s ease-in-out infinite;
+}
+
+.pet[data-asset="flowl-owl"].focusing {
+  animation: flowl-focus-work 0.78s ease-in-out infinite;
+}
+
+.pet[data-asset="flowl-owl"].focusing .pet-wing.left {
+  animation: flowl-wing-write-left 0.78s ease-in-out infinite;
+}
+
+.pet[data-asset="flowl-owl"].focusing .pet-wing.right {
+  animation: flowl-wing-write-right 0.78s ease-in-out infinite;
+}
+
+.pet[data-asset="flowl-owl"].focusing .eye {
+  transform: translateY(2px) scaleY(0.4);
+}
+
+.pet[data-asset="flowl-owl"].eat,
+.pet[data-asset="flowl-owl"].eating {
+  animation: flowl-eat-body 0.48s ease-in-out infinite;
+}
+
+.pet[data-asset="flowl-owl"].eat .owl-beak,
+.pet[data-asset="flowl-owl"].eating .owl-beak {
+  animation: flowl-beak-eat 0.24s ease-in-out infinite;
+}
+
+.pet[data-asset="flowl-owl"].happy {
+  animation: flowl-happy-hop 0.68s ease-in-out infinite;
+}
+
+.pet[data-asset="flowl-owl"].angry {
+  animation: flowl-angry-shake 0.32s ease-in-out infinite;
+}
+
+.pet[data-asset="flowl-owl"].angry .eye.left {
+  transform: rotate(18deg) scaleY(0.42);
+}
+
+.pet[data-asset="flowl-owl"].angry .eye.right {
+  transform: rotate(-18deg) scaleY(0.42);
+}
+
+.pet[data-asset="flowl-owl"].angry .owl-brow {
+  opacity: 1;
+}
+
+.pet[data-asset="flowl-owl"].sad {
+  animation: flowl-sad-sway 1.35s ease-in-out infinite;
+}
+
+.pet[data-asset="flowl-owl"].sad .eye {
+  transform: translateY(7px) rotate(8deg) scaleY(0.42);
+}
+
+.pet[data-asset="flowl-owl"].sad .eye.right {
+  transform: translateY(7px) rotate(-8deg) scaleY(0.42);
+}
+
+.pet[data-asset="flowl-owl"].fun,
+.pet[data-asset="flowl-owl"].playing {
+  animation: flowl-fun-hop 0.7s ease-in-out infinite;
+}
+
+.pet[data-asset="flowl-owl"].fun .pet-wing.left,
+.pet[data-asset="flowl-owl"].playing .pet-wing.left {
+  animation: flowl-wing-flap-left 0.25s ease-in-out infinite;
+}
+
+.pet[data-asset="flowl-owl"].fun .pet-wing.right,
+.pet[data-asset="flowl-owl"].playing .pet-wing.right {
+  animation: flowl-wing-flap-right 0.25s ease-in-out infinite;
+}
+
+.pet[data-asset="flowl-owl"].sleep,
+.pet[data-asset="flowl-owl"].resting {
+  animation: flowl-sleep-sway 2.2s ease-in-out infinite;
+}
+
+.pet[data-asset="flowl-owl"].sleep .eye,
+.pet[data-asset="flowl-owl"].resting .eye {
+  transform: translateY(5px) scaleY(0.16);
+}
+
+.pet[data-asset="flowl-owl"].sleep .owl-beak,
+.pet[data-asset="flowl-owl"].resting .owl-beak {
+  transform: translateY(2px) scale(0.92);
+}
+
+@keyframes flowl-owl-idle {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateY(-5px) scale(1.015, 0.992);
+  }
+}
+
+@keyframes flowl-head-tilt {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  40% {
+    transform: rotate(-10deg) translateY(1px);
+  }
+
+  72% {
+    transform: rotate(8deg);
+  }
+}
+
+@keyframes flowl-focus-work {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  42% {
+    transform: translateY(3px) rotate(-1.4deg);
+  }
+
+  74% {
+    transform: translateY(-2px) rotate(1.4deg);
+  }
+}
+
+@keyframes flowl-wing-write-left {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  50% {
+    transform: rotate(-10deg) translateY(4px);
+  }
+}
+
+@keyframes flowl-wing-write-right {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  50% {
+    transform: rotate(10deg) translateY(4px);
+  }
+}
+
+@keyframes flowl-eat-body {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+
+  45% {
+    transform: translateY(4px) scale(1.035, 0.97);
+  }
+}
+
+@keyframes flowl-beak-eat {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+
+  50% {
+    transform: translateY(3px) scaleY(0.68);
+  }
+}
+
+@keyframes flowl-happy-hop {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+
+  42% {
+    transform: translateY(-14px) scale(0.98, 1.04);
+  }
+
+  70% {
+    transform: translateY(2px) scale(1.04, 0.96);
+  }
+}
+
+@keyframes flowl-angry-shake {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0deg);
+  }
+
+  30% {
+    transform: translateX(-2px) rotate(-2deg);
+  }
+
+  70% {
+    transform: translateX(2px) rotate(2deg);
+  }
+}
+
+@keyframes flowl-sad-sway {
+  0%,
+  100% {
+    transform: translateY(3px) rotate(0deg) scale(0.98);
+  }
+
+  50% {
+    transform: translateY(7px) rotate(-2deg) scale(0.96);
+  }
+}
+
+@keyframes flowl-fun-hop {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  35% {
+    transform: translateY(-9px) rotate(-5deg);
+  }
+
+  70% {
+    transform: translateY(-6px) rotate(5deg);
+  }
+}
+
+@keyframes flowl-wing-flap-left {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  50% {
+    transform: rotate(-24deg) translate(-5px, -6px);
+  }
+}
+
+@keyframes flowl-wing-flap-right {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  50% {
+    transform: rotate(24deg) translate(5px, -6px);
+  }
+}
+
+@keyframes flowl-sleep-sway {
+  0%,
+  100% {
+    transform: translateY(6px) rotate(-1deg) scale(1.01, 0.96);
+  }
+
+  50% {
+    transform: translateY(10px) rotate(1deg) scale(1.04, 0.94);
+  }
+}
+
+@media (max-width: 800px) {
+  .pet[data-asset="flowl-owl"] {
+    width: 148px;
+    height: 158px;
+  }
+
+  .motion-controls {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 430px) {
+  .motion-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .motion-btn {
+    min-height: 44px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 380px) {
+  .pet[data-asset="flowl-owl"] {
+    width: 136px;
+    height: 146px;
+  }
+}

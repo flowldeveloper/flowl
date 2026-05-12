@@ -41,6 +41,18 @@ const shopItems = {
   },
 };
 
+const mascotMotions = ["idle", "headTilt", "eat", "happy", "angry", "sad", "fun", "sleep"];
+const mascotMotionLabels = {
+  idle: "待機",
+  headTilt: "首かしげ",
+  eat: "食事",
+  happy: "喜び",
+  angry: "怒り",
+  sad: "悲しみ",
+  fun: "楽しい",
+  sleep: "睡眠",
+};
+
 const timeDisplay = document.getElementById("time");
 const startBtn = document.getElementById("startBtn");
 const pauseBtn = document.getElementById("pauseBtn");
@@ -65,6 +77,8 @@ const shopList = document.getElementById("shopList");
 const inventoryList = document.getElementById("inventoryList");
 const petLevel = document.getElementById("petLevel");
 const petCareLevel = document.getElementById("petCareLevel");
+const motionLabel = document.getElementById("motionLabel");
+const motionButtons = document.querySelectorAll(".motion-btn");
 
 const petViews = [
   {
@@ -88,6 +102,7 @@ let timer = null;
 let state = loadState();
 let animationTimer = null;
 let weekOffset = 0;
+let activeMascotMotion = "idle";
 
 function createDefaultState() {
   return {
@@ -317,8 +332,8 @@ function renderPet() {
     view.hunger.value = state.pet.hunger;
     view.happy.value = state.pet.happy;
     view.energy.value = state.pet.energy;
-    view.pet.classList.toggle("happy", state.pet.happy >= 70);
-    view.pet.classList.toggle("tired", state.pet.energy <= 25 || state.pet.hunger <= 20);
+    view.pet.classList.toggle("mood-happy", state.pet.happy >= 70);
+    view.pet.classList.toggle("mood-tired", state.pet.energy <= 25 || state.pet.hunger <= 20);
   });
 }
 
@@ -403,33 +418,64 @@ function applyItemEffect(effect) {
   });
 }
 
+function applyMascotMotion(motion) {
+  const nextMotion = mascotMotions.includes(motion) ? motion : "idle";
+
+  activeMascotMotion = nextMotion;
+
+  // motionのclassは1つだけ付けます。画像素材へ差し替える時も、この関数だけ使えばOKです。
+  petViews.forEach((view) => {
+    view.pet.classList.remove(...mascotMotions, "eating", "playing", "resting");
+    view.pet.classList.add(nextMotion);
+  });
+
+  motionButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.motion === nextMotion);
+  });
+
+  if (motionLabel) {
+    motionLabel.textContent = mascotMotionLabels[nextMotion];
+  }
+}
+
+function setMascotMotion(motion) {
+  clearTimeout(animationTimer);
+  petViews.forEach((view) => {
+    view.prop.className = "pet-action-prop";
+  });
+  applyMascotMotion(motion);
+}
+
 function triggerPetAnimation(action, iconClass) {
   clearTimeout(animationTimer);
 
   const actionClass = {
-    feed: "eating",
-    play: "playing",
-    rest: "resting",
+    feed: "eat",
+    play: "fun",
+    rest: "sleep",
   }[action];
 
   if (!actionClass) return;
 
   petViews.forEach((view) => {
-    view.pet.classList.remove("eating", "playing", "resting");
     view.prop.className = "pet-action-prop";
-    view.pet.classList.add(actionClass);
     view.prop.classList.add("active", action, iconClass);
   });
+  applyMascotMotion(actionClass);
 
   animationTimer = setTimeout(() => {
     petViews.forEach((view) => {
-      view.pet.classList.remove(actionClass);
       view.prop.className = "pet-action-prop";
     });
-  }, 1100);
+    applyMascotMotion("idle");
+  }, 1300);
 }
 
 function setFocusMode(isRunning) {
+  if (isRunning) {
+    applyMascotMotion("idle");
+  }
+
   petViews.forEach((view) => {
     view.pet.classList.toggle("focusing", isRunning);
     view.pet.closest(".pet-stage").classList.toggle("focus-mode", isRunning);
@@ -591,5 +637,12 @@ document.querySelectorAll(".nav-btn").forEach((button) => {
   });
 });
 
+motionButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    setMascotMotion(button.dataset.motion);
+  });
+});
+
 updateDisplay();
 render();
+applyMascotMotion(activeMascotMotion);

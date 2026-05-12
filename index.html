@@ -49,18 +49,29 @@
         <div class="pet-stage" aria-label="育成中の動物">
           <div id="petActionProp" class="pet-action-prop" aria-hidden="true"></div>
           <div class="pet-shadow"></div>
-          <div class="pet" id="pet">
-            <div class="pet-ear left"></div>
-            <div class="pet-ear right"></div>
-            <div class="pet-wing left"></div>
-            <div class="pet-wing right"></div>
-            <div class="pet-face">
-              <span class="eye left"></span>
-              <span class="eye right"></span>
-              <span class="owl-beak"></span>
-              <span class="owl-foot left"></span>
-              <span class="owl-foot right"></span>
-            </div>
+          <div class="pet idle" id="pet" data-asset="flowl-owl">
+            <!-- SVGの各パーツにclassを付けて、CSSとJavaScriptから動かしやすくしています。 -->
+            <svg class="owl-svg" viewBox="0 0 160 170" role="img" aria-label="小さなフクロウのFlowlet">
+              <g class="owl-root">
+                <path class="owl-ear left" d="M50 38 C45 24 53 16 67 29 L61 47 Z"></path>
+                <path class="owl-ear right" d="M110 38 C115 24 107 16 93 29 L99 47 Z"></path>
+                <path class="owl-body" d="M80 18 C115 18 138 48 138 86 C138 127 114 154 80 154 C46 154 22 127 22 86 C22 48 45 18 80 18 Z"></path>
+                <path class="pet-wing left" d="M42 74 C25 84 22 111 32 130 C45 119 50 99 50 82 Z"></path>
+                <path class="pet-wing right" d="M118 74 C135 84 138 111 128 130 C115 119 110 99 110 82 Z"></path>
+                <path class="owl-belly" d="M80 60 C104 60 120 81 120 107 C120 135 103 148 80 148 C57 148 40 135 40 107 C40 81 56 60 80 60 Z"></path>
+                <g class="owl-head">
+                  <circle class="owl-cheek left" cx="57" cy="92" r="8"></circle>
+                  <circle class="owl-cheek right" cx="103" cy="92" r="8"></circle>
+                  <circle class="eye left" cx="61" cy="79" r="5.5"></circle>
+                  <circle class="eye right" cx="99" cy="79" r="5.5"></circle>
+                  <path class="owl-brow left" d="M52 67 L68 72"></path>
+                  <path class="owl-brow right" d="M108 67 L92 72"></path>
+                  <path class="owl-beak" d="M80 91 L70 79 L90 79 Z"></path>
+                </g>
+                <path class="owl-foot left" d="M54 149 C47 149 43 153 43 159 C50 157 56 157 63 159 C64 153 61 149 54 149 Z"></path>
+                <path class="owl-foot right" d="M106 149 C113 149 117 153 117 159 C110 157 104 157 97 159 C96 153 99 149 106 149 Z"></path>
+              </g>
+            </svg>
           </div>
         </div>
         <div class="stats">
@@ -131,18 +142,29 @@
         <div class="pet-stage" aria-label="お世話中の動物">
           <div id="petCareActionProp" class="pet-action-prop" aria-hidden="true"></div>
           <div class="pet-shadow"></div>
-          <div class="pet" id="petCare">
-            <div class="pet-ear left"></div>
-            <div class="pet-ear right"></div>
-            <div class="pet-wing left"></div>
-            <div class="pet-wing right"></div>
-            <div class="pet-face">
-              <span class="eye left"></span>
-              <span class="eye right"></span>
-              <span class="owl-beak"></span>
-              <span class="owl-foot left"></span>
-              <span class="owl-foot right"></span>
-            </div>
+          <div class="pet idle" id="petCare" data-asset="flowl-owl">
+            <!-- タイマー画面と同じ構造にして、同じclass切り替えで同期できます。 -->
+            <svg class="owl-svg" viewBox="0 0 160 170" role="img" aria-label="小さなフクロウのFlowlet">
+              <g class="owl-root">
+                <path class="owl-ear left" d="M50 38 C45 24 53 16 67 29 L61 47 Z"></path>
+                <path class="owl-ear right" d="M110 38 C115 24 107 16 93 29 L99 47 Z"></path>
+                <path class="owl-body" d="M80 18 C115 18 138 48 138 86 C138 127 114 154 80 154 C46 154 22 127 22 86 C22 48 45 18 80 18 Z"></path>
+                <path class="pet-wing left" d="M42 74 C25 84 22 111 32 130 C45 119 50 99 50 82 Z"></path>
+                <path class="pet-wing right" d="M118 74 C135 84 138 111 128 130 C115 119 110 99 110 82 Z"></path>
+                <path class="owl-belly" d="M80 60 C104 60 120 81 120 107 C120 135 103 148 80 148 C57 148 40 135 40 107 C40 81 56 60 80 60 Z"></path>
+                <g class="owl-head">
+                  <circle class="owl-cheek left" cx="57" cy="92" r="8"></circle>
+                  <circle class="owl-cheek right" cx="103" cy="92" r="8"></circle>
+                  <circle class="eye left" cx="61" cy="79" r="5.5"></circle>
+                  <circle class="eye right" cx="99" cy="79" r="5.5"></circle>
+                  <path class="owl-brow left" d="M52 67 L68 72"></path>
+                  <path class="owl-brow right" d="M108 67 L92 72"></path>
+                  <path class="owl-beak" d="M80 91 L70 79 L90 79 Z"></path>
+                </g>
+                <path class="owl-foot left" d="M54 149 C47 149 43 153 43 159 C50 157 56 157 63 159 C64 153 61 149 54 149 Z"></path>
+                <path class="owl-foot right" d="M106 149 C113 149 117 153 117 159 C110 157 104 157 97 159 C96 153 99 149 106 149 Z"></path>
+              </g>
+            </svg>
           </div>
         </div>
         <div class="stats">
@@ -172,6 +194,22 @@
             <span class="mini-icon cushion-icon" aria-hidden="true"></span>
             休む 5
           </button>
+        </div>
+        <div class="motion-lab">
+          <div class="section-title compact">
+            <p>Motion</p>
+            <span id="motionLabel">待機</span>
+          </div>
+          <div class="motion-controls" aria-label="フクロウのモーション切り替え">
+            <button class="motion-btn active" type="button" data-motion="idle">待機</button>
+            <button class="motion-btn" type="button" data-motion="headTilt">首かしげ</button>
+            <button class="motion-btn" type="button" data-motion="eat">食べる</button>
+            <button class="motion-btn" type="button" data-motion="happy">喜ぶ</button>
+            <button class="motion-btn" type="button" data-motion="angry">怒る</button>
+            <button class="motion-btn" type="button" data-motion="sad">悲しい</button>
+            <button class="motion-btn" type="button" data-motion="fun">楽しい</button>
+            <button class="motion-btn" type="button" data-motion="sleep">寝る</button>
+          </div>
         </div>
         <div class="inventory">
           <div class="section-title compact">
