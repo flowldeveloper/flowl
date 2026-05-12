@@ -2287,6 +2287,14 @@ input:focus {
   transition: transform 160ms ease;
 }
 
+.eye-shine {
+  fill: #ffffff;
+  pointer-events: none;
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
 .pet[data-asset="flowl-owl"] .owl-beak {
   position: static;
   width: auto;
@@ -2353,6 +2361,15 @@ input:focus {
 /* mood-* は育成ステータス用、happy/sadなどはボタンやJSのモーション用です。 */
 .pet[data-asset="flowl-owl"].happy .eye {
   transform: translateY(2px) scaleY(0.24);
+}
+
+.pet[data-asset="flowl-owl"].happy .eye-shine,
+.pet[data-asset="flowl-owl"].angry .eye-shine,
+.pet[data-asset="flowl-owl"].sad .eye-shine,
+.pet[data-asset="flowl-owl"].sleep .eye-shine,
+.pet[data-asset="flowl-owl"].resting .eye-shine {
+  opacity: 0;
+  transform: scaleY(0.2);
 }
 
 .pet[data-asset="flowl-owl"].mood-tired:not(.sad):not(.sleep) .eye,
