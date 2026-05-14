@@ -14,80 +14,116 @@
         <p class="eyebrow">Study pet tracker</p>
         <h1>Flowl</h1>
       </div>
+    </header>
+
+    <div class="top-status panel" aria-label="学習と育成ステータス">
+      <div class="status-chip">
+        <span>Lv</span>
+        <strong id="petLevel">1</strong>
+      </div>
       <div class="coin-pill" aria-label="所持コイン">
         <span>coin</span>
         <strong id="coinCount">0</strong>
       </div>
-    </header>
+      <div class="status-chip">
+        <span>連続</span>
+        <strong id="streakCount">0日</strong>
+      </div>
+      <div class="status-meters" aria-label="お世話ゲージ">
+        <label class="status-meter">
+          <span>まんぷく</span>
+          <meter id="hungerMeter" min="0" max="100" value="60"></meter>
+        </label>
+        <label class="status-meter">
+          <span>あそぶ</span>
+          <meter id="happyMeter" min="0" max="100" value="60"></meter>
+        </label>
+      </div>
+    </div>
 
     <section id="timerScreen" class="screen active" aria-label="タイマーと動物">
       <article class="timer panel">
         <div class="section-title">
           <p>Focus timer</p>
-          <span id="timerStatus">待機中</span>
+          <span id="timerStatus"></span>
         </div>
         <h2 id="time">25:00</h2>
         <div class="timer-controls">
           <button id="startBtn">スタート</button>
-          <button id="pauseBtn">一時停止</button>
           <button id="resetBtn">リセット</button>
         </div>
         <form id="timerRecordForm" class="timer-record">
           <label>
             タイマー科目
-            <input id="timerSubjectInput" type="text" placeholder="英語、数学など" maxlength="24">
+            <input id="timerSubjectInput" type="text" placeholder="英語、数学など" maxlength="24" list="subjectOptions">
           </label>
           <button id="recordTimerBtn" type="submit">記録して終了</button>
         </form>
+        <div class="daily-strip" aria-label="今日の育成状況">
+          <div>
+            <span>今日のごほうび</span>
+            <strong id="todayReward">あと10分</strong>
+          </div>
+          <div>
+            <span>放置報酬</span>
+            <strong id="idleReward">0 coin</strong>
+          </div>
+        </div>
       </article>
 
-      <article class="pet-panel panel">
-        <div class="section-title">
+      <article class="pet-panel panel timer-pet-panel">
+        <div class="section-title timer-pet-title">
           <p>Flowlet</p>
-          <span id="petLevel">Lv. 1</span>
+          <span>一緒に集中</span>
         </div>
         <div class="pet-stage" aria-label="育成中の動物">
           <div id="petActionProp" class="pet-action-prop" aria-hidden="true"></div>
           <div class="pet-shadow"></div>
           <div class="pet idle" id="pet" data-asset="flowl-owl">
             <!-- SVGの各パーツにclassを付けて、CSSとJavaScriptから動かしやすくしています。 -->
-            <svg class="owl-svg" viewBox="0 0 160 170" role="img" aria-label="小さなフクロウのFlowlet">
+            <svg class="owl-svg" viewBox="0 0 180 190" role="img" aria-label="小さなフクロウのFlowlet">
               <g class="owl-root">
-                <path class="owl-ear left" d="M50 38 C45 24 53 16 67 29 L61 47 Z"></path>
-                <path class="owl-ear right" d="M110 38 C115 24 107 16 93 29 L99 47 Z"></path>
-                <path class="owl-body" d="M80 18 C115 18 138 48 138 86 C138 127 114 154 80 154 C46 154 22 127 22 86 C22 48 45 18 80 18 Z"></path>
-                <path class="pet-wing left" d="M42 74 C25 84 22 111 32 130 C45 119 50 99 50 82 Z"></path>
-                <path class="pet-wing right" d="M118 74 C135 84 138 111 128 130 C115 119 110 99 110 82 Z"></path>
-                <path class="owl-belly" d="M80 60 C104 60 120 81 120 107 C120 135 103 148 80 148 C57 148 40 135 40 107 C40 81 56 60 80 60 Z"></path>
+                <path class="owl-ear left" d="M57 43 C51 26 62 18 77 33 C68 36 62 41 58 51 Z"></path>
+                <path class="owl-ear right" d="M123 43 C129 26 118 18 103 33 C112 36 118 41 122 51 Z"></path>
+                <path class="owl-body" d="M90 18 C126 18 151 46 151 90 C151 139 126 166 90 166 C54 166 29 139 29 90 C29 46 54 18 90 18 Z"></path>
+                <path class="pet-wing left" d="M47 88 C30 97 28 125 41 142 C55 132 58 108 56 92 Z"></path>
+                <path class="pet-wing right" d="M133 88 C150 97 152 125 139 142 C125 132 122 108 124 92 Z"></path>
+                <path class="owl-face-mask" d="M90 37 C115 37 132 55 132 78 C132 101 114 116 90 116 C66 116 48 101 48 78 C48 55 65 37 90 37 Z"></path>
+                <path class="owl-face-lobe left" d="M89 76 C80 55 58 52 51 68 C43 87 58 108 82 108 C90 101 94 88 89 76 Z"></path>
+                <path class="owl-face-lobe right" d="M91 76 C100 55 122 52 129 68 C137 87 122 108 98 108 C90 101 86 88 91 76 Z"></path>
+                <path class="owl-belly" d="M90 92 C112 92 127 111 127 133 C127 154 112 165 90 165 C68 165 53 154 53 133 C53 111 68 92 90 92 Z"></path>
                 <g class="owl-head">
-                  <circle class="owl-cheek left" cx="57" cy="92" r="8"></circle>
-                  <circle class="owl-cheek right" cx="103" cy="92" r="8"></circle>
-                  <circle class="eye left" cx="61" cy="79" r="5.5"></circle>
-                  <circle class="eye right" cx="99" cy="79" r="5.5"></circle>
-                  <path class="owl-brow left" d="M52 67 L68 72"></path>
-                  <path class="owl-brow right" d="M108 67 L92 72"></path>
-                  <path class="owl-beak" d="M80 91 L70 79 L90 79 Z"></path>
+                  <circle class="owl-cheek left" cx="64" cy="94" r="7"></circle>
+                  <circle class="owl-cheek right" cx="116" cy="94" r="7"></circle>
+                  <circle class="eye left" cx="68" cy="77" r="6.5"></circle>
+                  <circle class="eye right" cx="112" cy="77" r="6.5"></circle>
+                  <circle class="eye-shine left" cx="70.5" cy="74.5" r="1.7"></circle>
+                  <circle class="eye-shine right" cx="114.5" cy="74.5" r="1.7"></circle>
+                  <path class="owl-brow left" d="M58 66 L75 72"></path>
+                  <path class="owl-brow right" d="M122 66 L105 72"></path>
+                  <path class="owl-beak" d="M90 93 L78 80 L102 80 Z"></path>
                 </g>
-                <path class="owl-foot left" d="M54 149 C47 149 43 153 43 159 C50 157 56 157 63 159 C64 153 61 149 54 149 Z"></path>
-                <path class="owl-foot right" d="M106 149 C113 149 117 153 117 159 C110 157 104 157 97 159 C96 153 99 149 106 149 Z"></path>
+                <path class="owl-foot left" d="M63 160 C55 160 51 164 51 171 C58 168 65 168 72 171 C73 164 70 160 63 160 Z"></path>
+                <path class="owl-foot right" d="M117 160 C125 160 129 164 129 171 C122 168 115 168 108 171 C107 164 110 160 117 160 Z"></path>
               </g>
             </svg>
           </div>
         </div>
-        <div class="stats">
-          <label>
-            <span>まんぷく</span>
-            <meter id="hungerMeter" min="0" max="100" value="60"></meter>
-          </label>
-          <label>
-            <span>ごきげん</span>
-            <meter id="happyMeter" min="0" max="100" value="60"></meter>
-          </label>
-          <label>
-            <span>エネルギー</span>
-            <meter id="energyMeter" min="0" max="100" value="60"></meter>
-          </label>
+        <div class="growth-card">
+          <div>
+            <span id="growthStageLabel">たまご</span>
+            <strong id="growthNextLabel">あと10分でひな</strong>
+          </div>
+          <div class="growth-track" aria-label="成長ゲージ">
+            <span id="growthProgress"></span>
+          </div>
         </div>
+        <div class="level-reward-card">
+          <span>Level reward</span>
+          <strong id="levelRewardStatus">Lv.100で報酬</strong>
+          <small id="nextLevelReward">あと99レベル</small>
+        </div>
+        <p id="petMessage" class="pet-message">今日はどんな勉強をする？</p>
       </article>
     </section>
 
@@ -100,7 +136,7 @@
         <form id="studyForm" class="study-form">
           <label>
             科目
-            <input id="subjectInput" type="text" placeholder="英語、数学など" maxlength="24">
+            <input id="subjectInput" type="text" placeholder="英語、数学など" maxlength="24" list="subjectOptions">
           </label>
           <label>
             分
@@ -108,6 +144,8 @@
           </label>
           <button type="submit">記録</button>
         </form>
+        <datalist id="subjectOptions"></datalist>
+        <div id="subjectTags" class="subject-tags" aria-label="登録済み科目タグ"></div>
       </article>
 
       <article class="panel history-panel">
@@ -144,25 +182,30 @@
           <div class="pet-shadow"></div>
           <div class="pet idle" id="petCare" data-asset="flowl-owl">
             <!-- タイマー画面と同じ構造にして、同じclass切り替えで同期できます。 -->
-            <svg class="owl-svg" viewBox="0 0 160 170" role="img" aria-label="小さなフクロウのFlowlet">
+            <svg class="owl-svg" viewBox="0 0 180 190" role="img" aria-label="小さなフクロウのFlowlet">
               <g class="owl-root">
-                <path class="owl-ear left" d="M50 38 C45 24 53 16 67 29 L61 47 Z"></path>
-                <path class="owl-ear right" d="M110 38 C115 24 107 16 93 29 L99 47 Z"></path>
-                <path class="owl-body" d="M80 18 C115 18 138 48 138 86 C138 127 114 154 80 154 C46 154 22 127 22 86 C22 48 45 18 80 18 Z"></path>
-                <path class="pet-wing left" d="M42 74 C25 84 22 111 32 130 C45 119 50 99 50 82 Z"></path>
-                <path class="pet-wing right" d="M118 74 C135 84 138 111 128 130 C115 119 110 99 110 82 Z"></path>
-                <path class="owl-belly" d="M80 60 C104 60 120 81 120 107 C120 135 103 148 80 148 C57 148 40 135 40 107 C40 81 56 60 80 60 Z"></path>
+                <path class="owl-ear left" d="M57 43 C51 26 62 18 77 33 C68 36 62 41 58 51 Z"></path>
+                <path class="owl-ear right" d="M123 43 C129 26 118 18 103 33 C112 36 118 41 122 51 Z"></path>
+                <path class="owl-body" d="M90 18 C126 18 151 46 151 90 C151 139 126 166 90 166 C54 166 29 139 29 90 C29 46 54 18 90 18 Z"></path>
+                <path class="pet-wing left" d="M47 88 C30 97 28 125 41 142 C55 132 58 108 56 92 Z"></path>
+                <path class="pet-wing right" d="M133 88 C150 97 152 125 139 142 C125 132 122 108 124 92 Z"></path>
+                <path class="owl-face-mask" d="M90 37 C115 37 132 55 132 78 C132 101 114 116 90 116 C66 116 48 101 48 78 C48 55 65 37 90 37 Z"></path>
+                <path class="owl-face-lobe left" d="M89 76 C80 55 58 52 51 68 C43 87 58 108 82 108 C90 101 94 88 89 76 Z"></path>
+                <path class="owl-face-lobe right" d="M91 76 C100 55 122 52 129 68 C137 87 122 108 98 108 C90 101 86 88 91 76 Z"></path>
+                <path class="owl-belly" d="M90 92 C112 92 127 111 127 133 C127 154 112 165 90 165 C68 165 53 154 53 133 C53 111 68 92 90 92 Z"></path>
                 <g class="owl-head">
-                  <circle class="owl-cheek left" cx="57" cy="92" r="8"></circle>
-                  <circle class="owl-cheek right" cx="103" cy="92" r="8"></circle>
-                  <circle class="eye left" cx="61" cy="79" r="5.5"></circle>
-                  <circle class="eye right" cx="99" cy="79" r="5.5"></circle>
-                  <path class="owl-brow left" d="M52 67 L68 72"></path>
-                  <path class="owl-brow right" d="M108 67 L92 72"></path>
-                  <path class="owl-beak" d="M80 91 L70 79 L90 79 Z"></path>
+                  <circle class="owl-cheek left" cx="64" cy="94" r="7"></circle>
+                  <circle class="owl-cheek right" cx="116" cy="94" r="7"></circle>
+                  <circle class="eye left" cx="68" cy="77" r="6.5"></circle>
+                  <circle class="eye right" cx="112" cy="77" r="6.5"></circle>
+                  <circle class="eye-shine left" cx="70.5" cy="74.5" r="1.7"></circle>
+                  <circle class="eye-shine right" cx="114.5" cy="74.5" r="1.7"></circle>
+                  <path class="owl-brow left" d="M58 66 L75 72"></path>
+                  <path class="owl-brow right" d="M122 66 L105 72"></path>
+                  <path class="owl-beak" d="M90 93 L78 80 L102 80 Z"></path>
                 </g>
-                <path class="owl-foot left" d="M54 149 C47 149 43 153 43 159 C50 157 56 157 63 159 C64 153 61 149 54 149 Z"></path>
-                <path class="owl-foot right" d="M106 149 C113 149 117 153 117 159 C110 157 104 157 97 159 C96 153 99 149 106 149 Z"></path>
+                <path class="owl-foot left" d="M63 160 C55 160 51 164 51 171 C58 168 65 168 72 171 C73 164 70 160 63 160 Z"></path>
+                <path class="owl-foot right" d="M117 160 C125 160 129 164 129 171 C122 168 115 168 108 171 C107 164 110 160 117 160 Z"></path>
               </g>
             </svg>
           </div>
@@ -173,26 +216,18 @@
             <meter id="hungerCareMeter" min="0" max="100" value="60"></meter>
           </label>
           <label>
-            <span>ごきげん</span>
+            <span>あそぶ</span>
             <meter id="happyCareMeter" min="0" max="100" value="60"></meter>
-          </label>
-          <label>
-            <span>エネルギー</span>
-            <meter id="energyCareMeter" min="0" max="100" value="60"></meter>
           </label>
         </div>
         <div class="care-actions">
           <button class="care-btn" data-action="feed">
             <span class="mini-icon bowl-icon" aria-hidden="true"></span>
-            ごはん 8
+            ごはん 5コイン
           </button>
           <button class="care-btn" data-action="play">
             <span class="mini-icon ball-icon" aria-hidden="true"></span>
-            あそぶ 6
-          </button>
-          <button class="care-btn" data-action="rest">
-            <span class="mini-icon cushion-icon" aria-hidden="true"></span>
-            休む 5
+            あそぶ 5コイン
           </button>
         </div>
         <div class="motion-lab">
@@ -213,8 +248,8 @@
         </div>
         <div class="inventory">
           <div class="section-title compact">
-            <p>Items</p>
-            <span>もちもの</span>
+            <p>Closet</p>
+            <span>着せ替え</span>
           </div>
           <div id="inventoryList" class="item-list"></div>
         </div>
@@ -224,8 +259,8 @@
     <section id="shopScreen" class="screen" aria-label="ショップ">
       <article class="panel shop-panel">
         <div class="section-title">
-          <p>Pet shop</p>
-          <span>1分 = 1 coin</span>
+          <p>Dress shop</p>
+          <span>服・背景・飾り</span>
         </div>
         <div id="shopList" class="shop-list"></div>
       </article>
