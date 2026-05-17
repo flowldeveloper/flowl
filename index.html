@@ -248,6 +248,37 @@
       </article>
     </section>
 
+    <section id="wardrobeScreen" class="screen" aria-label="装備付け替え">
+      <article class="panel wardrobe-panel">
+        <div class="section-title">
+          <p>Dress room</p>
+          <span>試着してから選べます</span>
+        </div>
+        <div class="wardrobe-layout">
+          <div class="wardrobe-preview">
+            <div id="wardrobePreviewStage" class="pet-stage wardrobe-preview-stage" aria-label="装備プレビュー"></div>
+            <div id="equippedSummary" class="equipped-summary" aria-label="現在の装備"></div>
+          </div>
+          <div class="wardrobe-picker">
+            <div id="wardrobeTabs" class="wardrobe-tabs" aria-label="装備カテゴリ"></div>
+            <div id="wardrobeGrid" class="wardrobe-grid" aria-label="装備アイテム一覧"></div>
+          </div>
+        </div>
+        <div id="wardrobeActionBar" class="wardrobe-action-bar" aria-live="polite">
+          <div>
+            <span id="wardrobeSelectedMeta">アイテムを選択</span>
+            <strong id="wardrobeSelectedName">装備を選んでください</strong>
+            <p id="wardrobeSelectedDescription">購入前でもプレビューに試着できます。</p>
+            <small id="wardrobeSelectedStatus"></small>
+          </div>
+          <div class="wardrobe-action-buttons">
+            <button id="clearGearBtn" type="button">外す</button>
+            <button id="wardrobeActionBtn" type="button">選択</button>
+          </div>
+        </div>
+      </article>
+    </section>
+
     <section id="shopScreen" class="screen" aria-label="ショップ">
       <article class="panel shop-panel">
         <div class="section-title">
@@ -285,6 +316,10 @@
     <button class="nav-btn" type="button" data-screen="careScreen">
       <span>Care</span>
       お世話
+    </button>
+    <button class="nav-btn" type="button" data-screen="wardrobeScreen">
+      <span>Dress</span>
+      装備
     </button>
     <button class="nav-btn" type="button" data-screen="shopScreen">
       <span>Shop</span>

@@ -44,6 +44,143 @@ const shopItems = {
   },
 };
 
+const gearItems = {
+  leafCape: {
+    name: "リーフケープ",
+    description: "やさしい緑のケープ。勉強中も落ち着いた気分に。",
+    category: "clothes",
+    slot: "clothes",
+    rarity: "common",
+    cost: 24,
+    visualClass: "gear-leaf-cape",
+  },
+  scholarVest: {
+    name: "がくしゅうベスト",
+    description: "小さなノート風の飾りがついたベスト。",
+    category: "clothes",
+    slot: "clothes",
+    rarity: "uncommon",
+    cost: 34,
+    visualClass: "gear-scholar-vest",
+  },
+  studyRibbon: {
+    name: "スタディリボン",
+    description: "頭にちょこんと乗る応援リボン。",
+    category: "accessory",
+    slot: "head",
+    rarity: "common",
+    cost: 18,
+    visualClass: "gear-study-ribbon",
+  },
+  starCrown: {
+    name: "星のクラウン",
+    description: "特別な日に似合う、きらきらした王冠。",
+    category: "accessory",
+    slot: "head",
+    rarity: "legendary",
+    cost: 80,
+    visualClass: "gear-star-crown",
+  },
+  roundGlasses: {
+    name: "まるメガネ",
+    description: "集中している雰囲気が出る丸いメガネ。",
+    category: "accessory",
+    slot: "face",
+    rarity: "uncommon",
+    cost: 32,
+    visualClass: "gear-round-glasses",
+  },
+  cozyScarf: {
+    name: "ぬくぬくマフラー",
+    description: "夜の勉強にも似合う首元アクセサリー。",
+    category: "accessory",
+    slot: "neck",
+    rarity: "common",
+    cost: 22,
+    visualClass: "gear-cozy-scarf",
+  },
+  tinyPencil: {
+    name: "ちいさな鉛筆",
+    description: "手元に置ける、がんばり屋さんの鉛筆。",
+    category: "accessory",
+    slot: "hand",
+    rarity: "rare",
+    cost: 48,
+    visualClass: "gear-tiny-pencil",
+  },
+  studyDesk: {
+    name: "木の学習机",
+    description: "フクロウのそばに置ける小さな机。",
+    category: "furniture",
+    slot: "furniture",
+    rarity: "common",
+    cost: 26,
+    visualClass: "gear-study-desk",
+  },
+  moonLamp: {
+    name: "月あかりランプ",
+    description: "やわらかく光る、夜の勉強用ランプ。",
+    category: "furniture",
+    slot: "furniture",
+    rarity: "epic",
+    cost: 64,
+    visualClass: "gear-moon-lamp",
+  },
+  meadowBackground: {
+    name: "草原の背景",
+    description: "やさしい風を感じる明るい背景。",
+    category: "background",
+    slot: "background",
+    rarity: "common",
+    cost: 28,
+    visualClass: "look-bg-meadow",
+  },
+  nightBackground: {
+    name: "星夜の背景",
+    description: "静かな夜空と一緒に集中できる背景。",
+    category: "background",
+    slot: "background",
+    rarity: "rare",
+    cost: 52,
+    visualClass: "look-bg-night",
+  },
+};
+
+const gearCategories = [
+  { id: "all", label: "すべて" },
+  { id: "clothes", label: "服" },
+  { id: "accessory", label: "アクセサリー" },
+  { id: "furniture", label: "家具" },
+  { id: "background", label: "背景" },
+];
+
+const accessorySlotLabels = {
+  head: "頭",
+  face: "顔",
+  neck: "首",
+  hand: "手元",
+};
+
+const gearCategoryLabels = {
+  clothes: "服",
+  accessory: "アクセサリー",
+  furniture: "家具",
+  background: "背景",
+};
+
+const rarityLabels = {
+  common: "Common",
+  uncommon: "Uncommon",
+  rare: "Rare",
+  epic: "Epic",
+  legendary: "Legendary",
+};
+
+const gearLayerKeys = ["furniture", "clothes", "neck", "face", "hand", "head"];
+const gearBackgroundClasses = Object.values(gearItems)
+  .filter((item) => item.category === "background")
+  .map((item) => item.visualClass);
+
 const mascotMotions = ["idle", "headTilt", "eat", "happy", "angry", "sad", "fun", "sleep"];
 const mascotMotionLabels = {
   idle: "待機",
@@ -206,6 +343,17 @@ const shopConfirmStatus = document.getElementById("shopConfirmStatus");
 const confirmPurchaseBtn = document.getElementById("confirmPurchaseBtn");
 const cancelPurchaseBtn = document.getElementById("cancelPurchaseBtn");
 const shopList = document.getElementById("shopList");
+const wardrobePreviewStage = document.getElementById("wardrobePreviewStage");
+const equippedSummary = document.getElementById("equippedSummary");
+const wardrobeTabs = document.getElementById("wardrobeTabs");
+const wardrobeGrid = document.getElementById("wardrobeGrid");
+const wardrobeActionBar = document.getElementById("wardrobeActionBar");
+const wardrobeSelectedName = document.getElementById("wardrobeSelectedName");
+const wardrobeSelectedMeta = document.getElementById("wardrobeSelectedMeta");
+const wardrobeSelectedDescription = document.getElementById("wardrobeSelectedDescription");
+const wardrobeSelectedStatus = document.getElementById("wardrobeSelectedStatus");
+const clearGearBtn = document.getElementById("clearGearBtn");
+const wardrobeActionBtn = document.getElementById("wardrobeActionBtn");
 const inventoryList = document.getElementById("inventoryList");
 const petLevel = document.getElementById("petLevel");
 const petCareLevel = document.getElementById("petCareLevel");
@@ -239,6 +387,8 @@ let expressionOverride = null;
 let weekOffset = 0;
 let activeMascotMotion = "idle";
 let selectedShopItemId = null;
+let activeGearCategory = "all";
+let selectedGearItemId = "leafCape";
 
 function createDefaultState() {
   return {
@@ -252,6 +402,18 @@ function createDefaultState() {
       energy: 60,
     },
     inventory: {},
+    ownedGear: [],
+    equipped: {
+      clothes: null,
+      background: null,
+      furniture: null,
+      accessories: {
+        head: null,
+        face: null,
+        neck: null,
+        hand: null,
+      },
+    },
     sessions: [],
   };
 }
@@ -269,6 +431,15 @@ function normalizeState(savedState) {
     inventory: {
       ...defaults.inventory,
       ...savedState.inventory,
+    },
+    ownedGear: Array.isArray(savedState.ownedGear) ? savedState.ownedGear : [],
+    equipped: {
+      ...defaults.equipped,
+      ...savedState.equipped,
+      accessories: {
+        ...defaults.equipped.accessories,
+        ...savedState.equipped?.accessories,
+      },
     },
     sessions: Array.isArray(savedState.sessions) ? savedState.sessions : [],
   };
@@ -664,6 +835,385 @@ function createItemIcon(iconClass) {
   return icon;
 }
 
+function createGearIcon(item) {
+  const icon = document.createElement("span");
+  icon.className = `gear-icon rarity-${item.rarity} ${item.visualClass}`;
+  icon.setAttribute("aria-hidden", "true");
+  icon.append(document.createElement("span"), document.createElement("span"));
+  return icon;
+}
+
+function getGearSlotKey(item) {
+  if (!item) return "";
+  return item.category === "accessory" ? item.slot : item.category;
+}
+
+function getGearSlotLabel(item) {
+  if (!item) return "";
+  if (item.category === "accessory") return accessorySlotLabels[item.slot] || "アクセサリー";
+  return gearCategoryLabels[item.category] || item.category;
+}
+
+function getOwnedGearSet() {
+  return new Set(state.ownedGear || []);
+}
+
+function isGearOwned(itemId) {
+  return getOwnedGearSet().has(itemId);
+}
+
+function getEquippedGearId(item) {
+  if (!item) return null;
+  if (item.category === "accessory") return state.equipped.accessories[item.slot] || null;
+  return state.equipped[item.category] || null;
+}
+
+function isGearEquipped(itemId) {
+  const item = gearItems[itemId];
+  return Boolean(item && getEquippedGearId(item) === itemId);
+}
+
+function canAffordGear(item) {
+  return Boolean(item && state.coins >= item.cost);
+}
+
+function getGearActionLabel(item) {
+  if (!item) return "選択";
+  if (isGearEquipped(item.id)) return "外す";
+  if (isGearOwned(item.id)) return "装備";
+  if (!canAffordGear(item)) return "コイン不足";
+  return "購入";
+}
+
+function isGearActionEnabled(item) {
+  if (!item) return false;
+  if (isGearOwned(item.id)) return true;
+  return canAffordGear(item);
+}
+
+function getGearStatusText(item) {
+  if (!item) return "";
+  if (isGearEquipped(item.id)) return "装備中";
+  if (isGearOwned(item.id)) return "購入済み";
+  if (!canAffordGear(item)) return `あと ${item.cost - state.coins} coin`;
+  return "未購入";
+}
+
+function getGearMetaText(item) {
+  return `${getGearSlotLabel(item)} ・ ${rarityLabels[item.rarity] || item.rarity}`;
+}
+
+function cloneEquipped(equipped = state.equipped) {
+  return {
+    clothes: equipped.clothes || null,
+    background: equipped.background || null,
+    furniture: equipped.furniture || null,
+    accessories: {
+      head: equipped.accessories?.head || null,
+      face: equipped.accessories?.face || null,
+      neck: equipped.accessories?.neck || null,
+      hand: equipped.accessories?.hand || null,
+    },
+  };
+}
+
+function getPreviewEquipped() {
+  const preview = cloneEquipped();
+  const selectedItem = gearItems[selectedGearItemId];
+
+  if (!selectedItem) return preview;
+
+  if (selectedItem.category === "accessory") {
+    preview.accessories[selectedItem.slot] = selectedItem.id;
+  } else {
+    preview[selectedItem.category] = selectedItem.id;
+  }
+
+  return preview;
+}
+
+function equipGearItem(itemId) {
+  const item = gearItems[itemId];
+  if (!item || !isGearOwned(itemId)) return;
+
+  if (item.category === "accessory") {
+    state.equipped.accessories[item.slot] = itemId;
+  } else {
+    state.equipped[item.category] = itemId;
+  }
+}
+
+function unequipGearItem(itemId) {
+  const item = gearItems[itemId];
+  if (!item) return;
+
+  if (item.category === "accessory") {
+    if (state.equipped.accessories[item.slot] === itemId) state.equipped.accessories[item.slot] = null;
+    return;
+  }
+
+  if (state.equipped[item.category] === itemId) state.equipped[item.category] = null;
+}
+
+function clearGearSlot(item) {
+  if (!item) return;
+
+  if (item.category === "accessory") {
+    state.equipped.accessories[item.slot] = null;
+    return;
+  }
+
+  state.equipped[item.category] = null;
+}
+
+function getEquippedItemForLayer(equipped, layerKey) {
+  if (layerKey === "clothes") return gearItems[equipped.clothes];
+  if (layerKey === "furniture") return gearItems[equipped.furniture];
+  return gearItems[equipped.accessories?.[layerKey]];
+}
+
+function ensureLookLayers(stage) {
+  gearLayerKeys.forEach((layerKey) => {
+    if (stage.querySelector(`.gear-layer[data-layer="${layerKey}"]`)) return;
+
+    const layer = document.createElement("span");
+    layer.className = `gear-layer gear-layer-${layerKey}`;
+    layer.dataset.layer = layerKey;
+    layer.setAttribute("aria-hidden", "true");
+    stage.appendChild(layer);
+  });
+}
+
+function applyLookToStage(stage, equipped) {
+  ensureLookLayers(stage);
+  stage.classList.remove(...gearBackgroundClasses);
+
+  const background = gearItems[equipped.background];
+  if (background?.visualClass) stage.classList.add(background.visualClass);
+
+  gearLayerKeys.forEach((layerKey) => {
+    const layer = stage.querySelector(`.gear-layer[data-layer="${layerKey}"]`);
+    const item = getEquippedItemForLayer(equipped, layerKey);
+
+    layer.className = `gear-layer gear-layer-${layerKey}`;
+    layer.dataset.item = "";
+
+    if (!item) return;
+
+    layer.classList.add("active", item.visualClass, `rarity-${item.rarity}`);
+    layer.dataset.item = item.id;
+  });
+}
+
+function renderEquippedLook() {
+  const equipped = cloneEquipped();
+  document.querySelectorAll(".pet-stage:not(.wardrobe-preview-stage)").forEach((stage) => {
+    applyLookToStage(stage, equipped);
+  });
+}
+
+function initWardrobePreview() {
+  if (!wardrobePreviewStage || wardrobePreviewStage.querySelector(".wardrobe-preview-pet")) return;
+
+  const shadow = document.createElement("div");
+  const previewPet = petViews[0].pet.cloneNode(true);
+
+  shadow.className = "pet-shadow";
+  previewPet.removeAttribute("id");
+  previewPet.className = "pet idle expression-happy wardrobe-preview-pet";
+  previewPet.dataset.asset = "flowl-owl";
+  previewPet.dataset.expression = "happy";
+
+  wardrobePreviewStage.append(shadow, previewPet);
+}
+
+function renderWardrobePreview() {
+  if (!wardrobePreviewStage) return;
+
+  initWardrobePreview();
+  applyLookToStage(wardrobePreviewStage, getPreviewEquipped());
+}
+
+function renderEquippedSummary() {
+  if (!equippedSummary) return;
+
+  equippedSummary.innerHTML = "";
+  const equippedIds = [
+    state.equipped.background,
+    state.equipped.furniture,
+    state.equipped.clothes,
+    ...Object.values(state.equipped.accessories),
+  ].filter(Boolean);
+
+  if (equippedIds.length === 0) {
+    const empty = document.createElement("span");
+    empty.textContent = "まだ装備はありません";
+    equippedSummary.appendChild(empty);
+    return;
+  }
+
+  equippedIds.forEach((itemId) => {
+    const item = gearItems[itemId];
+    if (!item) return;
+
+    const badge = document.createElement("span");
+    badge.textContent = `${getGearSlotLabel(item)}: ${item.name}`;
+    equippedSummary.appendChild(badge);
+  });
+}
+
+function renderWardrobeTabs() {
+  if (!wardrobeTabs) return;
+
+  wardrobeTabs.innerHTML = "";
+  gearCategories.forEach((category) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "wardrobe-tab";
+    button.dataset.category = category.id;
+    button.classList.toggle("active", activeGearCategory === category.id);
+    button.textContent = category.label;
+    wardrobeTabs.appendChild(button);
+  });
+}
+
+function renderWardrobeGrid() {
+  if (!wardrobeGrid) return;
+
+  wardrobeGrid.innerHTML = "";
+  Object.entries(gearItems)
+    .filter(([, item]) => activeGearCategory === "all" || item.category === activeGearCategory)
+    .forEach(([id, item]) => {
+      item.id = id;
+      const owned = isGearOwned(id);
+      const equipped = isGearEquipped(id);
+      const canAfford = canAffordGear(item);
+      const actionLabel = getGearActionLabel(item) || "購入";
+      const card = document.createElement("article");
+      const iconWrap = document.createElement("div");
+      const badge = document.createElement("span");
+      const rarity = document.createElement("span");
+      const title = document.createElement("strong");
+      const meta = document.createElement("small");
+      const price = document.createElement("span");
+      const status = document.createElement("span");
+      const button = document.createElement("button");
+
+      card.className = `gear-card rarity-${item.rarity}`;
+      card.dataset.item = id;
+      card.classList.toggle("selected", selectedGearItemId === id);
+      card.classList.toggle("owned", owned);
+      card.classList.toggle("locked", !owned);
+      card.classList.toggle("equipped", equipped);
+      card.classList.toggle("insufficient", !owned && !canAfford);
+
+      iconWrap.className = "gear-card-art";
+      iconWrap.appendChild(createGearIcon(item));
+
+      badge.className = "gear-equipped-badge";
+      badge.textContent = equipped ? "装備中" : "試着OK";
+
+      rarity.className = "gear-rarity";
+      rarity.textContent = rarityLabels[item.rarity] || item.rarity;
+
+      title.textContent = item.name;
+      meta.textContent = getGearMetaText(item);
+      price.className = "gear-price";
+      price.textContent = `${item.cost} coin`;
+      status.className = "gear-status";
+      status.textContent = getGearStatusText(item);
+
+      button.type = "button";
+      button.className = "gear-action-btn";
+      button.dataset.item = id;
+      button.disabled = !isGearActionEnabled(item);
+      button.textContent = actionLabel;
+      button.setAttribute("aria-label", `${item.name} ${actionLabel}`);
+
+      card.append(iconWrap, badge, rarity, title, meta, price, status, button);
+      wardrobeGrid.appendChild(card);
+    });
+}
+
+function renderWardrobeActionBar() {
+  if (!wardrobeActionBar) return;
+
+  const item = gearItems[selectedGearItemId];
+
+  if (!item) {
+    wardrobeSelectedMeta.textContent = "アイテムを選択";
+    wardrobeSelectedName.textContent = "装備を選んでください";
+    wardrobeSelectedDescription.textContent = "購入前でもプレビューに試着できます。";
+    wardrobeSelectedStatus.textContent = "";
+    wardrobeActionBtn.textContent = "選択";
+    wardrobeActionBtn.disabled = true;
+    clearGearBtn.disabled = true;
+    return;
+  }
+
+  item.id = selectedGearItemId;
+  const actionLabel = getGearActionLabel(item) || "購入";
+  const equippedInSlot = getEquippedGearId(item);
+
+  wardrobeSelectedMeta.textContent = getGearMetaText(item);
+  wardrobeSelectedName.textContent = item.name;
+  wardrobeSelectedDescription.textContent = item.description;
+  wardrobeSelectedStatus.textContent = getGearStatusText(item);
+  wardrobeActionBtn.textContent = actionLabel;
+  wardrobeActionBtn.disabled = !isGearActionEnabled(item);
+  clearGearBtn.disabled = !equippedInSlot;
+  clearGearBtn.textContent = equippedInSlot ? `${getGearSlotLabel(item)}を外す` : "外す";
+}
+
+function renderWardrobe() {
+  if (!wardrobeGrid) return;
+
+  renderWardrobePreview();
+  renderEquippedSummary();
+  renderWardrobeTabs();
+  renderWardrobeGrid();
+  renderWardrobeActionBar();
+}
+
+function runGearAction(itemId) {
+  const item = gearItems[itemId];
+  if (!item) return;
+
+  item.id = itemId;
+  selectedGearItemId = itemId;
+
+  if (isGearEquipped(itemId)) {
+    unequipGearItem(itemId);
+    showTemporaryOwlExpression("happy", { durationMs: 1600, triggerType: "unequip" });
+  } else if (isGearOwned(itemId)) {
+    equipGearItem(itemId);
+    showTemporaryOwlExpression("proud", { durationMs: 2200, triggerType: "equip" });
+  } else if (canAffordGear(item)) {
+    state.coins -= item.cost;
+    state.ownedGear = [...new Set([...(state.ownedGear || []), itemId])];
+    showTemporaryOwlExpression(["rare", "epic", "legendary"].includes(item.rarity) ? "excited" : "happy", {
+      triggerType: "gear-purchase",
+    });
+  } else {
+    showTemporaryOwlExpression("neutral");
+    renderWardrobe();
+    return;
+  }
+
+  saveState();
+  render();
+}
+
+function clearSelectedGearSlot() {
+  const item = gearItems[selectedGearItemId];
+  if (!item) return;
+
+  clearGearSlot(item);
+  saveState();
+  render();
+  showTemporaryOwlExpression("happy", { durationMs: 1600, triggerType: "clear-gear" });
+}
+
 function renderInventory() {
   inventoryList.innerHTML = "";
   const ownedItems = Object.entries(shopItems).filter(([id]) => state.inventory[id] > 0);
@@ -760,8 +1310,10 @@ function render() {
   streakText.textContent = `連続学習 ${getStreakCount()}日`;
 
   renderPet();
+  renderEquippedLook();
   renderInventory();
   renderShop();
+  renderWardrobe();
   renderHistory();
   renderWeeklyChart();
 }
@@ -862,6 +1414,8 @@ function switchScreen(screenId) {
   document.querySelectorAll(".nav-btn").forEach((button) => {
     button.classList.toggle("active", button.dataset.screen === screenId);
   });
+
+  if (screenId === "wardrobeScreen") renderWardrobe();
 }
 
 function finishTimerSession() {
@@ -1047,6 +1601,36 @@ cancelPurchaseBtn.addEventListener("click", () => {
   renderShop();
   showTemporaryOwlExpression("normal", { durationMs: 900, triggerType: "shop-cancel" });
 });
+
+wardrobeTabs.addEventListener("click", (event) => {
+  const button = event.target.closest(".wardrobe-tab");
+  if (!button) return;
+
+  activeGearCategory = button.dataset.category || "all";
+  renderWardrobe();
+});
+
+wardrobeGrid.addEventListener("click", (event) => {
+  const actionButton = event.target.closest(".gear-action-btn");
+
+  if (actionButton) {
+    event.stopPropagation();
+    runGearAction(actionButton.dataset.item);
+    return;
+  }
+
+  const card = event.target.closest(".gear-card");
+  if (!card) return;
+
+  selectedGearItemId = card.dataset.item;
+  renderWardrobe();
+});
+
+wardrobeActionBtn.addEventListener("click", () => {
+  runGearAction(selectedGearItemId);
+});
+
+clearGearBtn.addEventListener("click", clearSelectedGearSlot);
 
 inventoryList.addEventListener("click", (event) => {
   const button = event.target.closest(".use-item-btn");
