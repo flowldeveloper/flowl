@@ -337,15 +337,9 @@ const nextWeekBtn = document.getElementById("nextWeekBtn");
 const shopList = document.getElementById("shopList");
 const wardrobePreviewStage = document.getElementById("wardrobePreviewStage");
 const equippedSummary = document.getElementById("equippedSummary");
+const wardrobeCoinBalance = document.getElementById("wardrobeCoinBalance");
 const wardrobeTabs = document.getElementById("wardrobeTabs");
 const wardrobeGrid = document.getElementById("wardrobeGrid");
-const wardrobeActionBar = document.getElementById("wardrobeActionBar");
-const wardrobeSelectedName = document.getElementById("wardrobeSelectedName");
-const wardrobeSelectedMeta = document.getElementById("wardrobeSelectedMeta");
-const wardrobeSelectedDescription = document.getElementById("wardrobeSelectedDescription");
-const wardrobeSelectedStatus = document.getElementById("wardrobeSelectedStatus");
-const clearGearBtn = document.getElementById("clearGearBtn");
-const wardrobeActionBtn = document.getElementById("wardrobeActionBtn");
 const inventoryList = document.getElementById("inventoryList");
 const petLevel = document.getElementById("petLevel");
 const petCareLevel = document.getElementById("petCareLevel");
@@ -381,7 +375,6 @@ let activeMascotMotion = "idle";
 let activeShopItemId = null;
 let shopUseTimer = null;
 let activeGearCategory = "all";
-let selectedGearItemId = "leafCape";
 
 function createDefaultState() {
   return {
@@ -920,21 +913,6 @@ function cloneEquipped(equipped = state.equipped) {
   };
 }
 
-function getPreviewEquipped() {
-  const preview = cloneEquipped();
-  const selectedItem = gearItems[selectedGearItemId];
-
-  if (!selectedItem) return preview;
-
-  if (selectedItem.category === "accessory") {
-    preview.accessories[selectedItem.slot] = selectedItem.id;
-  } else {
-    preview[selectedItem.category] = selectedItem.id;
-  }
-
-  return preview;
-}
-
 function equipGearItem(itemId) {
   const item = gearItems[itemId];
   if (!item || !isGearOwned(itemId)) return;
@@ -1034,7 +1012,7 @@ function renderWardrobePreview() {
   if (!wardrobePreviewStage) return;
 
   initWardrobePreview();
-  applyLookToStage(wardrobePreviewStage, getPreviewEquipped());
+  applyLookToStage(wardrobePreviewStage, cloneEquipped());
 }
 
 function renderEquippedSummary() {
@@ -1080,6 +1058,12 @@ function renderWardrobeTabs() {
   });
 }
 
+function renderWardrobeCoinBalance() {
+  if (!wardrobeCoinBalance) return;
+
+  wardrobeCoinBalance.textContent = `所持コイン: ${state.coins} coin`;
+}
+
 function renderWardrobeGrid() {
   if (!wardrobeGrid) return;
 
@@ -1104,7 +1088,6 @@ function renderWardrobeGrid() {
 
       card.className = `gear-card rarity-${item.rarity}`;
       card.dataset.item = id;
-      card.classList.toggle("selected", selectedGearItemId === id);
       card.classList.toggle("owned", owned);
       card.classList.toggle("locked", !owned);
       card.classList.toggle("equipped", equipped);
@@ -1114,7 +1097,7 @@ function renderWardrobeGrid() {
       iconWrap.appendChild(createGearIcon(item));
 
       badge.className = "gear-equipped-badge";
-      badge.textContent = equipped ? "装備中" : "試着OK";
+      badge.textContent = "装備中";
 
       rarity.className = "gear-rarity";
       rarity.textContent = rarityLabels[item.rarity] || item.rarity;
@@ -1137,45 +1120,14 @@ function renderWardrobeGrid() {
     });
 }
 
-function renderWardrobeActionBar() {
-  if (!wardrobeActionBar) return;
-
-  const item = gearItems[selectedGearItemId];
-
-  if (!item) {
-    wardrobeSelectedMeta.textContent = "アイテムを選択";
-    wardrobeSelectedName.textContent = "装備を選んでください";
-    wardrobeSelectedDescription.textContent = "購入前でもプレビューに試着できます。";
-    wardrobeSelectedStatus.textContent = "";
-    setButtonLabel(wardrobeActionBtn, "選択");
-    wardrobeActionBtn.disabled = true;
-    clearGearBtn.disabled = true;
-    setButtonLabel(clearGearBtn, "外す");
-    return;
-  }
-
-  item.id = selectedGearItemId;
-  const actionLabel = getGearActionLabel(item) || "購入";
-  const equippedInSlot = getEquippedGearId(item);
-
-  wardrobeSelectedMeta.textContent = getGearMetaText(item);
-  wardrobeSelectedName.textContent = item.name;
-  wardrobeSelectedDescription.textContent = item.description;
-  wardrobeSelectedStatus.textContent = getGearStatusText(item);
-  setButtonLabel(wardrobeActionBtn, actionLabel, item.name);
-  wardrobeActionBtn.disabled = !isGearActionEnabled(item);
-  clearGearBtn.disabled = !equippedInSlot;
-  setButtonLabel(clearGearBtn, equippedInSlot ? `${getGearSlotLabel(item)}を外す` : "外す");
-}
-
 function renderWardrobe() {
   if (!wardrobeGrid) return;
 
   renderWardrobePreview();
   renderEquippedSummary();
+  renderWardrobeCoinBalance();
   renderWardrobeTabs();
   renderWardrobeGrid();
-  renderWardrobeActionBar();
 }
 
 function runGearAction(itemId) {
@@ -1183,11 +1135,10 @@ function runGearAction(itemId) {
   if (!item) return;
 
   item.id = itemId;
-  selectedGearItemId = itemId;
 
   if (isGearEquipped(itemId)) {
-    unequipGearItem(itemId);
-    showTemporaryOwlExpression("happy", { durationMs: 1600, triggerType: "unequip" });
+    renderWardrobe();
+    return;
   } else if (isGearOwned(itemId)) {
     equipGearItem(itemId);
     showTemporaryOwlExpression("proud", { durationMs: 2200, triggerType: "equip" });
@@ -1205,16 +1156,6 @@ function runGearAction(itemId) {
 
   saveState();
   render();
-}
-
-function clearSelectedGearSlot() {
-  const item = gearItems[selectedGearItemId];
-  if (!item) return;
-
-  clearGearSlot(item);
-  saveState();
-  render();
-  showTemporaryOwlExpression("happy", { durationMs: 1600, triggerType: "clear-gear" });
 }
 
 function renderInventory() {
@@ -1645,21 +1586,8 @@ wardrobeGrid.addEventListener("click", (event) => {
   if (actionButton) {
     event.stopPropagation();
     runGearAction(actionButton.dataset.item);
-    return;
   }
-
-  const card = event.target.closest(".gear-card");
-  if (!card) return;
-
-  selectedGearItemId = card.dataset.item;
-  renderWardrobe();
 });
-
-wardrobeActionBtn.addEventListener("click", () => {
-  runGearAction(selectedGearItemId);
-});
-
-clearGearBtn.addEventListener("click", clearSelectedGearSlot);
 
 inventoryList.addEventListener("click", (event) => {
   const button = event.target.closest(".use-item-btn");

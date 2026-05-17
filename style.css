@@ -881,6 +881,11 @@ meter {
   grid-column: 1 / -1;
 }
 
+.wardrobe-simple {
+  display: grid;
+  gap: 14px;
+}
+
 .study-form {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 96px auto;
@@ -1084,7 +1089,8 @@ input:focus {
 }
 
 .wardrobe-preview-stage {
-  min-height: 360px;
+  min-height: 320px;
+  width: 100%;
 }
 
 .wardrobe-preview-stage .wardrobe-preview-pet {
@@ -1106,6 +1112,17 @@ input:focus {
   background: #fbfdfb;
   font-size: 12px;
   font-weight: 700;
+}
+
+.wardrobe-coin-balance {
+  min-height: 44px;
+  padding: 12px 14px;
+  border: 1px solid rgba(243, 182, 63, 0.32);
+  border-radius: 8px;
+  color: #553f18;
+  background: #fff8df;
+  font-size: 15px;
+  font-weight: 900;
 }
 
 .wardrobe-picker {
@@ -1137,17 +1154,17 @@ input:focus {
 
 .wardrobe-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 12px;
 }
 
 .gear-card {
   position: relative;
   display: grid;
-  grid-template-rows: auto auto auto auto auto auto 1fr auto;
+  grid-template-rows: auto auto auto auto auto 1fr auto;
   gap: 7px;
   min-width: 0;
-  min-height: 244px;
+  min-height: 220px;
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -1280,83 +1297,6 @@ input:focus {
 .gear-card.equipped .gear-action-btn {
   color: #553f18;
   background: #ffe2a3;
-}
-
-.wardrobe-action-bar {
-  position: sticky;
-  bottom: calc(74px + env(safe-area-inset-bottom));
-  z-index: 18;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 14px;
-  align-items: center;
-  margin-top: 16px;
-  padding: 14px;
-  border: 1px solid rgba(63, 143, 91, 0.22);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 12px 30px rgba(40, 74, 52, 0.13);
-  backdrop-filter: blur(14px);
-}
-
-.wardrobe-action-bar > div:first-child {
-  display: grid;
-  gap: 4px;
-  min-width: 0;
-}
-
-.wardrobe-action-bar span,
-.wardrobe-action-bar small {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.wardrobe-action-bar strong {
-  color: var(--ink);
-  font-size: 18px;
-}
-
-.wardrobe-action-bar p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.4;
-}
-
-.wardrobe-action-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.wardrobe-action-buttons button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 46px;
-  min-width: 96px;
-  padding: 10px 14px;
-  font-weight: 900;
-  text-align: center;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  opacity: 1;
-}
-
-#wardrobeActionBtn {
-  color: #fff;
-  background: var(--leaf);
-}
-
-#wardrobeActionBtn:disabled,
-#clearGearBtn:disabled {
-  color: #6b746d;
-  background: #e9efe9;
-  opacity: 1;
 }
 
 .shop-list {
@@ -2608,15 +2548,6 @@ input:focus {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .wardrobe-action-bar {
-    grid-template-columns: 1fr;
-    bottom: calc(86px + env(safe-area-inset-bottom));
-  }
-
-  .wardrobe-action-buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-  }
 }
 
 @media (max-width: 430px) {
