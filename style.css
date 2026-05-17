@@ -2390,11 +2390,25 @@ input:focus {
 }
 
 /* mood-* は育成ステータス用、happy/sadなどはボタンやJSのモーション用です。 */
-.pet[data-asset="flowl-owl"].happy .eye {
-  transform: translateY(2px) scaleY(0.24);
+.pet[data-asset="flowl-owl"].idle .eye,
+.pet[data-asset="flowl-owl"].eat .eye,
+.pet[data-asset="flowl-owl"].eating .eye,
+.pet[data-asset="flowl-owl"].happy .eye,
+.pet[data-asset="flowl-owl"].fun .eye,
+.pet[data-asset="flowl-owl"].playing .eye {
+  transform: scale(1.08);
 }
 
+.pet[data-asset="flowl-owl"].idle .eye-shine,
+.pet[data-asset="flowl-owl"].eat .eye-shine,
+.pet[data-asset="flowl-owl"].eating .eye-shine,
 .pet[data-asset="flowl-owl"].happy .eye-shine,
+.pet[data-asset="flowl-owl"].fun .eye-shine,
+.pet[data-asset="flowl-owl"].playing .eye-shine {
+  opacity: 1;
+  transform: translate(-1px, -1px) scale(1.22);
+}
+
 .pet[data-asset="flowl-owl"].angry .eye-shine,
 .pet[data-asset="flowl-owl"].sad .eye-shine,
 .pet[data-asset="flowl-owl"].sleep .eye-shine,
@@ -2522,12 +2536,12 @@ input:focus {
 }
 
 .pet[data-asset="flowl-owl"].expression-happy .eye {
-  transform: translateY(2px) scaleY(0.25);
+  transform: scale(1.14);
 }
 
 .pet[data-asset="flowl-owl"].expression-happy .eye-shine {
-  opacity: 0;
-  transform: scaleY(0.2);
+  opacity: 1;
+  transform: translate(-1px, -1px) scale(1.3);
 }
 
 .pet[data-asset="flowl-owl"].expression-happy .owl-mouth {
