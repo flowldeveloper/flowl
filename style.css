@@ -1099,6 +1099,11 @@ input:focus {
   font-weight: 700;
 }
 
+.shop-confirm-body .shop-confirm-status {
+  color: var(--leaf);
+  font-size: 13px;
+}
+
 .shop-confirm-body strong {
   color: var(--ink);
   font-size: 20px;
@@ -1126,10 +1131,16 @@ input:focus {
 #confirmPurchaseBtn {
   color: #fff;
   background: var(--leaf);
+  font-weight: 800;
 }
 
 #confirmPurchaseBtn:hover {
   background: #337a4b;
+}
+
+#confirmPurchaseBtn:disabled {
+  color: #7a5b5b;
+  background: #f4d1d1;
 }
 
 .shop-confirm-insufficient {
@@ -1137,6 +1148,10 @@ input:focus {
   background:
     linear-gradient(135deg, rgba(239, 143, 143, 0.14), rgba(255, 248, 223, 0.74)),
     #fbfdfb;
+}
+
+.shop-confirm-insufficient .shop-confirm-status {
+  color: #9b5656;
 }
 
 .shop-list {

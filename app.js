@@ -202,6 +202,7 @@ const shopConfirmIcon = document.getElementById("shopConfirmIcon");
 const shopConfirmName = document.getElementById("shopConfirmName");
 const shopConfirmDescription = document.getElementById("shopConfirmDescription");
 const shopConfirmCost = document.getElementById("shopConfirmCost");
+const shopConfirmStatus = document.getElementById("shopConfirmStatus");
 const confirmPurchaseBtn = document.getElementById("confirmPurchaseBtn");
 const cancelPurchaseBtn = document.getElementById("cancelPurchaseBtn");
 const shopList = document.getElementById("shopList");
@@ -695,10 +696,12 @@ function renderShopConfirmation() {
   if (!item) {
     shopConfirm.hidden = true;
     shopConfirmIcon.innerHTML = "";
+    shopConfirmStatus.textContent = "";
     return;
   }
 
   const canAfford = state.coins >= item.cost;
+  const shortage = Math.max(0, item.cost - state.coins);
 
   shopConfirm.hidden = false;
   shopConfirm.classList.toggle("shop-confirm-insufficient", !canAfford);
@@ -707,6 +710,9 @@ function renderShopConfirmation() {
   shopConfirmName.textContent = item.name;
   shopConfirmDescription.textContent = item.description;
   shopConfirmCost.textContent = `${item.cost} coin ・ 所持 ${state.coins} coin`;
+  shopConfirmStatus.textContent = canAfford
+    ? "購入できます。購入するともちものに入ります。"
+    : `あと ${shortage} coin で購入できます。`;
   confirmPurchaseBtn.disabled = !canAfford;
   confirmPurchaseBtn.textContent = canAfford ? "購入する" : "コイン不足";
 }
