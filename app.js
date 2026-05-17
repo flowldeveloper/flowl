@@ -197,6 +197,13 @@ const weekChart = document.getElementById("weekChart");
 const weekCompare = document.getElementById("weekCompare");
 const prevWeekBtn = document.getElementById("prevWeekBtn");
 const nextWeekBtn = document.getElementById("nextWeekBtn");
+const shopConfirm = document.getElementById("shopConfirm");
+const shopConfirmIcon = document.getElementById("shopConfirmIcon");
+const shopConfirmName = document.getElementById("shopConfirmName");
+const shopConfirmDescription = document.getElementById("shopConfirmDescription");
+const shopConfirmCost = document.getElementById("shopConfirmCost");
+const confirmPurchaseBtn = document.getElementById("confirmPurchaseBtn");
+const cancelPurchaseBtn = document.getElementById("cancelPurchaseBtn");
 const shopList = document.getElementById("shopList");
 const inventoryList = document.getElementById("inventoryList");
 const petLevel = document.getElementById("petLevel");
@@ -230,6 +237,7 @@ let inactivityTimer = null;
 let expressionOverride = null;
 let weekOffset = 0;
 let activeMascotMotion = "idle";
+let selectedShopItemId = null;
 
 function createDefaultState() {
   return {
@@ -681,6 +689,28 @@ function renderInventory() {
   });
 }
 
+function renderShopConfirmation() {
+  const item = shopItems[selectedShopItemId];
+
+  if (!item) {
+    shopConfirm.hidden = true;
+    shopConfirmIcon.innerHTML = "";
+    return;
+  }
+
+  const canAfford = state.coins >= item.cost;
+
+  shopConfirm.hidden = false;
+  shopConfirm.classList.toggle("shop-confirm-insufficient", !canAfford);
+  shopConfirmIcon.innerHTML = "";
+  shopConfirmIcon.appendChild(createItemIcon(item.iconClass));
+  shopConfirmName.textContent = item.name;
+  shopConfirmDescription.textContent = item.description;
+  shopConfirmCost.textContent = `${item.cost} coin ・ 所持 ${state.coins} coin`;
+  confirmPurchaseBtn.disabled = !canAfford;
+  confirmPurchaseBtn.textContent = canAfford ? "購入する" : "コイン不足";
+}
+
 function renderShop() {
   shopList.innerHTML = "";
 
@@ -693,17 +723,21 @@ function renderShop() {
     const button = document.createElement("button");
 
     card.className = "shop-item";
+    card.classList.toggle("selected", selectedShopItemId === id);
     title.textContent = item.name;
     description.textContent = item.description;
     button.type = "button";
-    button.className = "buy-item-btn";
+    button.className = "confirm-item-btn";
     button.dataset.item = id;
-    button.textContent = `${item.cost} coinで買う`;
+    button.setAttribute("aria-pressed", String(selectedShopItemId === id));
+    button.textContent = `${item.cost} coinを確認`;
 
     body.append(icon, title, description);
     card.append(body, button);
     shopList.appendChild(card);
   });
+
+  renderShopConfirmation();
 }
 
 function render() {
@@ -955,21 +989,34 @@ document.querySelectorAll(".care-btn").forEach((button) => {
   });
 });
 
-shopList.addEventListener("click", (event) => {
-  const button = event.target.closest(".buy-item-btn");
-  if (!button) return;
+function selectShopItem(itemId) {
+  if (!shopItems[itemId]) return;
 
-  const itemId = button.dataset.item;
-  const item = shopItems[itemId];
+  selectedShopItemId = itemId;
+  renderShop();
+  showTemporaryOwlExpression("happy", { durationMs: 1200, triggerType: "shop-confirm" });
+
+  requestAnimationFrame(() => {
+    shopConfirm.scrollIntoView({ behavior: "smooth", block: "start" });
+    confirmPurchaseBtn.focus({ preventScroll: true });
+  });
+}
+
+function purchaseSelectedShopItem() {
+  const item = shopItems[selectedShopItemId];
+
+  if (!item) return;
 
   if (state.coins < item.cost) {
     showTemporaryOwlExpression("neutral");
     alert("コインが足りません。1分学習すると1コイン増えます。");
+    renderShopConfirmation();
     return;
   }
 
   state.coins -= item.cost;
-  state.inventory[itemId] = (state.inventory[itemId] || 0) + 1;
+  state.inventory[selectedShopItemId] = (state.inventory[selectedShopItemId] || 0) + 1;
+  selectedShopItemId = null;
   saveState();
   render();
 
@@ -978,6 +1025,21 @@ shopList.addEventListener("click", (event) => {
   } else {
     showTemporaryOwlExpression("happy", { triggerType: "purchase" });
   }
+}
+
+shopList.addEventListener("click", (event) => {
+  const button = event.target.closest(".confirm-item-btn");
+  if (!button) return;
+
+  selectShopItem(button.dataset.item);
+});
+
+confirmPurchaseBtn.addEventListener("click", purchaseSelectedShopItem);
+
+cancelPurchaseBtn.addEventListener("click", () => {
+  selectedShopItemId = null;
+  renderShop();
+  showTemporaryOwlExpression("normal", { durationMs: 900, triggerType: "shop-cancel" });
 });
 
 inventoryList.addEventListener("click", (event) => {

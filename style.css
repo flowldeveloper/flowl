@@ -1063,6 +1063,82 @@ input:focus {
   font-weight: 700;
 }
 
+.shop-confirm {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 14px;
+  border: 1px solid rgba(63, 143, 91, 0.22);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(191, 230, 200, 0.5), rgba(255, 248, 223, 0.78)),
+    #fbfdfb;
+}
+
+.shop-confirm[hidden] {
+  display: none;
+}
+
+.shop-confirm-icon .item-illustration {
+  width: 64px;
+  height: 64px;
+}
+
+.shop-confirm-body {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.shop-confirm-body span,
+.shop-confirm-body small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.shop-confirm-body strong {
+  color: var(--ink);
+  font-size: 20px;
+}
+
+.shop-confirm-body p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.shop-confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.shop-confirm-actions button {
+  min-height: 42px;
+  padding: 9px 14px;
+}
+
+#confirmPurchaseBtn {
+  color: #fff;
+  background: var(--leaf);
+}
+
+#confirmPurchaseBtn:hover {
+  background: #337a4b;
+}
+
+.shop-confirm-insufficient {
+  border-color: rgba(239, 143, 143, 0.52);
+  background:
+    linear-gradient(135deg, rgba(239, 143, 143, 0.14), rgba(255, 248, 223, 0.74)),
+    #fbfdfb;
+}
+
 .shop-list {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1087,6 +1163,11 @@ input:focus {
   border-color: rgba(243, 182, 63, 0.7);
   box-shadow: 0 12px 24px rgba(63, 143, 91, 0.13);
   transform: translateY(-2px);
+}
+
+.shop-item.selected {
+  border-color: rgba(63, 143, 91, 0.68);
+  box-shadow: 0 12px 26px rgba(63, 143, 91, 0.16);
 }
 
 .shop-item:hover .item-illustration,
@@ -1917,6 +1998,18 @@ input:focus {
     margin: 0;
     padding: 0;
     overflow: visible;
+  }
+
+  .shop-confirm {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: 12px;
+  }
+
+  .shop-confirm-actions {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
   }
 
   .shop-item {
