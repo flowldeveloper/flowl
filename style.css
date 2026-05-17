@@ -1261,8 +1261,9 @@ input:focus {
   font-weight: 900;
   text-align: center;
   line-height: 1.15;
-  white-space: normal;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   opacity: 1;
 }
 
@@ -1340,8 +1341,9 @@ input:focus {
   font-weight: 900;
   text-align: center;
   line-height: 1.2;
-  white-space: normal;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   opacity: 1;
 }
 
@@ -1937,8 +1939,9 @@ input:focus {
   text-align: center;
   font-weight: 900;
   line-height: 1.2;
-  white-space: normal;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   opacity: 1;
 }
 

@@ -881,7 +881,7 @@ function canAffordGear(item) {
 
 function getGearActionLabel(item) {
   if (!item) return "選択";
-  if (isGearEquipped(item.id)) return "外す";
+  if (isGearEquipped(item.id)) return "装備中";
   if (isGearOwned(item.id)) return "装備";
   if (!canAffordGear(item)) return "コイン不足";
   return "購入";
@@ -889,6 +889,7 @@ function getGearActionLabel(item) {
 
 function isGearActionEnabled(item) {
   if (!item) return false;
+  if (isGearEquipped(item.id)) return false;
   if (isGearOwned(item.id)) return true;
   return canAffordGear(item);
 }
