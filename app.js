@@ -334,14 +334,6 @@ const weekChart = document.getElementById("weekChart");
 const weekCompare = document.getElementById("weekCompare");
 const prevWeekBtn = document.getElementById("prevWeekBtn");
 const nextWeekBtn = document.getElementById("nextWeekBtn");
-const shopConfirm = document.getElementById("shopConfirm");
-const shopConfirmIcon = document.getElementById("shopConfirmIcon");
-const shopConfirmName = document.getElementById("shopConfirmName");
-const shopConfirmDescription = document.getElementById("shopConfirmDescription");
-const shopConfirmCost = document.getElementById("shopConfirmCost");
-const shopConfirmStatus = document.getElementById("shopConfirmStatus");
-const confirmPurchaseBtn = document.getElementById("confirmPurchaseBtn");
-const cancelPurchaseBtn = document.getElementById("cancelPurchaseBtn");
 const shopList = document.getElementById("shopList");
 const wardrobePreviewStage = document.getElementById("wardrobePreviewStage");
 const equippedSummary = document.getElementById("equippedSummary");
@@ -386,7 +378,8 @@ let inactivityTimer = null;
 let expressionOverride = null;
 let weekOffset = 0;
 let activeMascotMotion = "idle";
-let selectedShopItemId = null;
+let activeShopItemId = null;
+let shopUseTimer = null;
 let activeGearCategory = "all";
 let selectedGearItemId = "leafCape";
 
@@ -1225,7 +1218,7 @@ function clearSelectedGearSlot() {
 
 function renderInventory() {
   inventoryList.innerHTML = "";
-  const ownedItems = Object.entries(shopItems).filter(([id]) => state.inventory[id] > 0);
+  const ownedItems = Object.entries(shopItems).filter(([id]) => isShopItemOwned(id));
 
   if (ownedItems.length === 0) {
     const empty = document.createElement("span");
@@ -1243,37 +1236,45 @@ function renderInventory() {
     button.type = "button";
     button.className = "use-item-btn";
     button.dataset.item = id;
-    label.textContent = `${item.name} x${state.inventory[id]}`;
+    button.disabled = isShopItemActive(id);
+    label.textContent = isShopItemActive(id) ? `${item.name} 利用中` : `${item.name} 利用`;
     button.append(icon, label);
     inventoryList.appendChild(button);
   });
 }
 
-function renderShopConfirmation() {
-  const item = shopItems[selectedShopItemId];
+function isShopItemOwned(itemId) {
+  return (Number(state.inventory[itemId]) || 0) > 0;
+}
 
-  if (!item) {
-    shopConfirm.hidden = true;
-    shopConfirmIcon.innerHTML = "";
-    shopConfirmStatus.textContent = "";
-    return;
-  }
+function isShopItemActive(itemId) {
+  return activeShopItemId === itemId;
+}
 
-  const canAfford = state.coins >= item.cost;
-  const shortage = Math.max(0, item.cost - state.coins);
+function canAffordShopItem(item) {
+  return Boolean(item && state.coins >= item.cost);
+}
 
-  shopConfirm.hidden = false;
-  shopConfirm.classList.toggle("shop-confirm-insufficient", !canAfford);
-  shopConfirmIcon.innerHTML = "";
-  shopConfirmIcon.appendChild(createItemIcon(item.iconClass));
-  shopConfirmName.textContent = item.name;
-  shopConfirmDescription.textContent = item.description;
-  shopConfirmCost.textContent = `${item.cost} coin ・ 所持 ${state.coins} coin`;
-  shopConfirmStatus.textContent = canAfford
-    ? "購入できます。購入するともちものに入ります。"
-    : `あと ${shortage} coin で購入できます。`;
-  confirmPurchaseBtn.disabled = !canAfford;
-  setButtonLabel(confirmPurchaseBtn, canAfford ? "購入する" : "コイン不足");
+function getShopActionLabel(itemId, item = shopItems[itemId]) {
+  if (!item) return "選択";
+  if (isShopItemActive(itemId)) return "利用中";
+  if (isShopItemOwned(itemId)) return "利用";
+  if (!canAffordShopItem(item)) return "コイン不足";
+  return "購入";
+}
+
+function isShopActionEnabled(itemId, item = shopItems[itemId]) {
+  if (!item || isShopItemActive(itemId)) return false;
+  if (isShopItemOwned(itemId)) return true;
+  return canAffordShopItem(item);
+}
+
+function getShopStatusText(itemId, item = shopItems[itemId]) {
+  if (!item) return "";
+  if (isShopItemActive(itemId)) return "利用中";
+  if (isShopItemOwned(itemId)) return "購入済み";
+  if (!canAffordShopItem(item)) return `あと ${item.cost - state.coins} coin`;
+  return "未購入";
 }
 
 function renderShop() {
@@ -1285,24 +1286,33 @@ function renderShop() {
     const icon = createItemIcon(item.iconClass);
     const title = document.createElement("h3");
     const description = document.createElement("p");
+    const meta = document.createElement("small");
+    const status = document.createElement("span");
     const button = document.createElement("button");
+    const owned = isShopItemOwned(id);
+    const active = isShopItemActive(id);
+    const canAfford = canAffordShopItem(item);
 
     card.className = "shop-item";
-    card.classList.toggle("selected", selectedShopItemId === id);
+    card.classList.toggle("owned", owned);
+    card.classList.toggle("active-use", active);
+    card.classList.toggle("insufficient", !owned && !canAfford);
     title.textContent = item.name;
     description.textContent = item.description;
+    meta.className = "shop-item-meta";
+    meta.textContent = `${item.cost} coin ・ ${rarityLabels[item.rarity] || item.rarity}`;
+    status.className = "shop-item-status";
+    status.textContent = getShopStatusText(id, item);
     button.type = "button";
-    button.className = "confirm-item-btn";
+    button.className = "shop-action-btn";
     button.dataset.item = id;
-    button.setAttribute("aria-pressed", String(selectedShopItemId === id));
-    setButtonLabel(button, `${item.cost} coinを確認`, item.name);
+    button.disabled = !isShopActionEnabled(id, item);
+    setButtonLabel(button, getShopActionLabel(id, item), item.name);
 
-    body.append(icon, title, description);
+    body.append(icon, title, description, meta, status);
     card.append(body, button);
     shopList.appendChild(card);
   });
-
-  renderShopConfirmation();
 }
 
 function render() {
@@ -1558,34 +1568,20 @@ document.querySelectorAll(".care-btn").forEach((button) => {
   });
 });
 
-function selectShopItem(itemId) {
-  if (!shopItems[itemId]) return;
-
-  selectedShopItemId = itemId;
-  renderShop();
-  showTemporaryOwlExpression("happy", { durationMs: 1200, triggerType: "shop-confirm" });
-
-  requestAnimationFrame(() => {
-    shopConfirm.scrollIntoView({ behavior: "smooth", block: "start" });
-    confirmPurchaseBtn.focus({ preventScroll: true });
-  });
-}
-
-function purchaseSelectedShopItem() {
-  const item = shopItems[selectedShopItemId];
+function purchaseShopItem(itemId) {
+  const item = shopItems[itemId];
 
   if (!item) return;
 
   if (state.coins < item.cost) {
     showTemporaryOwlExpression("neutral");
     alert("コインが足りません。1分学習すると1コイン増えます。");
-    renderShopConfirmation();
+    renderShop();
     return;
   }
 
   state.coins -= item.cost;
-  state.inventory[selectedShopItemId] = (state.inventory[selectedShopItemId] || 0) + 1;
-  selectedShopItemId = null;
+  state.inventory[itemId] = Math.max(1, Number(state.inventory[itemId]) || 0);
   saveState();
   render();
 
@@ -1596,19 +1592,42 @@ function purchaseSelectedShopItem() {
   }
 }
 
+function useShopItem(itemId) {
+  const item = shopItems[itemId];
+
+  if (!item || !isShopItemOwned(itemId) || isShopItemActive(itemId)) return;
+
+  activeShopItemId = itemId;
+  clearTimeout(shopUseTimer);
+  applyItemEffect(item.effect);
+  triggerPetAnimation(item.action, item.iconClass);
+  saveState();
+  render();
+
+  shopUseTimer = setTimeout(() => {
+    if (activeShopItemId !== itemId) return;
+    activeShopItemId = null;
+    renderShop();
+    renderInventory();
+  }, 1400);
+}
+
+function runShopAction(itemId) {
+  if (!shopItems[itemId]) return;
+
+  if (isShopItemOwned(itemId)) {
+    useShopItem(itemId);
+    return;
+  }
+
+  purchaseShopItem(itemId);
+}
+
 shopList.addEventListener("click", (event) => {
-  const button = event.target.closest(".confirm-item-btn");
+  const button = event.target.closest(".shop-action-btn");
   if (!button) return;
 
-  selectShopItem(button.dataset.item);
-});
-
-confirmPurchaseBtn.addEventListener("click", purchaseSelectedShopItem);
-
-cancelPurchaseBtn.addEventListener("click", () => {
-  selectedShopItemId = null;
-  renderShop();
-  showTemporaryOwlExpression("normal", { durationMs: 900, triggerType: "shop-cancel" });
+  runShopAction(button.dataset.item);
 });
 
 wardrobeTabs.addEventListener("click", (event) => {
@@ -1646,15 +1665,8 @@ inventoryList.addEventListener("click", (event) => {
   if (!button) return;
 
   const itemId = button.dataset.item;
-  const item = shopItems[itemId];
 
-  if (!state.inventory[itemId]) return;
-
-  state.inventory[itemId] -= 1;
-  applyItemEffect(item.effect);
-  triggerPetAnimation(item.action, item.iconClass);
-  saveState();
-  render();
+  useShopItem(itemId);
 });
 
 document.querySelectorAll(".nav-btn").forEach((button) => {

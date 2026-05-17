@@ -1069,105 +1069,6 @@ input:focus {
   font-weight: 700;
 }
 
-.shop-confirm {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 14px;
-  align-items: center;
-  margin-bottom: 16px;
-  padding: 14px;
-  border: 1px solid rgba(63, 143, 91, 0.22);
-  border-radius: 8px;
-  background:
-    linear-gradient(135deg, rgba(191, 230, 200, 0.5), rgba(255, 248, 223, 0.78)),
-    #fbfdfb;
-}
-
-.shop-confirm[hidden] {
-  display: none;
-}
-
-.shop-confirm-icon .item-illustration {
-  width: 64px;
-  height: 64px;
-}
-
-.shop-confirm-body {
-  display: grid;
-  gap: 4px;
-  min-width: 0;
-}
-
-.shop-confirm-body span,
-.shop-confirm-body small {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.shop-confirm-body .shop-confirm-status {
-  color: var(--leaf);
-  font-size: 13px;
-}
-
-.shop-confirm-body strong {
-  color: var(--ink);
-  font-size: 20px;
-}
-
-.shop-confirm-body p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.45;
-}
-
-.shop-confirm-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.shop-confirm-actions button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 42px;
-  min-width: 96px;
-  padding: 9px 14px;
-  text-align: center;
-  line-height: 1.2;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-
-#confirmPurchaseBtn {
-  color: #fff;
-  background: var(--leaf);
-  font-weight: 800;
-}
-
-#confirmPurchaseBtn:hover {
-  background: #337a4b;
-}
-
-#confirmPurchaseBtn:disabled {
-  color: #7a5b5b;
-  background: #f4d1d1;
-}
-
-.shop-confirm-insufficient {
-  border-color: rgba(239, 143, 143, 0.52);
-  background:
-    linear-gradient(135deg, rgba(239, 143, 143, 0.14), rgba(255, 248, 223, 0.74)),
-    #fbfdfb;
-}
-
-.shop-confirm-insufficient .shop-confirm-status {
-  color: #9b5656;
-}
-
 .wardrobe-layout {
   display: grid;
   grid-template-columns: minmax(280px, 0.82fr) minmax(0, 1.18fr);
@@ -1482,9 +1383,20 @@ input:focus {
   transform: translateY(-2px);
 }
 
-.shop-item.selected {
+.shop-item.owned {
   border-color: rgba(63, 143, 91, 0.68);
   box-shadow: 0 12px 26px rgba(63, 143, 91, 0.16);
+}
+
+.shop-item.active-use {
+  border-color: rgba(243, 182, 63, 0.86);
+  background:
+    linear-gradient(135deg, rgba(255, 226, 163, 0.46), rgba(251, 253, 251, 0.95)),
+    #fbfdfb;
+}
+
+.shop-item.insufficient {
+  filter: saturate(0.82);
 }
 
 .shop-item:hover .item-illustration,
@@ -1988,6 +1900,23 @@ input:focus {
   line-height: 1.5;
 }
 
+.shop-item-meta,
+.shop-item-status {
+  display: block;
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.shop-item-status {
+  color: var(--leaf);
+}
+
+.shop-item.insufficient .shop-item-status {
+  color: #9b5656;
+}
+
 .shop-item button,
 .item-list button {
   background: #ffe2a3;
@@ -1996,6 +1925,42 @@ input:focus {
 .shop-item button:hover,
 .item-list button:hover {
   background: #ffd57a;
+}
+
+.shop-item .shop-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  min-width: 96px;
+  color: #553f18;
+  text-align: center;
+  font-weight: 900;
+  line-height: 1.2;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  opacity: 1;
+}
+
+.shop-item.owned .shop-action-btn {
+  color: #fff;
+  background: var(--leaf);
+}
+
+.shop-item.owned .shop-action-btn:hover {
+  background: #337a4b;
+}
+
+.shop-item.active-use .shop-action-btn,
+.shop-item .shop-action-btn:disabled {
+  color: #6b746d;
+  background: #e9efe9;
+  opacity: 1;
+}
+
+.shop-item.insufficient .shop-action-btn:disabled {
+  color: #7a5b5b;
+  background: #f4d1d1;
 }
 
 .item-empty {
@@ -2607,18 +2572,6 @@ input:focus {
     margin: 0;
     padding: 0;
     overflow: visible;
-  }
-
-  .shop-confirm {
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: start;
-    gap: 12px;
-  }
-
-  .shop-confirm-actions {
-    grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
   }
 
   .shop-item {
