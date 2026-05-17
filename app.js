@@ -19,6 +19,7 @@ const shopItems = {
     name: "ベリースナック",
     description: "特別な食べ物。まんぷくとごきげんが上がります。",
     cost: 12,
+    rarity: "common",
     action: "feed",
     iconClass: "berry-icon",
     effect: { hunger: 34, happy: 12, energy: 0 },
@@ -27,6 +28,7 @@ const shopItems = {
     name: "パズルトイ",
     description: "知育オモチャ。ごきげんが大きく上がります。",
     cost: 15,
+    rarity: "rare",
     action: "play",
     iconClass: "puzzle-icon",
     effect: { hunger: -4, happy: 36, energy: -6 },
@@ -35,6 +37,7 @@ const shopItems = {
     name: "おひるねクッション",
     description: "特別な休憩アイテム。エネルギーを回復します。",
     cost: 10,
+    rarity: "common",
     action: "rest",
     iconClass: "cushion-icon",
     effect: { hunger: 0, happy: 8, energy: 34 },
@@ -52,6 +55,122 @@ const mascotMotionLabels = {
   fun: "楽しい",
   sleep: "睡眠",
 };
+
+const owlExpressions = {
+  normal: {
+    id: "normal",
+    name: "通常",
+    assetPath: "",
+    triggerType: "default",
+    durationMs: 0,
+    priority: 0,
+    offsetX: 0,
+    offsetY: 0,
+    scale: 1,
+    rotation: 0,
+  },
+  happy: {
+    id: "happy",
+    name: "うれしい",
+    assetPath: "",
+    triggerType: "reward",
+    durationMs: 2600,
+    priority: 40,
+    offsetX: 0,
+    offsetY: -1,
+    scale: 1.02,
+    rotation: 0,
+  },
+  excited: {
+    id: "excited",
+    name: "大よろこび",
+    assetPath: "",
+    triggerType: "milestone",
+    durationMs: 3600,
+    priority: 80,
+    offsetX: 0,
+    offsetY: -2,
+    scale: 1.04,
+    rotation: 0,
+  },
+  sleepy: {
+    id: "sleepy",
+    name: "ねむそう",
+    assetPath: "",
+    triggerType: "rest",
+    durationMs: 0,
+    priority: 20,
+    offsetX: 0,
+    offsetY: 2,
+    scale: 0.98,
+    rotation: 0,
+  },
+  focused: {
+    id: "focused",
+    name: "集中",
+    assetPath: "",
+    triggerType: "study",
+    durationMs: 0,
+    priority: 60,
+    offsetX: 0,
+    offsetY: -1,
+    scale: 1,
+    rotation: 0,
+  },
+  proud: {
+    id: "proud",
+    name: "誇らしい",
+    assetPath: "",
+    triggerType: "goal",
+    durationMs: 3200,
+    priority: 70,
+    offsetX: 0,
+    offsetY: -2,
+    scale: 1.03,
+    rotation: 0,
+  },
+  sad: {
+    id: "sad",
+    name: "さみしい",
+    assetPath: "",
+    triggerType: "away",
+    durationMs: 4200,
+    priority: 30,
+    offsetX: 0,
+    offsetY: 2,
+    scale: 0.98,
+    rotation: 0,
+  },
+  surprised: {
+    id: "surprised",
+    name: "びっくり",
+    assetPath: "",
+    triggerType: "event",
+    durationMs: 2100,
+    priority: 65,
+    offsetX: 0,
+    offsetY: -1,
+    scale: 1.04,
+    rotation: 0,
+  },
+  neutral: {
+    id: "neutral",
+    name: "困り顔",
+    assetPath: "",
+    triggerType: "soft-limit",
+    durationMs: 1800,
+    priority: 25,
+    offsetX: 0,
+    offsetY: 1,
+    scale: 1,
+    rotation: 0,
+  },
+};
+
+const owlExpressionClassNames = Object.keys(owlExpressions).map((id) => `expression-${id}`);
+const AWAY_SLEEPY_MS = 1000 * 60 * 60 * 18;
+const AWAY_SAD_MS = 1000 * 60 * 60 * 24 * 5;
+const INACTIVE_SLEEPY_MS = 1000 * 60 * 8;
 
 const timeDisplay = document.getElementById("time");
 const startBtn = document.getElementById("startBtn");
@@ -106,6 +225,9 @@ let time = SESSION_SECONDS;
 let timer = null;
 let state = loadState();
 let animationTimer = null;
+let expressionTimer = null;
+let inactivityTimer = null;
+let expressionOverride = null;
 let weekOffset = 0;
 let activeMascotMotion = "idle";
 
@@ -113,6 +235,7 @@ function createDefaultState() {
   return {
     coins: 0,
     dailyGoalMinutes: 60,
+    lastSeenAt: null,
     totalMinutes: 0,
     pet: {
       hunger: 60,
@@ -246,6 +369,149 @@ function getElapsedTimerMinutes() {
   return Math.ceil((SESSION_SECONDS - time) / 60);
 }
 
+function isNightTime(date = new Date()) {
+  const hour = date.getHours();
+  return hour >= 22 || hour < 6;
+}
+
+function getOwlExpression(id) {
+  return owlExpressions[id] || owlExpressions.normal;
+}
+
+function getBaseOwlExpression() {
+  const candidates = [owlExpressions.normal];
+  const isFocusing = petViews.some((view) => view.pet.classList.contains("focusing"));
+
+  if (timer !== null || isFocusing) {
+    candidates.push(owlExpressions.focused);
+  }
+
+  if (isNightTime() || state.pet.energy <= 18) {
+    candidates.push(owlExpressions.sleepy);
+  }
+
+  return candidates.sort((a, b) => b.priority - a.priority)[0];
+}
+
+function applyOwlExpression(expressionId) {
+  const expression = getOwlExpression(expressionId);
+
+  petViews.forEach((view) => {
+    view.pet.classList.remove(...owlExpressionClassNames);
+    view.pet.classList.add(`expression-${expression.id}`);
+    view.pet.dataset.expression = expression.id;
+    view.pet.dataset.expressionName = expression.name;
+    view.pet.dataset.expressionAsset = expression.assetPath || "";
+    view.pet.style.setProperty("--expression-offset-x", `${expression.offsetX}px`);
+    view.pet.style.setProperty("--expression-offset-y", `${expression.offsetY}px`);
+    view.pet.style.setProperty("--expression-scale", expression.scale);
+    view.pet.style.setProperty("--expression-rotation", `${expression.rotation}deg`);
+  });
+}
+
+function updateOwlExpression() {
+  const baseExpression = getBaseOwlExpression();
+  const nextExpression =
+    expressionOverride && expressionOverride.priority >= baseExpression.priority
+      ? expressionOverride
+      : baseExpression;
+
+  applyOwlExpression(nextExpression.id);
+}
+
+function clearTemporaryOwlExpression() {
+  clearTimeout(expressionTimer);
+  expressionTimer = null;
+  expressionOverride = null;
+  updateOwlExpression();
+}
+
+function showTemporaryOwlExpression(expressionId, options = {}) {
+  const expression = getOwlExpression(expressionId);
+  const priority = options.priority ?? expression.priority;
+  const durationMs = options.durationMs ?? expression.durationMs;
+  const triggerType = options.triggerType ?? expression.triggerType;
+
+  if (expressionOverride && expressionOverride.priority > priority) return;
+
+  clearTimeout(expressionTimer);
+  expressionOverride = { ...expression, priority, triggerType };
+  updateOwlExpression();
+
+  if (durationMs > 0) {
+    expressionTimer = setTimeout(() => {
+      expressionOverride = null;
+      expressionTimer = null;
+      updateOwlExpression();
+    }, durationMs);
+  }
+}
+
+function showRareItemReaction() {
+  showTemporaryOwlExpression("surprised", {
+    durationMs: 900,
+    priority: owlExpressions.surprised.priority,
+    triggerType: "rare-item",
+  });
+
+  setTimeout(() => {
+    showTemporaryOwlExpression("excited", {
+      durationMs: owlExpressions.excited.durationMs,
+      priority: owlExpressions.excited.priority,
+      triggerType: "rare-item",
+    });
+  }, 820);
+}
+
+function getLaunchExpression(previousSeenAt) {
+  const previousTime = previousSeenAt ? Date.parse(previousSeenAt) : NaN;
+
+  if (Number.isNaN(previousTime)) return owlExpressions.happy;
+
+  const awayMs = Date.now() - previousTime;
+
+  if (awayMs >= AWAY_SAD_MS) return owlExpressions.sad;
+  if (awayMs >= AWAY_SLEEPY_MS) return owlExpressions.sleepy;
+
+  return isNightTime() ? owlExpressions.sleepy : owlExpressions.normal;
+}
+
+function rememberSeen() {
+  state.lastSeenAt = new Date().toISOString();
+  saveState();
+}
+
+function handleAppLaunch() {
+  const launchExpression = getLaunchExpression(state.lastSeenAt);
+  rememberSeen();
+
+  if (launchExpression.id !== "normal") {
+    showTemporaryOwlExpression(launchExpression.id, {
+      durationMs: launchExpression.id === "sleepy" ? 3200 : launchExpression.durationMs,
+      priority: launchExpression.priority,
+      triggerType: "launch",
+    });
+  } else {
+    updateOwlExpression();
+  }
+}
+
+function resetInactivityTimer() {
+  clearTimeout(inactivityTimer);
+
+  if (expressionOverride?.triggerType === "idle") {
+    clearTemporaryOwlExpression();
+  }
+
+  inactivityTimer = setTimeout(() => {
+    showTemporaryOwlExpression("sleepy", {
+      durationMs: 0,
+      priority: owlExpressions.sleepy.priority,
+      triggerType: "idle",
+    });
+  }, INACTIVE_SLEEPY_MS);
+}
+
 function resetTimer() {
   clearInterval(timer);
   timer = null;
@@ -254,6 +520,9 @@ function resetTimer() {
 }
 
 function addStudySession(minutes, subject) {
+  const previousLevel = getLevel();
+  const previousTodayMinutes = getTodayMinutes();
+  const dailyGoal = Math.max(5, Number(state.dailyGoalMinutes) || 60);
   const earnedCoins = getEarnedCoins(minutes);
   const session = {
     id: Date.now(),
@@ -273,6 +542,18 @@ function addStudySession(minutes, subject) {
 
   saveState();
   render();
+
+  const nextLevel = getLevel();
+  const nextTodayMinutes = getTodayMinutes();
+  const reachedDailyGoal = previousTodayMinutes < dailyGoal && nextTodayMinutes >= dailyGoal;
+
+  if (nextLevel > previousLevel || minutes >= 120) {
+    showTemporaryOwlExpression("excited");
+  } else if (reachedDailyGoal || minutes >= 60) {
+    showTemporaryOwlExpression("proud");
+  } else {
+    showTemporaryOwlExpression("happy");
+  }
 }
 
 function updateDisplay() {
@@ -362,6 +643,8 @@ function renderPet() {
     view.pet.classList.toggle("mood-happy", state.pet.happy >= 70);
     view.pet.classList.toggle("mood-tired", state.pet.energy <= 25 || state.pet.hunger <= 20);
   });
+
+  updateOwlExpression();
 }
 
 function createItemIcon(iconClass) {
@@ -488,11 +771,24 @@ function triggerPetAnimation(action, iconClass) {
 
   if (!actionClass) return;
 
+  const expressionForAction = {
+    feed: "happy",
+    play: "excited",
+    rest: "sleepy",
+  }[action];
+
   petViews.forEach((view) => {
     view.prop.className = "pet-action-prop";
     view.prop.classList.add("active", action, iconClass);
   });
   applyMascotMotion(actionClass);
+
+  if (expressionForAction) {
+    showTemporaryOwlExpression(expressionForAction, {
+      durationMs: action === "rest" ? 2600 : undefined,
+      triggerType: action,
+    });
+  }
 
   animationTimer = setTimeout(() => {
     petViews.forEach((view) => {
@@ -504,6 +800,9 @@ function triggerPetAnimation(action, iconClass) {
 
 function setFocusMode(isRunning) {
   if (isRunning) {
+    clearTimeout(expressionTimer);
+    expressionTimer = null;
+    expressionOverride = null;
     applyMascotMotion("idle");
   }
 
@@ -511,6 +810,8 @@ function setFocusMode(isRunning) {
     view.pet.classList.toggle("focusing", isRunning);
     view.pet.closest(".pet-stage").classList.toggle("focus-mode", isRunning);
   });
+
+  updateOwlExpression();
 }
 
 function switchScreen(screenId) {
@@ -558,6 +859,7 @@ pauseBtn.addEventListener("click", () => {
   timer = null;
   timerStatus.textContent = "一時停止中";
   setFocusMode(false);
+  showTemporaryOwlExpression("sleepy", { durationMs: 2200, triggerType: "pause" });
 });
 
 resetBtn.addEventListener("click", () => {
@@ -571,6 +873,7 @@ timerRecordForm.addEventListener("submit", (event) => {
   const minutes = getElapsedTimerMinutes();
 
   if (minutes <= 0) {
+    showTemporaryOwlExpression("neutral");
     alert("まだ記録できる学習時間がありません。");
     return;
   }
@@ -598,7 +901,10 @@ studyForm.addEventListener("submit", (event) => {
   const minutes = Number(minutesInput.value);
   const subject = subjectInput.value.trim();
 
-  if (!Number.isFinite(minutes) || minutes <= 0) return;
+  if (!Number.isFinite(minutes) || minutes <= 0) {
+    showTemporaryOwlExpression("neutral");
+    return;
+  }
 
   addStudySession(Math.round(minutes), subject);
   subjectInput.value = "";
@@ -609,11 +915,20 @@ goalForm.addEventListener("submit", (event) => {
   event.preventDefault();
   const minutes = Number(dailyGoalInput.value);
 
-  if (!Number.isFinite(minutes) || minutes < 5) return;
+  if (!Number.isFinite(minutes) || minutes < 5) {
+    showTemporaryOwlExpression("neutral");
+    return;
+  }
 
   state.dailyGoalMinutes = Math.round(minutes);
   saveState();
   render();
+
+  if (getTodayMinutes() >= state.dailyGoalMinutes) {
+    showTemporaryOwlExpression("proud", { triggerType: "goal" });
+  } else {
+    showTemporaryOwlExpression("happy", { durationMs: 1800, triggerType: "goal-update" });
+  }
 });
 
 document.querySelectorAll(".care-btn").forEach((button) => {
@@ -622,6 +937,7 @@ document.querySelectorAll(".care-btn").forEach((button) => {
     const cost = careCosts[action];
 
     if (state.coins < cost) {
+      showTemporaryOwlExpression("neutral");
       alert("コインが足りません。学習すると増えます。");
       return;
     }
@@ -647,6 +963,7 @@ shopList.addEventListener("click", (event) => {
   const item = shopItems[itemId];
 
   if (state.coins < item.cost) {
+    showTemporaryOwlExpression("neutral");
     alert("コインが足りません。1分学習すると1コイン増えます。");
     return;
   }
@@ -655,6 +972,12 @@ shopList.addEventListener("click", (event) => {
   state.inventory[itemId] = (state.inventory[itemId] || 0) + 1;
   saveState();
   render();
+
+  if (item.rarity === "rare") {
+    showRareItemReaction();
+  } else {
+    showTemporaryOwlExpression("happy", { triggerType: "purchase" });
+  }
 });
 
 inventoryList.addEventListener("click", (event) => {
@@ -685,6 +1008,24 @@ motionButtons.forEach((button) => {
   });
 });
 
+["click", "keydown", "pointerdown"].forEach((eventName) => {
+  document.addEventListener(eventName, resetInactivityTimer, { passive: true });
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") {
+    rememberSeen();
+    return;
+  }
+
+  resetInactivityTimer();
+  updateOwlExpression();
+});
+
+window.addEventListener("beforeunload", rememberSeen);
+
 updateDisplay();
 render();
 applyMascotMotion(activeMascotMotion);
+handleAppLaunch();
+resetInactivityTimer();
