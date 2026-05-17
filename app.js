@@ -843,6 +843,15 @@ function createGearIcon(item) {
   return icon;
 }
 
+function setButtonLabel(button, label, ariaPrefix = "") {
+  if (!button) return;
+
+  const safeLabel = String(label || "").trim() || "購入";
+  button.textContent = safeLabel;
+  button.dataset.label = safeLabel;
+  button.setAttribute("aria-label", ariaPrefix ? `${ariaPrefix} ${safeLabel}` : safeLabel);
+}
+
 function getGearSlotKey(item) {
   if (!item) return "";
   return item.category === "accessory" ? item.slot : item.category;
@@ -1127,8 +1136,7 @@ function renderWardrobeGrid() {
       button.className = "gear-action-btn";
       button.dataset.item = id;
       button.disabled = !isGearActionEnabled(item);
-      button.textContent = actionLabel;
-      button.setAttribute("aria-label", `${item.name} ${actionLabel}`);
+      setButtonLabel(button, actionLabel, item.name);
 
       card.append(iconWrap, badge, rarity, title, meta, price, status, button);
       wardrobeGrid.appendChild(card);
@@ -1145,9 +1153,10 @@ function renderWardrobeActionBar() {
     wardrobeSelectedName.textContent = "装備を選んでください";
     wardrobeSelectedDescription.textContent = "購入前でもプレビューに試着できます。";
     wardrobeSelectedStatus.textContent = "";
-    wardrobeActionBtn.textContent = "選択";
+    setButtonLabel(wardrobeActionBtn, "選択");
     wardrobeActionBtn.disabled = true;
     clearGearBtn.disabled = true;
+    setButtonLabel(clearGearBtn, "外す");
     return;
   }
 
@@ -1159,10 +1168,10 @@ function renderWardrobeActionBar() {
   wardrobeSelectedName.textContent = item.name;
   wardrobeSelectedDescription.textContent = item.description;
   wardrobeSelectedStatus.textContent = getGearStatusText(item);
-  wardrobeActionBtn.textContent = actionLabel;
+  setButtonLabel(wardrobeActionBtn, actionLabel, item.name);
   wardrobeActionBtn.disabled = !isGearActionEnabled(item);
   clearGearBtn.disabled = !equippedInSlot;
-  clearGearBtn.textContent = equippedInSlot ? `${getGearSlotLabel(item)}を外す` : "外す";
+  setButtonLabel(clearGearBtn, equippedInSlot ? `${getGearSlotLabel(item)}を外す` : "外す");
 }
 
 function renderWardrobe() {
@@ -1264,7 +1273,7 @@ function renderShopConfirmation() {
     ? "購入できます。購入するともちものに入ります。"
     : `あと ${shortage} coin で購入できます。`;
   confirmPurchaseBtn.disabled = !canAfford;
-  confirmPurchaseBtn.textContent = canAfford ? "購入する" : "コイン不足";
+  setButtonLabel(confirmPurchaseBtn, canAfford ? "購入する" : "コイン不足");
 }
 
 function renderShop() {
@@ -1286,7 +1295,7 @@ function renderShop() {
     button.className = "confirm-item-btn";
     button.dataset.item = id;
     button.setAttribute("aria-pressed", String(selectedShopItemId === id));
-    button.textContent = `${item.cost} coinを確認`;
+    setButtonLabel(button, `${item.cost} coinを確認`, item.name);
 
     body.append(icon, title, description);
     card.append(body, button);
