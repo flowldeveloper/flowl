@@ -251,6 +251,13 @@
             <p>Closet</p>
             <span>着せ替え</span>
           </div>
+          <div class="preview-bar equipment-preview-bar">
+            <div>
+              <span id="inventoryPreviewMeta">Preview</span>
+              <strong id="inventoryPreviewName">未選択</strong>
+            </div>
+            <button id="inventoryPreviewAction" type="button" disabled>選択</button>
+          </div>
           <div id="inventoryList" class="item-list"></div>
         </div>
       </article>
@@ -259,8 +266,21 @@
     <section id="shopScreen" class="screen" aria-label="ショップ">
       <article class="panel shop-panel">
         <div class="section-title">
-          <p>Dress shop</p>
-          <span>服・背景・飾り</span>
+          <p>Customize shop</p>
+          <span>服・アクセ・家具・背景</span>
+        </div>
+        <div class="customize-preview">
+          <div id="shopPreviewStage" class="pet-stage shop-preview-stage" aria-label="ショッププレビュー">
+            <div class="pet-shadow"></div>
+            <div class="pet idle" id="shopPreviewPet" data-asset="flowl-owl"></div>
+          </div>
+          <div class="preview-bar">
+            <div>
+              <span id="shopPreviewMeta">Preview</span>
+              <strong id="shopPreviewName">未選択</strong>
+            </div>
+            <button id="shopPreviewAction" type="button" disabled>選択</button>
+          </div>
         </div>
         <div id="shopList" class="shop-list"></div>
       </article>

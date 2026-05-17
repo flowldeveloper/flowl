@@ -19,75 +19,345 @@ const careEffects = {
 };
 
 const shopItems = {
+  simpleScarf: {
+    name: "シンプルスカーフ",
+    category: "clothing",
+    rarity: "common",
+    price: 50,
+    description: "首元だけをやさしく飾る、最初に買いやすい服。",
+    iconClass: "clothing-icon rarity-icon-common",
+    assetClass: "wear-simple-scarf",
+    layer: "clothing",
+    offsetX: 0,
+    offsetY: 13,
+    scale: 1,
+    rotation: 0,
+  },
+  studyVest: {
+    name: "小さなベスト",
+    category: "clothing",
+    rarity: "uncommon",
+    price: 120,
+    description: "勉強モードに似合う、控えめな若葉色のベスト。",
+    iconClass: "clothing-icon rarity-icon-uncommon",
+    assetClass: "wear-study-vest",
+    layer: "clothing",
+    offsetX: 0,
+    offsetY: 23,
+    scale: 1,
+    rotation: 0,
+  },
+  scholarRobe: {
+    name: "学者ローブ",
+    category: "clothing",
+    rarity: "rare",
+    price: 300,
+    description: "本の刺繍が入った、特別感のあるローブ。",
+    iconClass: "clothing-icon rarity-icon-rare",
+    assetClass: "wear-scholar-robe",
+    layer: "clothing",
+    offsetX: 0,
+    offsetY: 27,
+    scale: 1,
+    rotation: 0,
+  },
+  starMantle: {
+    name: "星柄マント",
+    category: "clothing",
+    rarity: "epic",
+    price: 700,
+    description: "星模様がきらめく、夜の集中に似合うマント。",
+    iconClass: "clothing-icon rarity-icon-epic",
+    assetClass: "wear-star-mantle",
+    layer: "clothing",
+    offsetX: 0,
+    offsetY: 25,
+    scale: 1,
+    rotation: 0,
+  },
+  sageRobe: {
+    name: "光る賢者ローブ",
+    category: "clothing",
+    rarity: "legendary",
+    price: 1500,
+    description: "淡い光をまとった、長く続けた証になる特別な服。",
+    iconClass: "clothing-icon rarity-icon-legendary",
+    assetClass: "wear-sage-robe",
+    layer: "clothing",
+    offsetX: 0,
+    offsetY: 25,
+    scale: 1,
+    rotation: 0,
+  },
   cloverCape: {
     name: "若葉ブローチ",
-    description: "胸元に小さく留まる、動きに強い若葉のアクセサリー。",
-    cost: 18,
-    type: "outfit",
+    category: "accessory",
+    accessorySlot: "neck",
     rarity: "common",
-    iconClass: "leaf-pin-icon",
+    price: 50,
+    description: "胸元に小さく留まる、動きに強い若葉のアクセサリー。",
+    iconClass: "accessory-icon rarity-icon-common",
+    assetClass: "wear-leaf-brooch",
+    layer: "neck",
+    offsetX: 23,
+    offsetY: 18,
+    scale: 1,
+    rotation: -8,
   },
   acornBeret: {
     name: "どんぐりベレー",
-    description: "Flowletが少し得意げになる秋色の帽子。",
-    cost: 34,
-    type: "outfit",
+    category: "accessory",
+    accessorySlot: "head",
     rarity: "rare",
-    iconClass: "beret-icon",
+    price: 300,
+    description: "Flowletが少し得意げになる秋色の帽子。",
+    iconClass: "accessory-icon rarity-icon-rare",
+    assetClass: "wear-acorn-beret",
+    layer: "head",
+    offsetX: -6,
+    offsetY: -38,
+    scale: 1,
+    rotation: -4,
   },
   starScarf: {
     name: "星のヘアピン",
-    description: "頭にそっと光る、集中中もずれにくい特別なピン。",
-    cost: 62,
-    type: "outfit",
+    category: "accessory",
+    accessorySlot: "head",
     rarity: "epic",
-    iconClass: "star-pin-icon",
+    price: 700,
+    description: "頭にそっと光る、集中中もずれにくい特別なピン。",
+    iconClass: "accessory-icon rarity-icon-epic",
+    assetClass: "wear-star-pin",
+    layer: "head",
+    offsetX: 23,
+    offsetY: -31,
+    scale: 1,
+    rotation: 12,
+  },
+  roundGlasses: {
+    name: "丸メガネ",
+    category: "accessory",
+    accessorySlot: "face",
+    rarity: "common",
+    price: 50,
+    description: "表情を隠しすぎない、小さめの勉強メガネ。",
+    iconClass: "accessory-icon rarity-icon-common",
+    assetClass: "wear-round-glasses",
+    layer: "face",
+    offsetX: 0,
+    offsetY: -16,
+    scale: 1,
+    rotation: 0,
+  },
+  studyPencil: {
+    name: "小さな鉛筆",
+    category: "accessory",
+    accessorySlot: "hand",
+    rarity: "uncommon",
+    price: 120,
+    description: "羽の近くに持たせる、勉強アプリらしい小さな鉛筆。",
+    iconClass: "accessory-icon rarity-icon-uncommon",
+    assetClass: "wear-study-pencil",
+    layer: "hand",
+    offsetX: -30,
+    offsetY: 25,
+    scale: 1,
+    rotation: -22,
+  },
+  smallRibbon: {
+    name: "小さなリボン",
+    category: "accessory",
+    accessorySlot: "head",
+    rarity: "uncommon",
+    price: 120,
+    description: "頭にちょこんと乗る、やさしい黄色のリボン。",
+    iconClass: "accessory-icon rarity-icon-uncommon",
+    assetClass: "wear-small-ribbon",
+    layer: "head",
+    offsetX: -24,
+    offsetY: -34,
+    scale: 1,
+    rotation: -8,
+  },
+  quillHat: {
+    name: "羽ペン付き帽子",
+    category: "accessory",
+    accessorySlot: "head",
+    rarity: "rare",
+    price: 300,
+    description: "学者気分が上がる、羽ペン付きの帽子。",
+    iconClass: "accessory-icon rarity-icon-rare",
+    assetClass: "wear-quill-hat",
+    layer: "head",
+    offsetX: 0,
+    offsetY: -38,
+    scale: 1,
+    rotation: 0,
+  },
+  moonPin: {
+    name: "月の髪飾り",
+    category: "accessory",
+    accessorySlot: "head",
+    rarity: "epic",
+    price: 700,
+    description: "月の光がほんのり浮かぶ、夜学習のアクセサリー。",
+    iconClass: "accessory-icon rarity-icon-epic",
+    assetClass: "wear-moon-pin",
+    layer: "head",
+    offsetX: 27,
+    offsetY: -30,
+    scale: 1,
+    rotation: 10,
+  },
+  glowingCrown: {
+    name: "光る王冠",
+    category: "accessory",
+    accessorySlot: "head",
+    rarity: "legendary",
+    price: 1500,
+    description: "一目で特別と分かる、光をまとった王冠。",
+    iconClass: "accessory-icon rarity-icon-legendary",
+    assetClass: "wear-glowing-crown",
+    layer: "head",
+    offsetX: 0,
+    offsetY: -38,
+    scale: 1,
+    rotation: 0,
+  },
+  woodenDesk: {
+    name: "小さな木の机",
+    category: "furniture",
+    rarity: "common",
+    price: 50,
+    description: "背景に置ける、素朴な勉強机。",
+    iconClass: "furniture-icon rarity-icon-common",
+    assetClass: "furniture-wooden-desk",
+  },
+  studyPlant: {
+    name: "観葉植物",
+    category: "furniture",
+    rarity: "uncommon",
+    price: 120,
+    description: "部屋にやわらかい緑を足す小さな植物。",
+    iconClass: "furniture-icon rarity-icon-uncommon",
+    assetClass: "furniture-study-plant",
   },
   leafDesk: {
     name: "若葉の机",
-    description: "背景に置ける、勉強部屋用の小さな机。",
-    cost: 24,
-    type: "decor",
+    category: "furniture",
     rarity: "common",
-    iconClass: "leaf-room-icon",
+    price: 50,
+    description: "背景に置ける、勉強部屋用の小さな机。",
+    iconClass: "furniture-icon rarity-icon-common",
+    assetClass: "furniture-leaf-desk",
+  },
+  bookShelf: {
+    name: "本棚",
+    category: "furniture",
+    rarity: "rare",
+    price: 300,
+    description: "勉強部屋らしさがはっきり出る本棚。",
+    iconClass: "furniture-icon rarity-icon-rare",
+    assetClass: "furniture-book-shelf",
   },
   studyLamp: {
-    name: "まどろみランプ",
+    name: "魔法のランプ",
+    category: "furniture",
+    rarity: "epic",
+    price: 700,
     description: "動物画面にあたたかい灯りを足します。",
-    cost: 46,
-    type: "decor",
-    rarity: "rare",
-    iconClass: "lamp-icon",
+    iconClass: "furniture-icon rarity-icon-epic",
+    assetClass: "furniture-magic-lamp",
+  },
+  floatingBooks: {
+    name: "浮かぶ本の書斎セット",
+    category: "furniture",
+    rarity: "legendary",
+    price: 1500,
+    description: "ページがふわっと浮かぶ、特別な書斎セット。",
+    iconClass: "furniture-icon rarity-icon-legendary",
+    assetClass: "furniture-floating-books",
+  },
+  simpleRoom: {
+    name: "シンプルな部屋",
+    category: "background",
+    rarity: "common",
+    price: 50,
+    description: "どんな衣装にも合う、落ち着いた部屋背景。",
+    iconClass: "background-icon rarity-icon-common",
+    assetClass: "background-simple-room",
+  },
+  focusRoom: {
+    name: "勉強部屋",
+    category: "background",
+    rarity: "uncommon",
+    price: 120,
+    description: "机と本の雰囲気がある、集中しやすい背景。",
+    iconClass: "background-icon rarity-icon-uncommon",
+    assetClass: "background-focus-room",
   },
   morningForest: {
     name: "朝の森",
-    description: "眺めるだけで少し落ち着く森の背景。",
-    cost: 52,
-    type: "background",
+    category: "background",
     rarity: "rare",
-    iconClass: "forest-bg-icon",
+    price: 300,
+    description: "眺めるだけで少し落ち着く森の背景。",
+    iconClass: "background-icon rarity-icon-rare",
+    assetClass: "background-morning-forest",
+  },
+  libraryStudy: {
+    name: "図書館",
+    category: "background",
+    rarity: "rare",
+    price: 300,
+    description: "静かな読書机のある、少し特別な図書館背景。",
+    iconClass: "background-icon rarity-icon-rare",
+    assetClass: "background-library-study",
   },
   moonLibrary: {
     name: "月夜の図書室",
-    description: "静かな夜に似合う、レアな背景テーマ。",
-    cost: 88,
-    type: "background",
+    category: "background",
     rarity: "epic",
-    iconClass: "library-bg-icon",
+    price: 700,
+    description: "静かな夜に似合う、レアな背景テーマ。",
+    iconClass: "background-icon rarity-icon-epic",
+    assetClass: "background-moon-library",
+  },
+  starMagicLibrary: {
+    name: "星降る魔法図書館",
+    category: "background",
+    rarity: "legendary",
+    price: 1500,
+    description: "星が降る、長く続けた人向けの特別な背景。",
+    iconClass: "background-icon rarity-icon-legendary",
+    assetClass: "background-star-library",
   },
 };
 
 const rarityLabels = {
-  common: "N",
-  rare: "R",
-  epic: "SR",
+  common: "Common",
+  uncommon: "Uncommon",
+  rare: "Rare",
+  epic: "Epic",
+  legendary: "Legendary",
 };
 
-const itemTypeLabels = {
-  outfit: "服",
-  decor: "飾り",
+const categoryLabels = {
+  clothing: "服",
+  accessory: "アクセサリー",
+  furniture: "家具",
   background: "背景",
 };
+
+const accessorySlotLabels = {
+  head: "頭",
+  face: "顔",
+  neck: "首",
+  hand: "手元",
+};
+
+const shopCategoryOrder = ["clothing", "accessory", "furniture", "background"];
+const equipmentLayerOrder = ["clothing", "hand", "neck", "face", "head", "effect"];
 
 const mascotMotions = ["idle", "headTilt", "eat", "happy", "angry", "sad", "fun", "sleep"];
 const mascotMotionLabels = {
@@ -162,6 +432,14 @@ const prevWeekBtn = document.getElementById("prevWeekBtn");
 const nextWeekBtn = document.getElementById("nextWeekBtn");
 const shopList = document.getElementById("shopList");
 const inventoryList = document.getElementById("inventoryList");
+const shopPreviewStage = document.getElementById("shopPreviewStage");
+const shopPreviewPet = document.getElementById("shopPreviewPet");
+const shopPreviewName = document.getElementById("shopPreviewName");
+const shopPreviewMeta = document.getElementById("shopPreviewMeta");
+const shopPreviewAction = document.getElementById("shopPreviewAction");
+const inventoryPreviewName = document.getElementById("inventoryPreviewName");
+const inventoryPreviewMeta = document.getElementById("inventoryPreviewMeta");
+const inventoryPreviewAction = document.getElementById("inventoryPreviewAction");
 const petLevel = document.getElementById("petLevel");
 const petCareLevel = document.getElementById("petCareLevel");
 const motionLabel = document.getElementById("motionLabel");
@@ -199,6 +477,8 @@ let state = loadState();
 let animationTimer = null;
 let weekOffset = 0;
 let activeMascotMotion = "idle";
+let selectedShopItemId = null;
+let selectedInventoryItemId = null;
 
 function createDefaultState() {
   return {
@@ -213,7 +493,15 @@ function createDefaultState() {
     },
     inventory: {},
     customization: {
+      clothing: null,
       outfit: null,
+      accessories: {
+        head: null,
+        face: null,
+        neck: null,
+        hand: null,
+      },
+      furniture: null,
       decor: null,
       background: null,
     },
@@ -239,7 +527,37 @@ function createDefaultState() {
 }
 
 function normalizeState(savedState) {
+  savedState = savedState || {};
   const defaults = createDefaultState();
+  const savedCustomization = savedState.customization || {};
+  const customization = {
+    ...defaults.customization,
+    ...savedCustomization,
+    accessories: {
+      ...defaults.customization.accessories,
+      ...(savedCustomization.accessories || {}),
+    },
+  };
+
+  const legacyOutfit = savedCustomization.outfit;
+  const legacyDecor = savedCustomization.decor;
+
+  if (legacyOutfit && shopItems[legacyOutfit]) {
+    const item = shopItems[legacyOutfit];
+    const category = item.category || item.type;
+
+    if (category === "clothing" && !customization.clothing) {
+      customization.clothing = legacyOutfit;
+    }
+
+    if (category === "accessory" && item.accessorySlot && !customization.accessories[item.accessorySlot]) {
+      customization.accessories[item.accessorySlot] = legacyOutfit;
+    }
+  }
+
+  if (legacyDecor && !customization.furniture) {
+    customization.furniture = legacyDecor;
+  }
 
   return {
     ...defaults,
@@ -253,8 +571,7 @@ function normalizeState(savedState) {
       ...savedState.inventory,
     },
     customization: {
-      ...defaults.customization,
-      ...savedState.customization,
+      ...customization,
     },
     subjects: Array.isArray(savedState.subjects) ? savedState.subjects : [],
     sessions: Array.isArray(savedState.sessions) ? savedState.sessions : [],
@@ -402,9 +719,134 @@ function getUnlockedRewards() {
   return unlockRewards.filter((reward) => state.totalMinutes >= reward.threshold);
 }
 
+function applyStageCustomization(stageElement, customization = state.customization) {
+  if (!stageElement) return;
+
+  const unlocked = getUnlockedRewards();
+  const furniture = customization.furniture || customization.decor;
+
+  stageElement.classList.toggle("has-room-decor", unlocked.length >= 2);
+  stageElement.classList.toggle("has-forest-bg", unlocked.length >= 3);
+  stageElement.dataset.time = getTimePeriod();
+
+  if (furniture) {
+    stageElement.dataset.furniture = furniture;
+    stageElement.dataset.decor = furniture;
+  } else {
+    delete stageElement.dataset.furniture;
+    delete stageElement.dataset.decor;
+  }
+
+  if (customization.background) {
+    stageElement.dataset.background = customization.background;
+  } else {
+    delete stageElement.dataset.background;
+  }
+}
+
+function getItemCategory(item) {
+  return item?.category || item?.type || "accessory";
+}
+
+function getItemPrice(item) {
+  return item?.price ?? item?.cost ?? 0;
+}
+
+function getItemLayer(item) {
+  return item.layer || item.accessorySlot || getItemCategory(item);
+}
+
+function getItemSlotLabel(item) {
+  if (getItemCategory(item) !== "accessory") return categoryLabels[getItemCategory(item)] || "アイテム";
+  return accessorySlotLabels[item.accessorySlot] || "アクセサリー";
+}
+
+function getEquippedAccessoryIds(customization = state.customization) {
+  return Object.values(customization.accessories || {}).filter(Boolean);
+}
+
+function getEquippedItemIds(customization = state.customization) {
+  return [
+    customization.clothing,
+    ...getEquippedAccessoryIds(customization),
+  ].filter((id) => id && shopItems[id]);
+}
+
+function getCustomizationPreview(itemId) {
+  const customization = {
+    ...state.customization,
+    accessories: {
+      head: null,
+      face: null,
+      neck: null,
+      hand: null,
+      ...(state.customization.accessories || {}),
+    },
+  };
+  const item = shopItems[itemId];
+
+  if (!item) return customization;
+
+  const category = getItemCategory(item);
+
+  if (category === "clothing") {
+    customization.clothing = itemId;
+    return customization;
+  }
+
+  if (category === "accessory") {
+    customization.accessories[item.accessorySlot || "head"] = itemId;
+    return customization;
+  }
+
+  if (category === "furniture") {
+    customization.furniture = itemId;
+    customization.decor = itemId;
+    return customization;
+  }
+
+  if (category === "background") {
+    customization.background = itemId;
+  }
+
+  return customization;
+}
+
+function getItemMetaText(itemId, options = {}) {
+  const item = shopItems[itemId];
+
+  if (!item) return "Preview";
+
+  const category = getItemCategory(item);
+  const labels = [
+    categoryLabels[category],
+    category === "accessory" ? getItemSlotLabel(item) : null,
+    rarityLabels[item.rarity],
+  ];
+
+  if (options.includePrice) labels.push(`${getItemPrice(item)} coin`);
+  if (options.includeState) {
+    labels.push(isItemEquipped(itemId) ? "装備中" : state.inventory[itemId] ? "購入済み" : "未購入");
+  }
+
+  return labels.filter(Boolean).join(" / ");
+}
+
 function isItemEquipped(itemId) {
   const item = shopItems[itemId];
-  return Boolean(item && state.customization[item.type] === itemId);
+
+  if (!item) return false;
+
+  const category = getItemCategory(item);
+
+  if (category === "clothing") return state.customization.clothing === itemId;
+  if (category === "accessory") {
+    return state.customization.accessories?.[item.accessorySlot] === itemId;
+  }
+  if (category === "furniture") return state.customization.furniture === itemId;
+  if (category === "background") return state.customization.background === itemId;
+
+  return false;
 }
 
 function equipItem(itemId) {
@@ -412,13 +854,62 @@ function equipItem(itemId) {
 
   if (!item || !state.inventory[itemId]) return false;
 
-  if (state.customization[item.type] === itemId) {
-    state.customization[item.type] = null;
-    return false;
+  const category = getItemCategory(item);
+  state.customization.accessories = {
+    head: null,
+    face: null,
+    neck: null,
+    hand: null,
+    ...(state.customization.accessories || {}),
+  };
+
+  if (category === "clothing") {
+    if (state.customization.clothing === itemId) {
+      state.customization.clothing = null;
+      state.customization.outfit = null;
+      return false;
+    }
+
+    state.customization.clothing = itemId;
+    state.customization.outfit = null;
+    return true;
   }
 
-  state.customization[item.type] = itemId;
-  return true;
+  if (category === "accessory") {
+    const slot = item.accessorySlot || "head";
+
+    if (state.customization.accessories[slot] === itemId) {
+      state.customization.accessories[slot] = null;
+      return false;
+    }
+
+    state.customization.accessories[slot] = itemId;
+    return true;
+  }
+
+  if (category === "furniture") {
+    if (state.customization.furniture === itemId) {
+      state.customization.furniture = null;
+      state.customization.decor = null;
+      return false;
+    }
+
+    state.customization.furniture = itemId;
+    state.customization.decor = itemId;
+    return true;
+  }
+
+  if (category === "background") {
+    if (state.customization.background === itemId) {
+      state.customization.background = null;
+      return false;
+    }
+
+    state.customization.background = itemId;
+    return true;
+  }
+
+  return false;
 }
 
 function getDecayedCareValue(timestamp, duration) {
@@ -719,7 +1210,6 @@ function renderPet() {
   petLevel.textContent = currentLevel;
   petCareLevel.textContent = `Lv. ${currentLevel}`;
   const stage = getGrowthStage();
-  const unlocked = getUnlockedRewards();
   const stageClasses = growthStages.map((item) => `stage-${item.id}`);
 
   petViews.forEach((view) => {
@@ -731,24 +1221,11 @@ function renderPet() {
     view.pet.classList.toggle("mood-grumpy", state.pet.happy <= 20);
     view.pet.classList.remove(...stageClasses);
     view.pet.classList.add(`stage-${stage.id}`);
-    view.pet.dataset.outfit = state.customization.outfit || "";
+    delete view.pet.dataset.outfit;
+    renderEquipment(view.pet);
 
     const stageElement = view.pet.closest(".pet-stage");
-    stageElement.classList.toggle("has-room-decor", unlocked.length >= 2);
-    stageElement.classList.toggle("has-forest-bg", unlocked.length >= 3);
-    stageElement.dataset.time = getTimePeriod();
-
-    if (state.customization.decor) {
-      stageElement.dataset.decor = state.customization.decor;
-    } else {
-      delete stageElement.dataset.decor;
-    }
-
-    if (state.customization.background) {
-      stageElement.dataset.background = state.customization.background;
-    } else {
-      delete stageElement.dataset.background;
-    }
+    applyStageCustomization(stageElement);
   });
 }
 
@@ -833,6 +1310,147 @@ function createItemIcon(iconClass) {
   return icon;
 }
 
+function ensureEquipmentLayers(pet) {
+  const layers = {};
+
+  equipmentLayerOrder.forEach((layer) => {
+    let layerElement = pet.querySelector(`.pet-equipment[data-layer="${layer}"]`);
+
+    if (!layerElement) {
+      layerElement = document.createElement("span");
+      layerElement.className = `pet-equipment equipment-${layer}`;
+      layerElement.dataset.layer = layer;
+      layerElement.setAttribute("aria-hidden", "true");
+      pet.appendChild(layerElement);
+    }
+
+    layers[layer] = layerElement;
+  });
+
+  return layers;
+}
+
+function createEquipmentItem(itemId, item) {
+  const element = document.createElement("span");
+  const offsetX = Number.isFinite(item.offsetX) ? item.offsetX : 0;
+  const offsetY = Number.isFinite(item.offsetY) ? item.offsetY : 0;
+  const scale = Number.isFinite(item.scale) ? item.scale : 1;
+  const rotation = Number.isFinite(item.rotation) ? item.rotation : 0;
+
+  element.className = `equipment-item ${item.assetClass || item.iconClass || ""} rarity-${item.rarity}`;
+  element.dataset.item = itemId;
+  element.style.setProperty("--item-x", `${offsetX}%`);
+  element.style.setProperty("--item-y", `${offsetY}%`);
+  element.style.setProperty("--item-scale", scale);
+  element.style.setProperty("--item-rotation", `${rotation}deg`);
+  return element;
+}
+
+function renderEquipment(pet, customization = state.customization) {
+  const layers = ensureEquipmentLayers(pet);
+
+  Object.values(layers).forEach((layer) => {
+    layer.innerHTML = "";
+  });
+
+  if (pet.classList.contains("stage-egg")) return;
+
+  getEquippedItemIds(customization).forEach((itemId) => {
+    const item = shopItems[itemId];
+    const layer = getItemLayer(item);
+    const safeLayer = equipmentLayerOrder.includes(layer) ? layer : "effect";
+
+    layers[safeLayer].appendChild(createEquipmentItem(itemId, item));
+  });
+}
+
+function ensurePreviewSvg(pet) {
+  if (!pet || pet.querySelector(".owl-svg")) return;
+
+  const sourceSvg = document.querySelector("#pet .owl-svg");
+
+  if (sourceSvg) {
+    pet.appendChild(sourceSvg.cloneNode(true));
+  }
+}
+
+function renderPetPreview(stageElement, petElement, itemId) {
+  if (!stageElement || !petElement) return;
+
+  ensurePreviewSvg(petElement);
+
+  const stage = getGrowthStage();
+  const stageClasses = growthStages.map((item) => `stage-${item.id}`);
+  const customization = getCustomizationPreview(itemId);
+
+  petElement.classList.toggle("mood-happy", state.pet.happy >= 70);
+  petElement.classList.toggle("mood-tired", state.pet.hunger <= 20 || state.pet.happy <= 20);
+  petElement.classList.toggle("mood-sick", state.pet.hunger <= 20);
+  petElement.classList.toggle("mood-grumpy", state.pet.happy <= 20);
+  petElement.classList.remove(...stageClasses);
+  petElement.classList.add(`stage-${stage.id}`);
+  delete petElement.dataset.outfit;
+  renderEquipment(petElement, customization);
+  applyStageCustomization(stageElement, customization);
+}
+
+function getPreviewActionText(itemId) {
+  const item = shopItems[itemId];
+
+  if (!item) return "選択";
+  if (isItemEquipped(itemId)) return "外す";
+  if (state.inventory[itemId]) return "装備";
+  return "購入";
+}
+
+function updatePreviewAction(button, itemId) {
+  if (!button) return;
+
+  const item = shopItems[itemId];
+  const isOwned = Boolean(state.inventory[itemId]);
+  const cost = getItemPrice(item);
+
+  button.disabled = !item || (!isOwned && state.coins < cost);
+  button.textContent = getPreviewActionText(itemId);
+}
+
+function renderPreviewInfo(nameElement, metaElement, actionButton, itemId) {
+  const item = shopItems[itemId];
+
+  if (!item) {
+    if (nameElement) nameElement.textContent = "未選択";
+    if (metaElement) metaElement.textContent = "Preview";
+    updatePreviewAction(actionButton, null);
+    return;
+  }
+
+  if (nameElement) nameElement.textContent = item.name;
+  if (metaElement) metaElement.textContent = getItemMetaText(itemId, {
+    includePrice: true,
+    includeState: true,
+  });
+  updatePreviewAction(actionButton, itemId);
+}
+
+function renderCustomizationPreviews() {
+  const validShopItem = shopItems[selectedShopItemId] ? selectedShopItemId : null;
+  const validInventoryItem = shopItems[selectedInventoryItemId] && state.inventory[selectedInventoryItemId]
+    ? selectedInventoryItemId
+    : null;
+
+  selectedShopItemId = validShopItem;
+  selectedInventoryItemId = validInventoryItem;
+
+  renderPetPreview(shopPreviewStage, shopPreviewPet, selectedShopItemId);
+  renderPreviewInfo(shopPreviewName, shopPreviewMeta, shopPreviewAction, selectedShopItemId);
+  renderPreviewInfo(inventoryPreviewName, inventoryPreviewMeta, inventoryPreviewAction, selectedInventoryItemId);
+
+  if (selectedInventoryItemId) {
+    const careView = petViews.find((view) => view.pet.id === "petCare");
+    renderPetPreview(careView?.pet.closest(".pet-stage"), careView?.pet, selectedInventoryItemId);
+  }
+}
+
 function renderSubjectTags() {
   subjectOptions.innerHTML = "";
   subjectTags.innerHTML = "";
@@ -886,17 +1504,25 @@ function renderInventory() {
     const icon = createItemIcon(item.iconClass);
     const label = document.createElement("span");
     const meta = document.createElement("small");
+    const category = getItemCategory(item);
+    const slotLabel = category === "accessory" ? getItemSlotLabel(item) : null;
+    const detailLabels = [
+      categoryLabels[category],
+      slotLabel,
+      rarityLabels[item.rarity],
+    ].filter(Boolean);
 
     button.type = "button";
-    button.className = "use-item-btn";
+    button.className = `use-item-btn rarity-${item.rarity}`;
     button.dataset.item = id;
     label.className = "item-name";
     meta.className = "item-meta";
     label.textContent = item.name;
     meta.textContent = isItemEquipped(id)
-      ? "装備中 / タップで外す"
-      : `${itemTypeLabels[item.type]} / ${rarityLabels[item.rarity]} / タップで装備`;
+      ? "装備中"
+      : detailLabels.join(" / ");
     button.classList.toggle("equipped", isItemEquipped(id));
+    button.classList.toggle("selected", selectedInventoryItemId === id);
     button.append(icon, label, meta);
     inventoryList.appendChild(button);
   });
@@ -905,40 +1531,72 @@ function renderInventory() {
 function renderShop() {
   shopList.innerHTML = "";
 
-  Object.entries(shopItems).forEach(([id, item]) => {
-    const card = document.createElement("div");
-    const body = document.createElement("div");
-    const icon = createItemIcon(item.iconClass);
+  shopCategoryOrder.forEach((category) => {
+    const entries = Object.entries(shopItems).filter(([, item]) => getItemCategory(item) === category);
+    const section = document.createElement("section");
+    const heading = document.createElement("div");
     const title = document.createElement("h3");
-    const description = document.createElement("p");
-    const meta = document.createElement("div");
-    const type = document.createElement("span");
-    const rarity = document.createElement("span");
-    const button = document.createElement("button");
-    const isOwned = state.inventory[id] > 0;
-    const isEquipped = isItemEquipped(id);
+    const count = document.createElement("span");
+    const list = document.createElement("div");
 
-    card.className = `shop-item rarity-${item.rarity}`;
-    title.textContent = item.name;
-    description.textContent = item.description;
-    meta.className = "shop-meta";
-    type.className = "type-badge";
-    rarity.className = `rarity-badge rarity-${item.rarity}`;
-    type.textContent = itemTypeLabels[item.type];
-    rarity.textContent = rarityLabels[item.rarity];
-    button.type = "button";
-    button.className = "buy-item-btn";
-    button.dataset.item = id;
-    button.textContent = isEquipped
-      ? "外す"
-      : isOwned
-        ? "装備する"
-        : `${item.cost} coinで買う`;
+    if (entries.length === 0) return;
 
-    meta.append(type, rarity);
-    body.append(icon, meta, title, description);
-    card.append(body, button);
-    shopList.appendChild(card);
+    section.className = `shop-category shop-category-${category}`;
+    heading.className = "shop-category-title";
+    title.textContent = categoryLabels[category];
+    count.textContent = `${entries.length} items`;
+    list.className = "shop-category-list";
+    heading.append(title, count);
+
+    entries.forEach(([id, item]) => {
+      const card = document.createElement("div");
+      const body = document.createElement("div");
+      const icon = createItemIcon(item.iconClass);
+      const itemTitle = document.createElement("h3");
+      const meta = document.createElement("div");
+      const type = document.createElement("span");
+      const rarity = document.createElement("span");
+      const price = document.createElement("span");
+      const slot = document.createElement("span");
+      const button = document.createElement("button");
+      const isOwned = state.inventory[id] > 0;
+      const isEquipped = isItemEquipped(id);
+      const cost = getItemPrice(item);
+      const canBuy = state.coins >= cost;
+
+      card.className = `shop-item category-${category} rarity-${item.rarity}`;
+      card.dataset.item = id;
+      card.classList.toggle("owned", isOwned);
+      card.classList.toggle("equipped", isEquipped);
+      card.classList.toggle("locked", !isOwned && !canBuy);
+      card.classList.toggle("selected", selectedShopItemId === id);
+      itemTitle.textContent = item.name;
+      meta.className = "shop-meta";
+      type.className = "type-badge";
+      rarity.className = `rarity-badge rarity-${item.rarity}`;
+      price.className = "price-badge";
+      slot.className = "slot-badge";
+      type.textContent = categoryLabels[category];
+      rarity.textContent = rarityLabels[item.rarity];
+      price.textContent = `${cost} coin`;
+      slot.textContent = getItemSlotLabel(item);
+      button.type = "button";
+      button.className = "preview-item-btn";
+      button.dataset.item = id;
+      button.disabled = false;
+      button.textContent = selectedShopItemId === id ? "表示中" : "確認";
+      button.title = "プレビュー";
+
+      meta.append(type, rarity);
+      if (category === "accessory") meta.append(slot);
+      meta.append(price);
+      body.append(icon, meta, itemTitle);
+      card.append(body, button);
+      list.appendChild(card);
+    });
+
+    section.append(heading, list);
+    shopList.appendChild(section);
   });
 }
 
@@ -959,6 +1617,7 @@ function render() {
   renderSubjectTags();
   renderInventory();
   renderShop();
+  renderCustomizationPreviews();
   renderHistory();
   renderWeeklyChart();
 }
@@ -999,6 +1658,7 @@ function setMascotMotion(motion) {
 
 function triggerPetAnimation(action, iconClass) {
   clearTimeout(animationTimer);
+  const iconClasses = (iconClass || "").split(/\s+/).filter(Boolean);
 
   const actionClass = {
     feed: "eat",
@@ -1010,7 +1670,7 @@ function triggerPetAnimation(action, iconClass) {
 
   petViews.forEach((view) => {
     view.prop.className = "pet-action-prop";
-    view.prop.classList.add("active", action, iconClass);
+    view.prop.classList.add("active", action, ...iconClasses);
   });
   applyMascotMotion(actionClass);
 
@@ -1169,39 +1829,56 @@ document.querySelectorAll(".care-btn").forEach((button) => {
   });
 });
 
-shopList.addEventListener("click", (event) => {
-  const button = event.target.closest(".buy-item-btn");
-  if (!button) return;
-
-  const itemId = button.dataset.item;
+function applySelectedItem(itemId) {
   const item = shopItems[itemId];
-  if (!item) return;
+  if (!item) return false;
 
   const isOwned = state.inventory[itemId] > 0;
+  const category = getItemCategory(item);
 
   if (isOwned) {
     const equipped = equipItem(itemId);
-    if (equipped && item.type === "outfit") {
+    if (equipped && (category === "clothing" || category === "accessory")) {
       triggerPetAnimation("play", item.iconClass);
     }
     saveState();
     render();
-    return;
+    return true;
   }
 
-  if (state.coins < item.cost) {
+  const cost = getItemPrice(item);
+
+  if (state.coins < cost) {
     alert("コインが足りません。1分学習すると1コイン増えます。");
-    return;
+    render();
+    return false;
   }
 
-  state.coins -= item.cost;
+  state.coins -= cost;
   state.inventory[itemId] = 1;
   const equipped = equipItem(itemId);
-  if (equipped && item.type === "outfit") {
+  if (equipped && (category === "clothing" || category === "accessory")) {
     triggerPetAnimation("play", item.iconClass);
   }
   saveState();
   render();
+  return true;
+}
+
+shopList.addEventListener("click", (event) => {
+  const card = event.target.closest(".shop-item");
+  if (!card) return;
+
+  const itemId = card.dataset.item;
+  if (!shopItems[itemId]) return;
+
+  selectedShopItemId = itemId;
+  render();
+});
+
+shopPreviewAction.addEventListener("click", () => {
+  if (!selectedShopItemId) return;
+  applySelectedItem(selectedShopItemId);
 });
 
 inventoryList.addEventListener("click", (event) => {
@@ -1209,17 +1886,15 @@ inventoryList.addEventListener("click", (event) => {
   if (!button) return;
 
   const itemId = button.dataset.item;
-  const item = shopItems[itemId];
-  if (!item) return;
+  if (!shopItems[itemId] || !state.inventory[itemId]) return;
 
-  if (!state.inventory[itemId]) return;
-
-  const equipped = equipItem(itemId);
-  if (equipped && item.type === "outfit") {
-    triggerPetAnimation("play", item.iconClass);
-  }
-  saveState();
+  selectedInventoryItemId = itemId;
   render();
+});
+
+inventoryPreviewAction.addEventListener("click", () => {
+  if (!selectedInventoryItemId) return;
+  applySelectedItem(selectedInventoryItemId);
 });
 
 document.querySelectorAll(".nav-btn").forEach((button) => {
