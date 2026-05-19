@@ -342,6 +342,8 @@ const rarityLabels = {
   legendary: "Legendary",
 };
 
+const rarityOrder = ["common", "uncommon", "rare", "epic", "legendary"];
+
 const categoryLabels = {
   clothing: "服",
   accessory: "アクセサリー",
@@ -370,6 +372,9 @@ const mascotMotionLabels = {
   fun: "楽しい",
   sleep: "睡眠",
 };
+
+const owlMotionStateIds = ["veryHappy", "energetic", "normal", "hungry", "bored", "lowEnergy"];
+const owlMotionStateClasses = owlMotionStateIds.map((id) => `owl-motion-${id}`);
 
 const growthStages = [
   { id: "egg", name: "たまご", min: 0, next: 10, nextName: "ひな" },
@@ -437,9 +442,6 @@ const shopPreviewPet = document.getElementById("shopPreviewPet");
 const shopPreviewName = document.getElementById("shopPreviewName");
 const shopPreviewMeta = document.getElementById("shopPreviewMeta");
 const shopPreviewAction = document.getElementById("shopPreviewAction");
-const inventoryPreviewName = document.getElementById("inventoryPreviewName");
-const inventoryPreviewMeta = document.getElementById("inventoryPreviewMeta");
-const inventoryPreviewAction = document.getElementById("inventoryPreviewAction");
 const petLevel = document.getElementById("petLevel");
 const petCareLevel = document.getElementById("petCareLevel");
 const motionLabel = document.getElementById("motionLabel");
@@ -478,7 +480,7 @@ let animationTimer = null;
 let weekOffset = 0;
 let activeMascotMotion = "idle";
 let selectedShopItemId = null;
-let selectedInventoryItemId = null;
+let selectedShopCategory = shopCategoryOrder[0];
 
 function createDefaultState() {
   return {
@@ -719,6 +721,26 @@ function getUnlockedRewards() {
   return unlockRewards.filter((reward) => state.totalMinutes >= reward.threshold);
 }
 
+function getOwlMotionState(fullness, play) {
+  const safeFullness = clamp(Number(fullness) || 0);
+  const safePlay = clamp(Number(play) || 0);
+
+  if (safeFullness >= 90 && safePlay >= 90) return "veryHappy";
+  if (safeFullness >= 70 && safePlay >= 70) return "energetic";
+  if (safeFullness < 40 && safePlay < 40) return "lowEnergy";
+  if (safeFullness < 40) return "hungry";
+  if (safePlay < 40) return "bored";
+  return "normal";
+}
+
+function applyOwlMotionState(pet, motionState) {
+  if (!pet) return;
+
+  pet.classList.remove(...owlMotionStateClasses);
+  pet.classList.add(`owl-motion-${motionState}`);
+  pet.dataset.careMotion = motionState;
+}
+
 function applyStageCustomization(stageElement, customization = state.customization) {
   if (!stageElement) return;
 
@@ -750,6 +772,21 @@ function getItemCategory(item) {
 
 function getItemPrice(item) {
   return item?.price ?? item?.cost ?? 0;
+}
+
+function getRarityRank(item) {
+  const index = rarityOrder.indexOf(item?.rarity);
+  return index === -1 ? rarityOrder.length : index;
+}
+
+function sortItemEntries([idA, itemA], [idB, itemB]) {
+  const rarityDiff = getRarityRank(itemA) - getRarityRank(itemB);
+  if (rarityDiff !== 0) return rarityDiff;
+
+  const priceDiff = getItemPrice(itemA) - getItemPrice(itemB);
+  if (priceDiff !== 0) return priceDiff;
+
+  return (itemA.name || idA).localeCompare(itemB.name || idB, "ja");
 }
 
 function getItemLayer(item) {
@@ -1211,6 +1248,7 @@ function renderPet() {
   petCareLevel.textContent = `Lv. ${currentLevel}`;
   const stage = getGrowthStage();
   const stageClasses = growthStages.map((item) => `stage-${item.id}`);
+  const owlMotionState = getOwlMotionState(state.pet.hunger, state.pet.happy);
 
   petViews.forEach((view) => {
     view.hunger.value = state.pet.hunger;
@@ -1221,6 +1259,7 @@ function renderPet() {
     view.pet.classList.toggle("mood-grumpy", state.pet.happy <= 20);
     view.pet.classList.remove(...stageClasses);
     view.pet.classList.add(`stage-${stage.id}`);
+    applyOwlMotionState(view.pet, owlMotionState);
     delete view.pet.dataset.outfit;
     renderEquipment(view.pet);
 
@@ -1382,6 +1421,7 @@ function renderPetPreview(stageElement, petElement, itemId) {
   const stage = getGrowthStage();
   const stageClasses = growthStages.map((item) => `stage-${item.id}`);
   const customization = getCustomizationPreview(itemId);
+  const owlMotionState = getOwlMotionState(state.pet.hunger, state.pet.happy);
 
   petElement.classList.toggle("mood-happy", state.pet.happy >= 70);
   petElement.classList.toggle("mood-tired", state.pet.hunger <= 20 || state.pet.happy <= 20);
@@ -1389,6 +1429,7 @@ function renderPetPreview(stageElement, petElement, itemId) {
   petElement.classList.toggle("mood-grumpy", state.pet.happy <= 20);
   petElement.classList.remove(...stageClasses);
   petElement.classList.add(`stage-${stage.id}`);
+  applyOwlMotionState(petElement, owlMotionState);
   delete petElement.dataset.outfit;
   renderEquipment(petElement, customization);
   applyStageCustomization(stageElement, customization);
@@ -1400,6 +1441,7 @@ function getPreviewActionText(itemId) {
   if (!item) return "選択";
   if (isItemEquipped(itemId)) return "外す";
   if (state.inventory[itemId]) return "装備";
+  if (state.coins < getItemPrice(item)) return "コイン不足";
   return "購入";
 }
 
@@ -1434,21 +1476,35 @@ function renderPreviewInfo(nameElement, metaElement, actionButton, itemId) {
 
 function renderCustomizationPreviews() {
   const validShopItem = shopItems[selectedShopItemId] ? selectedShopItemId : null;
-  const validInventoryItem = shopItems[selectedInventoryItemId] && state.inventory[selectedInventoryItemId]
-    ? selectedInventoryItemId
-    : null;
 
   selectedShopItemId = validShopItem;
-  selectedInventoryItemId = validInventoryItem;
 
   renderPetPreview(shopPreviewStage, shopPreviewPet, selectedShopItemId);
   renderPreviewInfo(shopPreviewName, shopPreviewMeta, shopPreviewAction, selectedShopItemId);
-  renderPreviewInfo(inventoryPreviewName, inventoryPreviewMeta, inventoryPreviewAction, selectedInventoryItemId);
+}
 
-  if (selectedInventoryItemId) {
-    const careView = petViews.find((view) => view.pet.id === "petCare");
-    renderPetPreview(careView?.pet.closest(".pet-stage"), careView?.pet, selectedInventoryItemId);
-  }
+function scrollShopPreviewIntoView() {
+  if (!shopPreviewStage) return;
+
+  requestAnimationFrame(() => {
+    shopPreviewStage.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  });
+}
+
+function scrollShopCategoryIntoView(category) {
+  const section = shopList.querySelector(`.shop-category-${category}`);
+
+  if (!section) return;
+
+  requestAnimationFrame(() => {
+    section.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  });
 }
 
 function renderSubjectTags() {
@@ -1489,7 +1545,35 @@ function renderSubjectTags() {
 
 function renderInventory() {
   inventoryList.innerHTML = "";
-  const ownedItems = Object.entries(shopItems).filter(([id]) => state.inventory[id] > 0);
+  const ownedItems = Object.entries(shopItems)
+    .filter(([id]) => state.inventory[id] > 0)
+    .sort(sortItemEntries);
+  const inventoryGroups = [
+    {
+      id: "clothing",
+      title: "服",
+      note: "1つだけ装備",
+      match: (item) => getItemCategory(item) === "clothing",
+    },
+    ...Object.entries(accessorySlotLabels).map(([slot, label]) => ({
+      id: `accessory-${slot}`,
+      title: `アクセサリー・${label}`,
+      note: `${label}は1つだけ`,
+      match: (item) => getItemCategory(item) === "accessory" && (item.accessorySlot || "head") === slot,
+    })),
+    {
+      id: "furniture",
+      title: "家具",
+      note: "1つだけ配置",
+      match: (item) => getItemCategory(item) === "furniture",
+    },
+    {
+      id: "background",
+      title: "背景",
+      note: "1つだけ設定",
+      match: (item) => getItemCategory(item) === "background",
+    },
+  ];
 
   if (ownedItems.length === 0) {
     const empty = document.createElement("span");
@@ -1499,12 +1583,15 @@ function renderInventory() {
     return;
   }
 
-  ownedItems.forEach(([id, item]) => {
+  function createInventoryButton(id, item) {
+    const card = document.createElement("div");
     const button = document.createElement("button");
+    const equipButton = document.createElement("button");
     const icon = createItemIcon(item.iconClass);
     const label = document.createElement("span");
     const meta = document.createElement("small");
     const category = getItemCategory(item);
+    const equipped = isItemEquipped(id);
     const slotLabel = category === "accessory" ? getItemSlotLabel(item) : null;
     const detailLabels = [
       categoryLabels[category],
@@ -1515,24 +1602,86 @@ function renderInventory() {
     button.type = "button";
     button.className = `use-item-btn rarity-${item.rarity}`;
     button.dataset.item = id;
+    card.className = `inventory-card rarity-${item.rarity}`;
+    card.dataset.item = id;
+    equipButton.type = "button";
+    equipButton.className = "inventory-equip-btn";
+    equipButton.dataset.item = id;
     label.className = "item-name";
     meta.className = "item-meta";
     label.textContent = item.name;
-    meta.textContent = isItemEquipped(id)
+    meta.textContent = equipped
       ? "装備中"
       : detailLabels.join(" / ");
-    button.classList.toggle("equipped", isItemEquipped(id));
-    button.classList.toggle("selected", selectedInventoryItemId === id);
+    equipButton.textContent = equipped ? "外す" : "装備";
+    card.classList.toggle("equipped", equipped);
+    button.classList.toggle("equipped", equipped);
     button.append(icon, label, meta);
-    inventoryList.appendChild(button);
+    card.append(button, equipButton);
+
+    return card;
+  }
+
+  inventoryGroups.forEach((group) => {
+    const groupItems = ownedItems.filter(([, item]) => group.match(item));
+
+    if (groupItems.length === 0) return;
+
+    const section = document.createElement("section");
+    const heading = document.createElement("div");
+    const title = document.createElement("h4");
+    const note = document.createElement("span");
+    const list = document.createElement("div");
+
+    section.className = `inventory-section inventory-section-${group.id}`;
+    heading.className = "inventory-section-title";
+    title.textContent = group.title;
+    note.textContent = group.note;
+    list.className = "inventory-section-list";
+
+    heading.append(title, note);
+    groupItems.forEach(([id, item]) => {
+      list.appendChild(createInventoryButton(id, item));
+    });
+    section.append(heading, list);
+    inventoryList.appendChild(section);
   });
 }
 
 function renderShop() {
   shopList.innerHTML = "";
+  const tabs = document.createElement("div");
+
+  tabs.className = "shop-category-tabs";
+  tabs.setAttribute("aria-label", "ショップカテゴリ");
 
   shopCategoryOrder.forEach((category) => {
-    const entries = Object.entries(shopItems).filter(([, item]) => getItemCategory(item) === category);
+    const entries = Object.entries(shopItems)
+      .filter(([, item]) => getItemCategory(item) === category)
+      .sort(sortItemEntries);
+    const tab = document.createElement("button");
+    const label = document.createElement("span");
+    const count = document.createElement("small");
+
+    if (entries.length === 0) return;
+
+    tab.type = "button";
+    tab.className = "shop-category-tab";
+    tab.dataset.category = category;
+    tab.setAttribute("aria-pressed", String(selectedShopCategory === category));
+    tab.classList.toggle("active", selectedShopCategory === category);
+    label.textContent = categoryLabels[category];
+    count.textContent = entries.length;
+    tab.append(label, count);
+    tabs.appendChild(tab);
+  });
+
+  shopList.appendChild(tabs);
+
+  shopCategoryOrder.forEach((category) => {
+    const entries = Object.entries(shopItems)
+      .filter(([, item]) => getItemCategory(item) === category)
+      .sort(sortItemEntries);
     const section = document.createElement("section");
     const heading = document.createElement("div");
     const title = document.createElement("h3");
@@ -1584,8 +1733,12 @@ function renderShop() {
       button.className = "preview-item-btn";
       button.dataset.item = id;
       button.disabled = false;
-      button.textContent = selectedShopItemId === id ? "表示中" : "確認";
-      button.title = "プレビュー";
+      button.textContent = isOwned
+        ? "購入済み"
+        : selectedShopItemId === id
+          ? "表示中"
+          : "確認";
+      button.title = isOwned ? "購入済み" : "プレビュー";
 
       meta.append(type, rarity);
       if (category === "accessory") meta.append(slot);
@@ -1866,6 +2019,15 @@ function applySelectedItem(itemId) {
 }
 
 shopList.addEventListener("click", (event) => {
+  const tab = event.target.closest(".shop-category-tab");
+
+  if (tab) {
+    selectedShopCategory = tab.dataset.category;
+    renderShop();
+    scrollShopCategoryIntoView(selectedShopCategory);
+    return;
+  }
+
   const card = event.target.closest(".shop-item");
   if (!card) return;
 
@@ -1874,6 +2036,7 @@ shopList.addEventListener("click", (event) => {
 
   selectedShopItemId = itemId;
   render();
+  scrollShopPreviewIntoView();
 });
 
 shopPreviewAction.addEventListener("click", () => {
@@ -1882,19 +2045,15 @@ shopPreviewAction.addEventListener("click", () => {
 });
 
 inventoryList.addEventListener("click", (event) => {
-  const button = event.target.closest(".use-item-btn");
-  if (!button) return;
+  const equipButton = event.target.closest(".inventory-equip-btn");
 
-  const itemId = button.dataset.item;
-  if (!shopItems[itemId] || !state.inventory[itemId]) return;
+  if (equipButton) {
+    const itemId = equipButton.dataset.item;
+    if (!shopItems[itemId] || !state.inventory[itemId]) return;
 
-  selectedInventoryItemId = itemId;
-  render();
-});
-
-inventoryPreviewAction.addEventListener("click", () => {
-  if (!selectedInventoryItemId) return;
-  applySelectedItem(selectedInventoryItemId);
+    applySelectedItem(itemId);
+    return;
+  }
 });
 
 document.querySelectorAll(".nav-btn").forEach((button) => {
