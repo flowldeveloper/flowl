@@ -47,15 +47,18 @@
           <p>Focus timer</p>
           <span id="timerStatus"></span>
         </div>
-        <h2 id="time">25:00</h2>
         <div class="timer-controls">
           <button id="startBtn">スタート</button>
           <button id="resetBtn">リセット</button>
         </div>
         <form id="timerRecordForm" class="timer-record">
-          <label>
-            タイマー科目
-            <input id="timerSubjectInput" type="text" placeholder="英語、数学など" maxlength="24" list="subjectOptions">
+          <label class="subject-label">
+            <span>タイマー科目</span>
+            <span class="subject-field">
+              <input id="timerSubjectInput" type="text" placeholder="英語、数学など" maxlength="24" autocomplete="off">
+              <button class="subject-toggle" type="button" aria-label="登録済み科目を開閉" aria-expanded="false">▼</button>
+              <span id="timerSubjectMenu" class="subject-menu" hidden></span>
+            </span>
           </label>
           <button id="recordTimerBtn" type="submit">記録して終了</button>
         </form>
@@ -109,6 +112,7 @@
             </svg>
           </div>
         </div>
+        <h2 id="time">25:00</h2>
         <div class="growth-card">
           <div>
             <span id="growthStageLabel">たまご</span>
@@ -134,9 +138,13 @@
           <span id="todayTotal">今日 0分</span>
         </div>
         <form id="studyForm" class="study-form">
-          <label>
-            科目
-            <input id="subjectInput" type="text" placeholder="英語、数学など" maxlength="24" list="subjectOptions">
+          <label class="subject-label">
+            <span>科目</span>
+            <span class="subject-field">
+              <input id="subjectInput" type="text" placeholder="英語、数学など" maxlength="24" autocomplete="off">
+              <button class="subject-toggle" type="button" aria-label="登録済み科目を開閉" aria-expanded="false">▼</button>
+              <span id="subjectMenu" class="subject-menu" hidden></span>
+            </span>
           </label>
           <label>
             分
@@ -145,7 +153,7 @@
           <button type="submit">記録</button>
         </form>
         <datalist id="subjectOptions"></datalist>
-        <div id="subjectTags" class="subject-tags" aria-label="登録済み科目タグ"></div>
+        <div id="subjectTags" class="subject-tags" aria-label="登録済み科目タグ" hidden></div>
       </article>
 
       <article class="panel history-panel">

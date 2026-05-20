@@ -20,10 +20,10 @@ const careEffects = {
 
 const shopItems = {
   simpleScarf: {
-    name: "シンプルスカーフ",
+    name: "ふわふわスカーフ",
     category: "clothing",
     rarity: "common",
-    price: 50,
+    price: 60,
     description: "首元だけをやさしく飾る、最初に買いやすい服。",
     iconClass: "clothing-icon rarity-icon-common",
     assetClass: "wear-simple-scarf",
@@ -34,10 +34,10 @@ const shopItems = {
     rotation: 0,
   },
   studyVest: {
-    name: "小さなベスト",
+    name: "若葉の勉強ベスト",
     category: "clothing",
     rarity: "uncommon",
-    price: 120,
+    price: 160,
     description: "勉強モードに似合う、控えめな若葉色のベスト。",
     iconClass: "clothing-icon rarity-icon-uncommon",
     assetClass: "wear-study-vest",
@@ -51,7 +51,7 @@ const shopItems = {
     name: "学者ローブ",
     category: "clothing",
     rarity: "rare",
-    price: 300,
+    price: 420,
     description: "本の刺繍が入った、特別感のあるローブ。",
     iconClass: "clothing-icon rarity-icon-rare",
     assetClass: "wear-scholar-robe",
@@ -65,7 +65,7 @@ const shopItems = {
     name: "星柄マント",
     category: "clothing",
     rarity: "epic",
-    price: 700,
+    price: 900,
     description: "星模様がきらめく、夜の集中に似合うマント。",
     iconClass: "clothing-icon rarity-icon-epic",
     assetClass: "wear-star-mantle",
@@ -79,7 +79,7 @@ const shopItems = {
     name: "光る賢者ローブ",
     category: "clothing",
     rarity: "legendary",
-    price: 1500,
+    price: 2200,
     description: "淡い光をまとった、長く続けた証になる特別な服。",
     iconClass: "clothing-icon rarity-icon-legendary",
     assetClass: "wear-sage-robe",
@@ -89,12 +89,40 @@ const shopItems = {
     scale: 1,
     rotation: 0,
   },
+  pagePoncho: {
+    name: "しおりポンチョ",
+    category: "clothing",
+    rarity: "rare",
+    price: 520,
+    description: "本のしおりをイメージした、勉強気分が上がるポンチョ。",
+    iconClass: "clothing-icon rarity-icon-rare",
+    assetClass: "wear-page-poncho",
+    layer: "clothing",
+    offsetX: 0,
+    offsetY: 25,
+    scale: 1,
+    rotation: 0,
+  },
+  auroraCloak: {
+    name: "オーロラ集中クローク",
+    category: "clothing",
+    rarity: "legendary",
+    price: 2800,
+    description: "淡い光の層が重なる、最高レアの集中クローク。",
+    iconClass: "clothing-icon rarity-icon-legendary",
+    assetClass: "wear-aurora-cloak",
+    layer: "clothing",
+    offsetX: 0,
+    offsetY: 24,
+    scale: 1,
+    rotation: 0,
+  },
   cloverCape: {
     name: "若葉ブローチ",
     category: "accessory",
     accessorySlot: "neck",
     rarity: "common",
-    price: 50,
+    price: 60,
     description: "胸元に小さく留まる、動きに強い若葉のアクセサリー。",
     iconClass: "accessory-icon rarity-icon-common",
     assetClass: "wear-leaf-brooch",
@@ -105,11 +133,11 @@ const shopItems = {
     rotation: -8,
   },
   acornBeret: {
-    name: "どんぐりベレー",
+    name: "森色ベレー",
     category: "accessory",
     accessorySlot: "head",
     rarity: "rare",
-    price: 300,
+    price: 420,
     description: "Flowletが少し得意げになる秋色の帽子。",
     iconClass: "accessory-icon rarity-icon-rare",
     assetClass: "wear-acorn-beret",
@@ -124,7 +152,7 @@ const shopItems = {
     category: "accessory",
     accessorySlot: "head",
     rarity: "epic",
-    price: 700,
+    price: 900,
     description: "頭にそっと光る、集中中もずれにくい特別なピン。",
     iconClass: "accessory-icon rarity-icon-epic",
     assetClass: "wear-star-pin",
@@ -139,7 +167,7 @@ const shopItems = {
     category: "accessory",
     accessorySlot: "face",
     rarity: "common",
-    price: 50,
+    price: 70,
     description: "表情を隠しすぎない、小さめの勉強メガネ。",
     iconClass: "accessory-icon rarity-icon-common",
     assetClass: "wear-round-glasses",
@@ -154,7 +182,7 @@ const shopItems = {
     category: "accessory",
     accessorySlot: "hand",
     rarity: "uncommon",
-    price: 120,
+    price: 160,
     description: "羽の近くに持たせる、勉強アプリらしい小さな鉛筆。",
     iconClass: "accessory-icon rarity-icon-uncommon",
     assetClass: "wear-study-pencil",
@@ -169,7 +197,7 @@ const shopItems = {
     category: "accessory",
     accessorySlot: "head",
     rarity: "uncommon",
-    price: 120,
+    price: 160,
     description: "頭にちょこんと乗る、やさしい黄色のリボン。",
     iconClass: "accessory-icon rarity-icon-uncommon",
     assetClass: "wear-small-ribbon",
@@ -184,7 +212,7 @@ const shopItems = {
     category: "accessory",
     accessorySlot: "head",
     rarity: "rare",
-    price: 300,
+    price: 520,
     description: "学者気分が上がる、羽ペン付きの帽子。",
     iconClass: "accessory-icon rarity-icon-rare",
     assetClass: "wear-quill-hat",
@@ -199,7 +227,7 @@ const shopItems = {
     category: "accessory",
     accessorySlot: "head",
     rarity: "epic",
-    price: 700,
+    price: 950,
     description: "月の光がほんのり浮かぶ、夜学習のアクセサリー。",
     iconClass: "accessory-icon rarity-icon-epic",
     assetClass: "wear-moon-pin",
@@ -210,11 +238,11 @@ const shopItems = {
     rotation: 10,
   },
   glowingCrown: {
-    name: "光る王冠",
+    name: "星読みの王冠",
     category: "accessory",
     accessorySlot: "head",
     rarity: "legendary",
-    price: 1500,
+    price: 2200,
     description: "一目で特別と分かる、光をまとった王冠。",
     iconClass: "accessory-icon rarity-icon-legendary",
     assetClass: "wear-glowing-crown",
@@ -224,11 +252,41 @@ const shopItems = {
     scale: 1,
     rotation: 0,
   },
+  bookCharm: {
+    name: "小さな本チャーム",
+    category: "accessory",
+    accessorySlot: "neck",
+    rarity: "rare",
+    price: 480,
+    description: "胸元で小さな本が揺れる、勉強アプリらしいチャーム。",
+    iconClass: "accessory-icon rarity-icon-rare",
+    assetClass: "wear-book-charm",
+    layer: "neck",
+    offsetX: -21,
+    offsetY: 20,
+    scale: 1,
+    rotation: 7,
+  },
+  starOrbit: {
+    name: "星めぐりオーラ",
+    category: "accessory",
+    accessorySlot: "face",
+    rarity: "legendary",
+    price: 2500,
+    description: "顔まわりに小さな星がめぐる、最高レアの前面アクセサリー。",
+    iconClass: "accessory-icon rarity-icon-legendary",
+    assetClass: "wear-star-orbit",
+    layer: "face",
+    offsetX: 0,
+    offsetY: -13,
+    scale: 1,
+    rotation: 0,
+  },
   woodenDesk: {
     name: "小さな木の机",
     category: "furniture",
     rarity: "common",
-    price: 50,
+    price: 70,
     description: "背景に置ける、素朴な勉強机。",
     iconClass: "furniture-icon rarity-icon-common",
     assetClass: "furniture-wooden-desk",
@@ -237,7 +295,7 @@ const shopItems = {
     name: "観葉植物",
     category: "furniture",
     rarity: "uncommon",
-    price: 120,
+    price: 170,
     description: "部屋にやわらかい緑を足す小さな植物。",
     iconClass: "furniture-icon rarity-icon-uncommon",
     assetClass: "furniture-study-plant",
@@ -246,7 +304,7 @@ const shopItems = {
     name: "若葉の机",
     category: "furniture",
     rarity: "common",
-    price: 50,
+    price: 80,
     description: "背景に置ける、勉強部屋用の小さな机。",
     iconClass: "furniture-icon rarity-icon-common",
     assetClass: "furniture-leaf-desk",
@@ -255,16 +313,16 @@ const shopItems = {
     name: "本棚",
     category: "furniture",
     rarity: "rare",
-    price: 300,
+    price: 480,
     description: "勉強部屋らしさがはっきり出る本棚。",
     iconClass: "furniture-icon rarity-icon-rare",
     assetClass: "furniture-book-shelf",
   },
   studyLamp: {
-    name: "魔法のランプ",
+    name: "星明かりランプ",
     category: "furniture",
     rarity: "epic",
-    price: 700,
+    price: 950,
     description: "動物画面にあたたかい灯りを足します。",
     iconClass: "furniture-icon rarity-icon-epic",
     assetClass: "furniture-magic-lamp",
@@ -273,25 +331,43 @@ const shopItems = {
     name: "浮かぶ本の書斎セット",
     category: "furniture",
     rarity: "legendary",
-    price: 1500,
+    price: 2200,
     description: "ページがふわっと浮かぶ、特別な書斎セット。",
     iconClass: "furniture-icon rarity-icon-legendary",
     assetClass: "furniture-floating-books",
+  },
+  moonDeskSet: {
+    name: "月窓の学習机",
+    category: "furniture",
+    rarity: "rare",
+    price: 560,
+    description: "小さな月窓と本が付いた、落ち着いた学習机。",
+    iconClass: "furniture-icon rarity-icon-rare",
+    assetClass: "furniture-moon-desk",
+  },
+  starlightStudySet: {
+    name: "星明かり書斎セット",
+    category: "furniture",
+    rarity: "legendary",
+    price: 2800,
+    description: "浮かぶ本、星の灯り、小さな書斎をまとめた特別な家具。",
+    iconClass: "furniture-icon rarity-icon-legendary",
+    assetClass: "furniture-starlight-study",
   },
   simpleRoom: {
     name: "シンプルな部屋",
     category: "background",
     rarity: "common",
-    price: 50,
+    price: 80,
     description: "どんな衣装にも合う、落ち着いた部屋背景。",
     iconClass: "background-icon rarity-icon-common",
     assetClass: "background-simple-room",
   },
   focusRoom: {
-    name: "勉強部屋",
+    name: "あたたかい勉強部屋",
     category: "background",
     rarity: "uncommon",
-    price: 120,
+    price: 180,
     description: "机と本の雰囲気がある、集中しやすい背景。",
     iconClass: "background-icon rarity-icon-uncommon",
     assetClass: "background-focus-room",
@@ -300,25 +376,25 @@ const shopItems = {
     name: "朝の森",
     category: "background",
     rarity: "rare",
-    price: 300,
+    price: 420,
     description: "眺めるだけで少し落ち着く森の背景。",
     iconClass: "background-icon rarity-icon-rare",
     assetClass: "background-morning-forest",
   },
   libraryStudy: {
-    name: "図書館",
+    name: "静かな図書館",
     category: "background",
     rarity: "rare",
-    price: 300,
+    price: 520,
     description: "静かな読書机のある、少し特別な図書館背景。",
     iconClass: "background-icon rarity-icon-rare",
     assetClass: "background-library-study",
   },
   moonLibrary: {
-    name: "月夜の図書室",
+    name: "星明かりの書斎",
     category: "background",
     rarity: "epic",
-    price: 700,
+    price: 950,
     description: "静かな夜に似合う、レアな背景テーマ。",
     iconClass: "background-icon rarity-icon-epic",
     assetClass: "background-moon-library",
@@ -327,10 +403,28 @@ const shopItems = {
     name: "星降る魔法図書館",
     category: "background",
     rarity: "legendary",
-    price: 1500,
+    price: 2400,
     description: "星が降る、長く続けた人向けの特別な背景。",
     iconClass: "background-icon rarity-icon-legendary",
     assetClass: "background-star-library",
+  },
+  rainyWindowRoom: {
+    name: "雨音の読書部屋",
+    category: "background",
+    rarity: "uncommon",
+    price: 240,
+    description: "静かな雨音を感じる、落ち着いた読書部屋。",
+    iconClass: "background-icon rarity-icon-uncommon",
+    assetClass: "background-rainy-room",
+  },
+  celestialArchive: {
+    name: "星界アーカイブ",
+    category: "background",
+    rarity: "legendary",
+    price: 3000,
+    description: "星の記録が浮かぶ、最高レアの魔法図書館背景。",
+    iconClass: "background-icon rarity-icon-legendary",
+    assetClass: "background-celestial-archive",
   },
 };
 
@@ -425,6 +519,8 @@ const studyForm = document.getElementById("studyForm");
 const subjectInput = document.getElementById("subjectInput");
 const subjectOptions = document.getElementById("subjectOptions");
 const subjectTags = document.getElementById("subjectTags");
+const timerSubjectMenu = document.getElementById("timerSubjectMenu");
+const subjectMenu = document.getElementById("subjectMenu");
 const minutesInput = document.getElementById("minutesInput");
 const todayTotal = document.getElementById("todayTotal");
 const totalStudy = document.getElementById("totalStudy");
@@ -473,12 +569,21 @@ const petViews = [
   },
 ];
 
+const subjectFields = [
+  { input: timerSubjectInput, menu: timerSubjectMenu },
+  { input: subjectInput, menu: subjectMenu },
+].map((field) => ({
+  ...field,
+  toggle: field.input?.closest(".subject-field")?.querySelector(".subject-toggle") || null,
+})).filter(({ input, menu }) => input && menu);
+
 let time = SESSION_SECONDS;
 let timer = null;
 let state = loadState();
 let animationTimer = null;
 let weekOffset = 0;
 let activeMascotMotion = "idle";
+let activeSubjectInput = null;
 let selectedShopItemId = null;
 let selectedShopCategory = shopCategoryOrder[0];
 
@@ -1341,11 +1446,33 @@ function renderLevelReward() {
     : `あと${remainingLevels}レベル`;
 }
 
-function createItemIcon(iconClass) {
+function createItemIcon(itemOrClass) {
+  const item = typeof itemOrClass === "string" ? null : itemOrClass;
+  const category = item ? getItemCategory(item) : null;
+  const rarity = item?.rarity || "common";
+  const iconClass = item
+    ? [
+      "item-art",
+      `item-art-${category}`,
+      `item-art-${rarity}`,
+      item.assetClass || item.iconClass || "item-art-placeholder",
+    ].filter(Boolean).join(" ")
+    : itemOrClass;
   const icon = document.createElement("span");
   icon.className = `item-illustration ${iconClass}`;
   icon.setAttribute("aria-hidden", "true");
-  icon.append(document.createElement("span"), document.createElement("span"));
+
+  if (item) {
+    icon.dataset.category = category;
+    icon.dataset.rarity = rarity;
+  }
+
+  icon.append(
+    document.createElement("span"),
+    document.createElement("span"),
+    document.createElement("span"),
+    document.createElement("span"),
+  );
   return icon;
 }
 
@@ -1507,40 +1634,121 @@ function scrollShopCategoryIntoView(category) {
   });
 }
 
-function renderSubjectTags() {
-  subjectOptions.innerHTML = "";
-  subjectTags.innerHTML = "";
+function getSubjectMatches(input) {
+  const query = (input?.value || "").trim().toLowerCase();
 
-  if (state.subjects.length === 0) {
+  if (!query) return state.subjects;
+
+  return state.subjects.filter((subject) => subject.toLowerCase().includes(query));
+}
+
+function renderSubjectMenu(input, menu) {
+  menu.innerHTML = "";
+
+  const subjects = getSubjectMatches(input);
+
+  if (subjects.length === 0) {
     const empty = document.createElement("span");
-    empty.className = "tag-empty";
-    empty.textContent = "記録すると科目タグが増えます";
-    subjectTags.appendChild(empty);
+    empty.className = "subject-menu-empty";
+    empty.textContent = state.subjects.length === 0
+      ? "記録すると候補が増えます"
+      : "一致する科目がありません";
+    menu.appendChild(empty);
     return;
   }
 
-  state.subjects.forEach((subject) => {
-    const option = document.createElement("option");
-    const chip = document.createElement("span");
-    const button = document.createElement("button");
+  subjects.forEach((subject) => {
+    const row = document.createElement("span");
+    const optionButton = document.createElement("button");
     const removeButton = document.createElement("button");
 
-    option.value = subject;
-    chip.className = "subject-chip";
-    button.type = "button";
-    button.className = "subject-tag";
-    button.dataset.subject = subject;
-    button.textContent = subject;
+    row.className = "subject-menu-row";
+    optionButton.type = "button";
+    optionButton.className = "subject-option";
+    optionButton.dataset.subject = subject;
+    optionButton.textContent = subject;
     removeButton.type = "button";
-    removeButton.className = "tag-remove";
+    removeButton.className = "subject-remove";
     removeButton.dataset.subject = subject;
     removeButton.setAttribute("aria-label", `${subject}を削除`);
     removeButton.textContent = "×";
 
-    subjectOptions.appendChild(option);
-    chip.append(button, removeButton);
-    subjectTags.appendChild(chip);
+    row.append(optionButton, removeButton);
+    menu.appendChild(row);
   });
+}
+
+function closeSubjectMenus() {
+  activeSubjectInput = null;
+  subjectFields.forEach(({ input, menu, toggle }) => {
+    menu.hidden = true;
+    input.closest(".subject-field")?.classList.remove("menu-open");
+    if (toggle) {
+      toggle.textContent = "▼";
+      toggle.setAttribute("aria-expanded", "false");
+    }
+  });
+}
+
+function openSubjectMenu(input) {
+  activeSubjectInput = input;
+
+  subjectFields.forEach((field) => {
+    const isActive = field.input === input;
+    const canOpen = isActive && state.subjects.length > 0;
+
+    renderSubjectMenu(field.input, field.menu);
+    field.menu.hidden = !canOpen;
+    field.input.closest(".subject-field")?.classList.toggle("menu-open", canOpen);
+    if (field.toggle) {
+      field.toggle.textContent = canOpen ? "▲" : "▼";
+      field.toggle.setAttribute("aria-expanded", String(canOpen));
+    }
+  });
+}
+
+function toggleSubjectMenu(input) {
+  const field = subjectFields.find((item) => item.input === input);
+
+  if (!field || state.subjects.length === 0) {
+    closeSubjectMenus();
+    return;
+  }
+
+  if (!field.menu.hidden) {
+    closeSubjectMenus();
+    return;
+  }
+
+  openSubjectMenu(input);
+}
+
+function removeSubject(subject) {
+  state.subjects = state.subjects.filter((item) => item !== subject);
+
+  if (subjectInput.value === subject) subjectInput.value = "";
+  if (timerSubjectInput.value === subject) timerSubjectInput.value = "";
+
+  saveState();
+  renderSubjectTags();
+
+  if (activeSubjectInput) {
+    openSubjectMenu(activeSubjectInput);
+  }
+}
+
+function renderSubjectTags() {
+  subjectOptions.innerHTML = "";
+  subjectTags.innerHTML = "";
+
+  state.subjects.forEach((subject) => {
+    const option = document.createElement("option");
+
+    option.value = subject;
+    subjectOptions.appendChild(option);
+  });
+
+  subjectFields.forEach(({ input, menu }) => renderSubjectMenu(input, menu));
 }
 
 function renderInventory() {
@@ -1587,7 +1795,7 @@ function renderInventory() {
     const card = document.createElement("div");
     const button = document.createElement("button");
     const equipButton = document.createElement("button");
-    const icon = createItemIcon(item.iconClass);
+    const icon = createItemIcon(item);
     const label = document.createElement("span");
     const meta = document.createElement("small");
     const category = getItemCategory(item);
@@ -1700,7 +1908,7 @@ function renderShop() {
     entries.forEach(([id, item]) => {
       const card = document.createElement("div");
       const body = document.createElement("div");
-      const icon = createItemIcon(item.iconClass);
+      const icon = createItemIcon(item);
       const itemTitle = document.createElement("h3");
       const meta = document.createElement("div");
       const type = document.createElement("span");
@@ -1938,18 +2146,48 @@ studyForm.addEventListener("submit", (event) => {
   minutesInput.value = 25;
 });
 
+subjectFields.forEach(({ input, menu, toggle }) => {
+  input.addEventListener("focus", () => openSubjectMenu(input));
+  input.addEventListener("click", () => openSubjectMenu(input));
+  input.addEventListener("input", () => openSubjectMenu(input));
+
+  if (toggle) {
+    toggle.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      toggleSubjectMenu(input);
+    });
+  }
+
+  menu.addEventListener("click", (event) => {
+    event.stopPropagation();
+
+    const removeButton = event.target.closest(".subject-remove");
+
+    if (removeButton) {
+      removeSubject(removeButton.dataset.subject);
+      return;
+    }
+
+    const optionButton = event.target.closest(".subject-option");
+    if (!optionButton) return;
+
+    input.value = optionButton.dataset.subject;
+    closeSubjectMenus();
+  });
+});
+
+document.addEventListener("click", (event) => {
+  if (event.target.closest(".subject-field")) return;
+
+  closeSubjectMenus();
+});
+
 subjectTags.addEventListener("click", (event) => {
   const removeButton = event.target.closest(".tag-remove");
 
   if (removeButton) {
-    const subject = removeButton.dataset.subject;
-    state.subjects = state.subjects.filter((item) => item !== subject);
-
-    if (subjectInput.value === subject) subjectInput.value = "";
-    if (timerSubjectInput.value === subject) timerSubjectInput.value = "";
-
-    saveState();
-    renderSubjectTags();
+    removeSubject(removeButton.dataset.subject);
     return;
   }
 
