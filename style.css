@@ -120,6 +120,84 @@ button:disabled {
   grid-template-columns: 1fr;
 }
 
+#careScreen.active,
+#shopScreen.active {
+  max-height: calc(100svh - 150px);
+  overflow-y: scroll;
+  padding-right: 12px;
+  scrollbar-gutter: stable;
+  scrollbar-width: auto;
+  scrollbar-color: rgba(139, 190, 151, 0.62) rgba(226, 236, 228, 0.78);
+  -webkit-overflow-scrolling: touch;
+}
+
+#careScreen.active::-webkit-scrollbar,
+#shopScreen.active::-webkit-scrollbar {
+  width: 14px;
+}
+
+#careScreen.active::-webkit-scrollbar-track,
+#shopScreen.active::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: rgba(220, 232, 223, 0.72);
+}
+
+#careScreen.active::-webkit-scrollbar-thumb,
+#shopScreen.active::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  border: 3px solid rgba(220, 232, 223, 0.78);
+  background: linear-gradient(180deg, #c8e6cb, #94c6a0);
+}
+
+.fast-scrollbar {
+  position: fixed;
+  right: max(6px, calc((100vw - 560px) / 2 + 6px));
+  z-index: 45;
+  width: 24px;
+  padding: 3px;
+  border: 1px solid rgba(143, 207, 145, 0.48);
+  border-radius: 999px;
+  background: rgba(231, 244, 232, 0.82);
+  box-shadow: 0 10px 24px rgba(40, 74, 52, 0.18);
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  backdrop-filter: blur(10px);
+}
+
+.fast-scrollbar[hidden] {
+  display: none;
+}
+
+.fast-scrollbar-thumb {
+  display: block;
+  width: 100%;
+  min-height: 50px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(255, 253, 248, 0.36), transparent 42%),
+    linear-gradient(180deg, #d4ecd5, #9fcaaa);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 253, 248, 0.54),
+    0 8px 18px rgba(40, 74, 52, 0.24);
+  cursor: grab;
+  transition: box-shadow 0.16s ease, filter 0.16s ease;
+}
+
+.fast-scrollbar.is-dragging .fast-scrollbar-thumb {
+  cursor: grabbing;
+  filter: saturate(1.08) brightness(0.98);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 253, 248, 0.64),
+    0 10px 22px rgba(40, 74, 52, 0.32);
+}
+
+.fast-scrollbar.is-disabled {
+  opacity: 0.42;
+}
+
 .bottom-nav {
   position: fixed;
   left: 50%;
@@ -870,17 +948,45 @@ h1 {
 
 .stats label {
   display: grid;
-  grid-template-columns: 92px 1fr;
+  grid-template-columns: minmax(64px, 0.36fr) minmax(120px, 1fr);
   align-items: center;
   gap: 12px;
+  min-width: 0;
   color: var(--muted);
   font-size: 14px;
   font-weight: 700;
 }
 
 meter {
+  display: block;
   width: 100%;
+  min-width: 0;
   height: 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+meter::-webkit-meter-bar {
+  height: 100%;
+  border: 1px solid rgba(220, 232, 223, 0.95);
+  border-radius: 999px;
+  background: #eef7ef;
+  box-shadow: inset 0 1px 3px rgba(40, 74, 52, 0.1);
+}
+
+meter::-webkit-meter-optimum-value,
+meter::-webkit-meter-suboptimum-value,
+meter::-webkit-meter-even-less-good-value {
+  border-radius: 999px;
+  background: linear-gradient(90deg, #c8e6cb, #98c8a2);
+}
+
+meter::-moz-meter-bar {
+  border-radius: 999px;
+  background: linear-gradient(90deg, #c8e6cb, #98c8a2);
 }
 
 .record-panel,
@@ -4189,18 +4295,26 @@ input:focus {
 .status-meters {
   display: grid;
   align-content: center;
+  min-width: 0;
   gap: 7px;
 }
 
 .status-meter {
   display: grid;
-  grid-template-columns: 58px minmax(0, 1fr);
+  grid-template-columns: minmax(44px, 0.34fr) minmax(72px, 1fr);
   align-items: center;
   gap: 8px;
+  min-width: 0;
+}
+
+.status-meter span,
+.stats label span {
+  min-width: 0;
+  white-space: nowrap;
 }
 
 .status-meter meter {
-  height: 8px;
+  height: 10px;
 }
 
 .timer-pet-panel {
@@ -4485,7 +4599,7 @@ input:focus {
   }
 
   .status-meter {
-    grid-template-columns: 38px minmax(0, 1fr);
+    grid-template-columns: minmax(34px, 0.34fr) minmax(58px, 1fr);
     gap: 4px;
   }
 }
@@ -6884,7 +6998,7 @@ input:focus {
   }
 
   .status-meter {
-    grid-template-columns: 40px minmax(0, 1fr);
+    grid-template-columns: minmax(36px, 0.34fr) minmax(64px, 1fr);
   }
 
   .pet-stage {
@@ -6897,7 +7011,7 @@ input:focus {
   }
 
   .stats label {
-    grid-template-columns: 68px 1fr;
+    grid-template-columns: minmax(56px, 0.34fr) minmax(120px, 1fr);
     gap: 8px;
     font-size: 12px;
   }
@@ -7109,6 +7223,8 @@ input:focus {
 
   #shopScreen.active,
   #careScreen.active {
+    max-height: calc(100svh - 128px - env(safe-area-inset-bottom));
+    padding-right: 10px;
     padding-bottom: calc(74px + env(safe-area-inset-bottom));
   }
 }
@@ -7266,5 +7382,83 @@ input:focus {
     background: #fff8d7;
     color: #d9b600;
     font-size: 18px;
+  }
+}
+
+/* Timer-synced owl beat: JS replays this once whenever the timer advances by 1 second. */
+.pet[data-asset="flowl-owl"].focusing {
+  animation: none;
+}
+
+.pet[data-asset="flowl-owl"].focusing .pet-wing.left,
+.pet[data-asset="flowl-owl"].focusing .pet-wing.right {
+  animation: none;
+}
+
+.pet[data-asset="flowl-owl"].focusing.timer-beat {
+  animation: flowl-timer-beat 0.82s cubic-bezier(0.22, 0.72, 0.24, 1) 1;
+}
+
+.pet[data-asset="flowl-owl"].focusing.timer-beat .pet-wing.left {
+  animation: flowl-timer-beat-wing-left 0.82s ease-in-out 1;
+}
+
+.pet[data-asset="flowl-owl"].focusing.timer-beat .pet-wing.right {
+  animation: flowl-timer-beat-wing-right 0.82s ease-in-out 1;
+}
+
+@keyframes flowl-timer-beat {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+
+  28% {
+    transform: translateY(-9px) scale(0.99, 1.025);
+  }
+
+  58% {
+    transform: translateY(1px) scale(1.02, 0.985);
+  }
+}
+
+@keyframes flowl-timer-beat-wing-left {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  38% {
+    transform: rotate(-10deg) translateY(3px);
+  }
+}
+
+@keyframes flowl-timer-beat-wing-right {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  38% {
+    transform: rotate(10deg) translateY(3px);
+  }
+}
+
+/* Final gauge tuning: keep care meters compact but readable after all layout overrides. */
+.status-meter meter {
+  height: 8px;
+}
+
+.stats meter {
+  height: 12px;
+}
+
+@media (max-width: 800px) {
+  .status-meter meter {
+    height: 8px;
+  }
+
+  .stats meter {
+    height: 10px;
   }
 }

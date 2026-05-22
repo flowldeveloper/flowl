@@ -1,5 +1,5 @@
 const STORAGE_KEY = "flowl-study-pet";
-const SESSION_SECONDS = 25 * 60;
+const TIMER_MAX_SECONDS = 12 * 60 * 60;
 const COINS_PER_MINUTE = 1;
 const HUNGER_DECAY_MS = 7 * 24 * 60 * 60 * 1000;
 const PLAY_DECAY_MS = 3 * 24 * 60 * 60 * 1000;
@@ -577,15 +577,33 @@ const subjectFields = [
   toggle: field.input?.closest(".subject-field")?.querySelector(".subject-toggle") || null,
 })).filter(({ input, menu }) => input && menu);
 
-let time = SESSION_SECONDS;
+let time = 0;
 let timer = null;
 let state = loadState();
 let animationTimer = null;
+let timerBeatId = 0;
 let weekOffset = 0;
 let activeMascotMotion = "idle";
 let activeSubjectInput = null;
 let selectedShopItemId = null;
 let selectedShopCategory = shopCategoryOrder[0];
+let fastScrollDragging = false;
+
+const fastScrollScreens = [
+  document.getElementById("careScreen"),
+  document.getElementById("shopScreen"),
+].filter(Boolean);
+const fastScrollControl = document.createElement("div");
+const fastScrollThumb = document.createElement("button");
+
+fastScrollControl.className = "fast-scrollbar";
+fastScrollControl.hidden = true;
+fastScrollControl.setAttribute("aria-hidden", "true");
+fastScrollThumb.className = "fast-scrollbar-thumb";
+fastScrollThumb.type = "button";
+fastScrollThumb.setAttribute("aria-label", "高速スクロール");
+fastScrollControl.appendChild(fastScrollThumb);
+document.body.appendChild(fastScrollControl);
 
 function createDefaultState() {
   return {
@@ -719,12 +737,32 @@ function saveState() {
 }
 
 function clamp(value) {
-  return Math.max(0, Math.min(100, value));
+  const numericValue = Number(value);
+
+  if (!Number.isFinite(numericValue)) return 0;
+
+  return Math.max(0, Math.min(100, numericValue));
+}
+
+function setCareMeterValue(meterElement, value) {
+  const normalizedValue = clamp(value);
+
+  meterElement.min = 0;
+  meterElement.max = 100;
+  meterElement.value = normalizedValue;
+  meterElement.setAttribute("aria-valuenow", String(Math.round(normalizedValue)));
+  meterElement.title = `${Math.round(normalizedValue)}%`;
 }
 
 function formatTime(value) {
-  const minutes = Math.floor(value / 60);
+  const hours = Math.floor(value / 3600);
+  const minutes = Math.floor((value % 3600) / 60);
   const seconds = value % 60;
+
+  if (hours > 0) {
+    return `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+  }
+
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
@@ -1214,13 +1252,13 @@ function getPetMessage(todayMinutes, streak) {
 }
 
 function getElapsedTimerMinutes() {
-  return Math.ceil((SESSION_SECONDS - time) / 60);
+  return Math.floor(Math.min(time, TIMER_MAX_SECONDS) / 60);
 }
 
 function resetTimer() {
   clearInterval(timer);
   timer = null;
-  time = SESSION_SECONDS;
+  time = 0;
   updateDisplay();
   updateTimerButton("スタート");
 }
@@ -1347,6 +1385,8 @@ function getDayTotal(day) {
 
 function renderPet() {
   applyCareDecay();
+  state.pet.hunger = clamp(state.pet.hunger);
+  state.pet.happy = clamp(state.pet.happy);
 
   const currentLevel = getLevel();
   petLevel.textContent = currentLevel;
@@ -1356,8 +1396,8 @@ function renderPet() {
   const owlMotionState = getOwlMotionState(state.pet.hunger, state.pet.happy);
 
   petViews.forEach((view) => {
-    view.hunger.value = state.pet.hunger;
-    view.happy.value = state.pet.happy;
+    setCareMeterValue(view.hunger, state.pet.hunger);
+    setCareMeterValue(view.happy, state.pet.happy);
     view.pet.classList.toggle("mood-happy", state.pet.happy >= 70);
     view.pet.classList.toggle("mood-tired", state.pet.hunger <= 20 || state.pet.happy <= 20);
     view.pet.classList.toggle("mood-sick", state.pet.hunger <= 20);
@@ -1981,6 +2021,7 @@ function render() {
   renderCustomizationPreviews();
   renderHistory();
   renderWeeklyChart();
+  updateFastScrollBar();
 }
 
 function applyItemEffect(effect) {
@@ -2007,6 +2048,22 @@ function applyMascotMotion(motion) {
   if (motionLabel) {
     motionLabel.textContent = mascotMotionLabels[nextMotion];
   }
+}
+
+function playTimerBeat() {
+  timerBeatId += 1;
+  const beatId = timerBeatId;
+
+  petViews.forEach((view) => {
+    view.pet.classList.remove("timer-beat");
+    // classを付け直して、タイマーが1秒進むたびに同じ跳ねモーションを再生します。
+    void view.pet.offsetWidth;
+    view.pet.classList.add("timer-beat");
+    window.setTimeout(() => {
+      if (beatId !== timerBeatId) return;
+      view.pet.classList.remove("timer-beat");
+    }, 860);
+  });
 }
 
 function setMascotMotion(motion) {
@@ -2046,6 +2103,11 @@ function triggerPetAnimation(action, iconClass) {
 function setFocusMode(isRunning) {
   if (isRunning) {
     applyMascotMotion("idle");
+  } else {
+    timerBeatId += 1;
+    petViews.forEach((view) => {
+      view.pet.classList.remove("timer-beat");
+    });
   }
 
   petViews.forEach((view) => {
@@ -2062,14 +2124,72 @@ function switchScreen(screenId) {
   document.querySelectorAll(".nav-btn").forEach((button) => {
     button.classList.toggle("active", button.dataset.screen === screenId);
   });
+
+  updateFastScrollBar();
 }
 
-function finishTimerSession() {
-  const minutes = Math.round(SESSION_SECONDS / 60);
-  timerStatus.textContent = `完了 +${getEarnedCoins(minutes)} coin`;
-  addStudySession(minutes, timerSubjectInput.value.trim() || "タイマー学習");
-  timerSubjectInput.value = "";
-  alert("学習完了！コインを獲得しました。");
+function getActiveFastScrollScreen() {
+  return fastScrollScreens.find((screen) => screen.classList.contains("active")) || null;
+}
+
+function getFastScrollMax(screen) {
+  return Math.max(0, screen.scrollHeight - screen.clientHeight);
+}
+
+function updateFastScrollBar() {
+  const screen = getActiveFastScrollScreen();
+
+  if (!screen) {
+    fastScrollControl.hidden = true;
+    fastScrollControl.classList.remove("is-disabled", "is-dragging");
+    return;
+  }
+
+  const rect = screen.getBoundingClientRect();
+  const maxScroll = getFastScrollMax(screen);
+  const trackHeight = Math.max(120, rect.height - 14);
+  const thumbHeight = maxScroll > 0
+    ? Math.max(58, Math.min(trackHeight, Math.round(trackHeight * (screen.clientHeight / screen.scrollHeight))))
+    : trackHeight;
+  const travel = Math.max(1, trackHeight - thumbHeight);
+  const thumbTop = maxScroll > 0 ? Math.round((screen.scrollTop / maxScroll) * travel) : 0;
+
+  fastScrollControl.hidden = false;
+  fastScrollControl.classList.toggle("is-disabled", maxScroll <= 0);
+  fastScrollControl.style.top = `${Math.max(8, Math.round(rect.top + 7))}px`;
+  fastScrollControl.style.height = `${Math.round(trackHeight)}px`;
+  fastScrollThumb.style.height = `${thumbHeight}px`;
+  fastScrollThumb.style.transform = `translateY(${thumbTop}px)`;
+}
+
+function moveFastScrollThumb(clientY) {
+  const screen = getActiveFastScrollScreen();
+  if (!screen) return;
+
+  const maxScroll = getFastScrollMax(screen);
+  if (maxScroll <= 0) {
+    updateFastScrollBar();
+    return;
+  }
+
+  const trackRect = fastScrollControl.getBoundingClientRect();
+  const thumbHeight = fastScrollThumb.getBoundingClientRect().height;
+  const travel = Math.max(1, trackRect.height - thumbHeight);
+  const localY = clientY - trackRect.top - thumbHeight / 2;
+  const ratio = Math.max(0, Math.min(1, localY / travel));
+
+  screen.scrollTop = ratio * maxScroll;
+  updateFastScrollBar();
+}
+
+function stopTimerAtLimit() {
+  clearInterval(timer);
+  timer = null;
+  time = TIMER_MAX_SECONDS;
+  updateDisplay();
+  updateTimerButton("記録待ち");
+  setFocusMode(false);
+  timerStatus.textContent = "12時間に到達しました";
 }
 
 startBtn.addEventListener("click", () => {
@@ -2082,21 +2202,22 @@ startBtn.addEventListener("click", () => {
     return;
   }
 
+  if (time >= TIMER_MAX_SECONDS) {
+    timerStatus.textContent = "12時間まで記録できます。記録して終了してください。";
+    updateTimerButton("記録待ち");
+    return;
+  }
+
   timerStatus.textContent = "";
   updateTimerButton("一時停止");
   setFocusMode(true);
   timer = setInterval(() => {
-    time--;
+    time++;
     updateDisplay();
+    playTimerBeat();
 
-    if (time <= 0) {
-      clearInterval(timer);
-      timer = null;
-      time = SESSION_SECONDS;
-      updateDisplay();
-      updateTimerButton("スタート");
-      setFocusMode(false);
-      finishTimerSession();
+    if (time >= TIMER_MAX_SECONDS) {
+      stopTimerAtLimit();
     }
   }, 1000);
 });
@@ -2112,7 +2233,7 @@ timerRecordForm.addEventListener("submit", (event) => {
   const minutes = getElapsedTimerMinutes();
 
   if (minutes <= 0) {
-    alert("まだ記録できる学習時間がありません。");
+    alert("1分以上たってから記録できます。");
     return;
   }
 
@@ -2298,6 +2419,57 @@ document.querySelectorAll(".nav-btn").forEach((button) => {
   button.addEventListener("click", () => {
     switchScreen(button.dataset.screen);
   });
+});
+
+document.querySelectorAll("#careScreen, #shopScreen").forEach((screen) => {
+  screen.addEventListener("scroll", () => {
+    updateFastScrollBar();
+  });
+
+  screen.addEventListener("wheel", (event) => {
+    if (!screen.classList.contains("active") || event.deltaY === 0) return;
+
+    const deltaUnit = event.deltaMode === 1
+      ? 16
+      : event.deltaMode === 2
+        ? screen.clientHeight
+        : 1;
+
+    event.preventDefault();
+    screen.scrollTop += event.deltaY * deltaUnit * 1.8;
+  }, { passive: false });
+});
+
+fastScrollControl.addEventListener("pointerdown", (event) => {
+  if (fastScrollControl.classList.contains("is-disabled")) return;
+
+  fastScrollDragging = true;
+  fastScrollControl.classList.add("is-dragging");
+  fastScrollControl.setPointerCapture(event.pointerId);
+  event.preventDefault();
+  moveFastScrollThumb(event.clientY);
+});
+
+fastScrollControl.addEventListener("pointermove", (event) => {
+  if (!fastScrollDragging) return;
+
+  event.preventDefault();
+  moveFastScrollThumb(event.clientY);
+});
+
+fastScrollControl.addEventListener("pointerup", (event) => {
+  fastScrollDragging = false;
+  fastScrollControl.classList.remove("is-dragging");
+  fastScrollControl.releasePointerCapture(event.pointerId);
+});
+
+fastScrollControl.addEventListener("pointercancel", () => {
+  fastScrollDragging = false;
+  fastScrollControl.classList.remove("is-dragging");
+});
+
+window.addEventListener("resize", () => {
+  updateFastScrollBar();
 });
 
 motionButtons.forEach((button) => {
