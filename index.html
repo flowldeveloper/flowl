@@ -47,6 +47,14 @@
           <p>Focus timer</p>
           <span id="timerStatus"></span>
         </div>
+        <div class="study-mode-toggle" aria-label="Study計測モード">
+          <button class="active" type="button" data-study-mode="timer" aria-pressed="true">タイマー</button>
+          <button type="button" data-study-mode="stopwatch" aria-pressed="false">ストップウォッチ</button>
+        </div>
+        <div id="timerDurationSetting" class="duration-setting">
+          <span>設定時間</span>
+          <button id="timerDurationBtn" type="button">0時間25分</button>
+        </div>
         <div class="timer-controls">
           <button id="startBtn">スタート</button>
           <button id="resetBtn">リセット</button>
@@ -148,7 +156,8 @@
           </label>
           <label>
             分
-            <input id="minutesInput" type="number" min="1" max="720" value="25">
+            <button id="manualDurationBtn" class="duration-input-btn" type="button">0時間25分</button>
+            <input id="minutesInput" type="hidden" min="1" max="720" value="25">
           </label>
           <button type="submit">記録</button>
         </form>
@@ -288,10 +297,33 @@
     </section>
   </main>
 
+  <div id="durationPicker" class="duration-picker-backdrop" hidden>
+    <div class="duration-picker-sheet" role="dialog" aria-modal="true" aria-labelledby="durationPickerTitle">
+      <div class="duration-picker-head">
+        <button id="durationCancelBtn" type="button">キャンセル</button>
+        <strong id="durationPickerTitle">時間を選択</strong>
+        <button id="durationConfirmBtn" type="button">決定</button>
+      </div>
+      <div class="duration-picker-value" id="durationPickerValue">0時間25分</div>
+      <div class="duration-wheels" aria-label="時間と分を選ぶ">
+        <div>
+          <span>時間</span>
+          <div id="durationHourWheel" class="duration-wheel" tabindex="0" aria-label="時間"></div>
+        </div>
+        <div>
+          <span>分</span>
+          <div id="durationMinuteWheel" class="duration-wheel" tabindex="0" aria-label="分"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="studyReaction" class="study-reaction" role="status" aria-live="polite" hidden></div>
+
   <nav class="bottom-nav" aria-label="画面切り替え">
     <button class="nav-btn active" type="button" data-screen="timerScreen">
-      <span>Timer</span>
-      タイマー
+      <span>Study</span>
+      勉強
     </button>
     <button class="nav-btn" type="button" data-screen="logScreen">
       <span>Log</span>

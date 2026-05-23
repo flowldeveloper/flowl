@@ -607,6 +607,9 @@ const resetBtn = document.getElementById("resetBtn");
 const timerRecordForm = document.getElementById("timerRecordForm");
 const timerSubjectInput = document.getElementById("timerSubjectInput");
 const timerStatus = document.getElementById("timerStatus");
+const studyModeButtons = document.querySelectorAll("[data-study-mode]");
+const timerDurationSetting = document.getElementById("timerDurationSetting");
+const timerDurationBtn = document.getElementById("timerDurationBtn");
 const coinCount = document.getElementById("coinCount");
 const studyForm = document.getElementById("studyForm");
 const subjectInput = document.getElementById("subjectInput");
@@ -615,6 +618,7 @@ const subjectTags = document.getElementById("subjectTags");
 const timerSubjectMenu = document.getElementById("timerSubjectMenu");
 const subjectMenu = document.getElementById("subjectMenu");
 const minutesInput = document.getElementById("minutesInput");
+const manualDurationBtn = document.getElementById("manualDurationBtn");
 const todayTotal = document.getElementById("todayTotal");
 const totalStudy = document.getElementById("totalStudy");
 const historyList = document.getElementById("historyList");
@@ -646,6 +650,14 @@ const nextLevelReward = document.getElementById("nextLevelReward");
 const petMessage = document.getElementById("petMessage");
 const unlockCount = document.getElementById("unlockCount");
 const unlockList = document.getElementById("unlockList");
+const studyReaction = document.getElementById("studyReaction");
+const durationPicker = document.getElementById("durationPicker");
+const durationPickerTitle = document.getElementById("durationPickerTitle");
+const durationPickerValue = document.getElementById("durationPickerValue");
+const durationHourWheel = document.getElementById("durationHourWheel");
+const durationMinuteWheel = document.getElementById("durationMinuteWheel");
+const durationCancelBtn = document.getElementById("durationCancelBtn");
+const durationConfirmBtn = document.getElementById("durationConfirmBtn");
 
 const petViews = [
   {
@@ -675,6 +687,12 @@ let timer = null;
 let state = loadState();
 let animationTimer = null;
 let timerBeatId = 0;
+let studyReactionTimer = null;
+let studyReactionMoodTimer = null;
+let studyMode = "timer";
+let timerTargetSeconds = 25 * 60;
+let manualStudyMinutes = 25;
+let durationPickerState = null;
 let weekOffset = 0;
 let activeMascotMotion = "idle";
 let activeSubjectInput = null;
@@ -913,6 +931,30 @@ function formatStudyDuration(minutes) {
   if (hours === 0) return `${remainingMinutes}分`;
   if (remainingMinutes === 0) return `${hours}時間`;
   return `${hours}時間${remainingMinutes}分`;
+}
+
+function formatDurationPickerLabel(totalMinutes) {
+  const safeMinutes = Math.max(0, Math.min(12 * 60, Math.round(totalMinutes)));
+  const hours = Math.floor(safeMinutes / 60);
+  const minutes = safeMinutes % 60;
+
+  return `${hours}時間${String(minutes).padStart(2, "0")}分`;
+}
+
+function getTimerDisplaySeconds() {
+  if (studyMode === "timer") {
+    return Math.max(0, timerTargetSeconds - time);
+  }
+
+  return time;
+}
+
+function getCurrentStudyLimitSeconds() {
+  return studyMode === "timer" ? timerTargetSeconds : TIMER_MAX_SECONDS;
+}
+
+function getCurrentStudyRecordLabel() {
+  return studyMode === "timer" ? "タイマー学習" : "ストップウォッチ学習";
 }
 
 function getLevel() {
@@ -1371,8 +1413,104 @@ function getPetMessage(todayMinutes, streak) {
   return "今日も短くていいから、いっしょに進もう";
 }
 
+function getStudyReactionMood(minutes) {
+  if (minutes >= 60) return "excited";
+  if (minutes >= 25) return "proud";
+  return "happy";
+}
+
+function buildStudyCompleteMessage({ minutes, subject, streakDays }) {
+  if (minutes >= 90) return "すごい集中力！今日は大きく成長したね";
+  if (minutes >= 50) return "かなり頑張ったね！フクロウも喜んでるよ";
+  if (minutes >= 25) return `${subject}を${minutes}分集中できたね！`;
+  if (minutes >= 10) return "いい集中だったね！今日も進められたよ";
+  if (streakDays >= 3) return `連続${streakDays}日目、今日も始められてえらい！`;
+  return "少しでも始められてえらい！";
+}
+
+function buildStudyReaction(session) {
+  const streakDays = getStudyStreak();
+  const title = buildStudyCompleteMessage({
+    minutes: session.minutes,
+    subject: session.subject,
+    streakDays,
+  });
+  const detail = `${session.subject}を${session.minutes}分記録しました`;
+  const bonus = streakDays >= 7
+    ? `連続${streakDays}日！本当にすごい！`
+    : streakDays >= 3
+      ? `連続${streakDays}日、いい習慣になってきたね`
+      : "今日の積み重ねが力になるよ";
+
+  return {
+    title,
+    detail,
+    bonus,
+    reward: `+${session.coins} coin`,
+    mood: getStudyReactionMood(session.minutes),
+  };
+}
+
+function triggerStudyReactionMood(mood) {
+  const moodClasses = ["study-reaction-happy", "study-reaction-proud", "study-reaction-excited"];
+  const safeMood = ["happy", "proud", "excited"].includes(mood) ? mood : "happy";
+
+  clearTimeout(studyReactionMoodTimer);
+  petViews.forEach((view) => {
+    view.pet.classList.remove(...moodClasses);
+    view.pet.classList.add(`study-reaction-${safeMood}`);
+  });
+
+  studyReactionMoodTimer = setTimeout(() => {
+    petViews.forEach((view) => {
+      view.pet.classList.remove(...moodClasses);
+    });
+  }, 2800);
+}
+
+function showStudyReaction(reaction) {
+  if (!studyReaction || !reaction) return;
+
+  clearTimeout(studyReactionTimer);
+
+  const icon = document.createElement("span");
+  const body = document.createElement("span");
+  const title = document.createElement("strong");
+  const detail = document.createElement("small");
+  const reward = document.createElement("span");
+
+  icon.className = "study-reaction-icon";
+  icon.textContent = "F";
+  body.className = "study-reaction-body";
+  reward.className = "study-reaction-reward";
+  title.textContent = reaction.title;
+  detail.textContent = `${reaction.detail} / ${reaction.bonus}`;
+  reward.textContent = reaction.reward;
+
+  body.append(title, detail);
+  studyReaction.replaceChildren(icon, body, reward);
+  studyReaction.className = `study-reaction mood-${reaction.mood}`;
+  studyReaction.hidden = false;
+  window.requestAnimationFrame(() => {
+    studyReaction.classList.add("show");
+  });
+
+  triggerStudyReactionMood(reaction.mood);
+
+  if (petMessage) {
+    petMessage.textContent = reaction.title;
+  }
+
+  studyReactionTimer = setTimeout(() => {
+    studyReaction.classList.remove("show");
+    window.setTimeout(() => {
+      studyReaction.hidden = true;
+    }, 220);
+  }, 3600);
+}
+
 function getElapsedTimerMinutes() {
-  return Math.floor(Math.min(time, TIMER_MAX_SECONDS) / 60);
+  return Math.floor(Math.min(time, getCurrentStudyLimitSeconds()) / 60);
 }
 
 function resetTimer() {
@@ -1381,6 +1519,164 @@ function resetTimer() {
   time = 0;
   updateDisplay();
   updateTimerButton("スタート");
+}
+
+function renderStudyModeControls() {
+  studyModeButtons.forEach((button) => {
+    const isActive = button.dataset.studyMode === studyMode;
+
+    button.classList.toggle("active", isActive);
+    button.setAttribute("aria-pressed", String(isActive));
+  });
+
+  if (timerDurationSetting) {
+    timerDurationSetting.hidden = studyMode !== "timer";
+  }
+}
+
+function updateDurationButtons() {
+  if (timerDurationBtn) {
+    timerDurationBtn.textContent = formatDurationPickerLabel(timerTargetSeconds / 60);
+  }
+
+  if (manualDurationBtn) {
+    manualDurationBtn.textContent = formatDurationPickerLabel(manualStudyMinutes);
+  }
+
+  if (minutesInput) {
+    minutesInput.value = String(manualStudyMinutes);
+  }
+}
+
+function resetCurrentStudyForModeChange() {
+  resetTimer();
+  timerStatus.textContent = "";
+  setFocusMode(false);
+}
+
+function setStudyMode(nextMode) {
+  if (!["timer", "stopwatch"].includes(nextMode) || nextMode === studyMode) {
+    renderStudyModeControls();
+    return;
+  }
+
+  if ((timer !== null || time > 0) && !confirm("現在の計測をリセットして切り替えますか？")) {
+    renderStudyModeControls();
+    return;
+  }
+
+  resetCurrentStudyForModeChange();
+  studyMode = nextMode;
+  updateDisplay();
+  renderStudyModeControls();
+}
+
+function createDurationWheelOptions(wheel, max) {
+  if (!wheel) return;
+
+  wheel.innerHTML = "";
+  for (let value = 0; value <= max; value += 1) {
+    const option = document.createElement("button");
+
+    option.type = "button";
+    option.className = "duration-option";
+    option.dataset.value = String(value);
+    option.textContent = String(value).padStart(2, "0");
+    wheel.appendChild(option);
+  }
+}
+
+function getWheelValue(wheel, max) {
+  if (!wheel) return 0;
+
+  const optionHeight = Number(durationPickerState?.optionHeight) || 40;
+  return Math.max(0, Math.min(max, Math.round(wheel.scrollTop / optionHeight)));
+}
+
+function setWheelValue(wheel, value) {
+  if (!wheel) return;
+
+  const optionHeight = Number(durationPickerState?.optionHeight) || 40;
+  wheel.scrollTo({ top: value * optionHeight, behavior: "auto" });
+}
+
+function updateDurationPickerSelection() {
+  if (!durationPickerState) return;
+
+  const hours = getWheelValue(durationHourWheel, durationPickerState.maxHours);
+  let minutes = getWheelValue(durationMinuteWheel, 59);
+
+  if (hours * 60 + minutes > durationPickerState.maxMinutes) {
+    minutes = Math.max(0, durationPickerState.maxMinutes - hours * 60);
+    setWheelValue(durationMinuteWheel, minutes);
+  }
+
+  const totalMinutes = hours * 60 + minutes;
+
+  durationPickerValue.textContent = formatDurationPickerLabel(totalMinutes);
+
+  [durationHourWheel, durationMinuteWheel].forEach((wheel, wheelIndex) => {
+    const currentValue = wheelIndex === 0 ? hours : minutes;
+
+    wheel.querySelectorAll(".duration-option").forEach((option) => {
+      option.classList.toggle("selected", Number(option.dataset.value) === currentValue);
+    });
+  });
+}
+
+function openDurationPicker(options = {}) {
+  if (!durationPicker) return;
+
+  const initialMinutes = Math.max(options.minMinutes || 0, Math.min(options.maxMinutes || 12 * 60, options.initialMinutes || 0));
+  const initialHours = Math.floor(initialMinutes / 60);
+  const initialRemainder = initialMinutes % 60;
+
+  durationPickerState = {
+    title: options.title || "時間を選択",
+    minMinutes: options.minMinutes ?? 1,
+    maxMinutes: options.maxMinutes ?? 12 * 60,
+    maxHours: options.maxHours ?? 12,
+    onConfirm: options.onConfirm,
+    optionHeight: 40,
+  };
+
+  durationPickerTitle.textContent = durationPickerState.title;
+  durationPicker.hidden = false;
+
+  window.requestAnimationFrame(() => {
+    const firstOption = durationHourWheel?.querySelector(".duration-option");
+    durationPickerState.optionHeight = firstOption?.getBoundingClientRect().height || 40;
+    setWheelValue(durationHourWheel, initialHours);
+    setWheelValue(durationMinuteWheel, initialRemainder);
+    updateDurationPickerSelection();
+    durationPicker.classList.add("show");
+  });
+}
+
+function closeDurationPicker() {
+  if (!durationPicker) return;
+
+  durationPicker.classList.remove("show");
+  window.setTimeout(() => {
+    durationPicker.hidden = true;
+  }, 180);
+}
+
+function confirmDurationPicker() {
+  if (!durationPickerState) return;
+
+  const hours = getWheelValue(durationHourWheel, durationPickerState.maxHours);
+  const minutes = getWheelValue(durationMinuteWheel, 59);
+  const totalMinutes = hours * 60 + minutes;
+
+  if (totalMinutes < durationPickerState.minMinutes) {
+    alert("1分以上を選んでください。");
+    return;
+  }
+
+  const result = durationPickerState.onConfirm?.(Math.min(totalMinutes, durationPickerState.maxMinutes));
+  if (result === false) return;
+  closeDurationPicker();
 }
 
 function addStudySession(minutes, subject) {
@@ -1407,10 +1703,11 @@ function addStudySession(minutes, subject) {
 
   saveState();
   render();
+  return session;
 }
 
 function updateDisplay() {
-  timeDisplay.textContent = formatTime(time);
+  timeDisplay.textContent = formatTime(getTimerDisplaySeconds());
 }
 
 function updateTimerButton(label) {
@@ -2257,12 +2554,74 @@ function switchScreen(screenId) {
 function stopTimerAtLimit() {
   clearInterval(timer);
   timer = null;
-  time = TIMER_MAX_SECONDS;
+  time = getCurrentStudyLimitSeconds();
   updateDisplay();
   updateTimerButton("記録待ち");
   setFocusMode(false);
-  timerStatus.textContent = "12時間に到達しました";
+  timerStatus.textContent = studyMode === "timer"
+    ? "タイマー終了。記録できます。"
+    : "12時間に到達しました";
 }
+
+studyModeButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    setStudyMode(button.dataset.studyMode);
+  });
+});
+
+timerDurationBtn?.addEventListener("click", () => {
+  openDurationPicker({
+    title: "タイマー時間",
+    initialMinutes: Math.round(timerTargetSeconds / 60),
+    minMinutes: 1,
+    maxMinutes: 12 * 60,
+    maxHours: 12,
+    onConfirm: (totalMinutes) => {
+      if ((timer !== null || time > 0) && !confirm("現在の計測をリセットして時間を変更しますか？")) {
+        return false;
+      }
+
+      resetCurrentStudyForModeChange();
+      timerTargetSeconds = totalMinutes * 60;
+      updateDurationButtons();
+      updateDisplay();
+    },
+  });
+});
+
+manualDurationBtn?.addEventListener("click", () => {
+  openDurationPicker({
+    title: "記録時間",
+    initialMinutes: manualStudyMinutes,
+    minMinutes: 1,
+    maxMinutes: 12 * 60,
+    maxHours: 12,
+    onConfirm: (totalMinutes) => {
+      manualStudyMinutes = totalMinutes;
+      updateDurationButtons();
+    },
+  });
+});
+
+[durationHourWheel, durationMinuteWheel].forEach((wheel) => {
+  wheel?.addEventListener("scroll", () => {
+    window.requestAnimationFrame(updateDurationPickerSelection);
+  });
+
+  wheel?.addEventListener("click", (event) => {
+    const option = event.target.closest(".duration-option");
+    if (!option) return;
+
+    setWheelValue(wheel, Number(option.dataset.value));
+    updateDurationPickerSelection();
+  });
+});
+
+durationCancelBtn?.addEventListener("click", closeDurationPicker);
+durationConfirmBtn?.addEventListener("click", confirmDurationPicker);
+durationPicker?.addEventListener("click", (event) => {
+  if (event.target === durationPicker) closeDurationPicker();
+});
 
 startBtn.addEventListener("click", () => {
   if (timer !== null) {
@@ -2274,8 +2633,10 @@ startBtn.addEventListener("click", () => {
     return;
   }
 
-  if (time >= TIMER_MAX_SECONDS) {
-    timerStatus.textContent = "12時間まで記録できます。記録して終了してください。";
+  if (time >= getCurrentStudyLimitSeconds()) {
+    timerStatus.textContent = studyMode === "timer"
+      ? "タイマー終了。記録して終了してください。"
+      : "12時間まで記録できます。記録して終了してください。";
     updateTimerButton("記録待ち");
     return;
   }
@@ -2288,7 +2649,7 @@ startBtn.addEventListener("click", () => {
     updateDisplay();
     playTimerBeat();
 
-    if (time >= TIMER_MAX_SECONDS) {
+    if (time >= getCurrentStudyLimitSeconds()) {
       stopTimerAtLimit();
     }
   }, 1000);
@@ -2309,11 +2670,12 @@ timerRecordForm.addEventListener("submit", (event) => {
     return;
   }
 
-  addStudySession(minutes, timerSubjectInput.value.trim() || "タイマー学習");
+  const session = addStudySession(minutes, timerSubjectInput.value.trim() || getCurrentStudyRecordLabel());
   resetTimer();
   setFocusMode(false);
   timerSubjectInput.value = "";
   timerStatus.textContent = `記録済み +${getEarnedCoins(minutes)} coin`;
+  showStudyReaction(buildStudyReaction(session));
 });
 
 prevWeekBtn.addEventListener("click", () => {
@@ -2334,9 +2696,12 @@ studyForm.addEventListener("submit", (event) => {
 
   if (!Number.isFinite(minutes) || minutes <= 0) return;
 
-  addStudySession(Math.round(minutes), subject);
+  const session = addStudySession(Math.round(minutes), subject);
   subjectInput.value = "";
+  manualStudyMinutes = 25;
   minutesInput.value = 25;
+  updateDurationButtons();
+  showStudyReaction(buildStudyReaction(session));
 });
 
 subjectFields.forEach(({ input, menu, toggle }) => {
@@ -2503,6 +2868,10 @@ grantLoginBonus();
 grantIdleReward();
 grantLevelRewards();
 saveState();
+createDurationWheelOptions(durationHourWheel, 12);
+createDurationWheelOptions(durationMinuteWheel, 59);
+updateDurationButtons();
+renderStudyModeControls();
 updateDisplay();
 render();
 applyMascotMotion(activeMascotMotion);
