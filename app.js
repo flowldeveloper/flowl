@@ -601,6 +601,70 @@ const unlockRewards = [
   },
 ];
 
+const encouragementMessages = {
+  short: [
+    "少しだけでも始めたの、ちゃんと意味あるよ。",
+    "まず始めたことがすごいよ。Flowletも見てたよ。",
+    "今日は短めでも大丈夫。続けようとしたことが大事だよ。",
+  ],
+  light: [
+    "いい集中だったね。今日もちゃんと進められたよ。",
+    "小さな一歩、ちゃんと積み重なってるよ。",
+    "その集中、Flowletにも届いてるよ。",
+  ],
+  steady: [
+    "{subject}を{minutes}分も集中できたね。よくがんばったよ。",
+    "しっかり向き合えたね。{subject}の時間、ちゃんと積み上がったよ。",
+    "{subject}をここまで進めたの、すごくいい流れだよ。",
+  ],
+  long: [
+    "かなり頑張ったね。Flowletも誇らしそうにしてるよ。",
+    "{minutes}分も集中できたね。今日は大きく前に進んだよ。",
+    "長めに向き合えたね。その粘り、ちゃんと力になってるよ。",
+  ],
+  huge: [
+    "すごい集中力！今日は大きく成長したね。",
+    "{minutes}分、本当におつかれさま。Flowletが胸を張ってるよ。",
+    "ここまで集中できたの、すごいよ。今日はゆっくり休んでもいいくらい。",
+  ],
+  improvement: [
+    "前回より{diff}分長くできたね。小さな成長、ちゃんと見てるよ。",
+    "前より少し長く続いたね。その伸び方、すごくいいよ。",
+  ],
+  streak: [
+    "連続{streak}日達成！いい習慣になってきたね。",
+    "今日も続けられたね。連続{streak}日、Flowletもうれしいよ。",
+  ],
+  streakMilestone: [
+    "連続{streak}日！本当にすごい。ちゃんと習慣になってるよ。",
+    "ここまで続けたの、えらいよ。Flowletも毎日待ってたよ。",
+  ],
+  subjectHabit: [
+    "今週は{subject}が続いてるね。習慣になってきてるよ。",
+    "{subject}に何度も向き合ってるね。その積み重ね、強いよ。",
+  ],
+  todayGoal: [
+    "今日の{goal}分ラインに届いたね。小さな目標、ちゃんと越えたよ。",
+    "今日は合計{goal}分まで進めたよ。Flowletもそっと拍手してるよ。",
+  ],
+  careHigh: [
+    "満腹度も好感度もいい感じ。Flowletがうれしそうに近づいてきたよ。",
+    "Flowlet、今日はとてもごきげんみたい。いっしょに進めてうれしいね。",
+  ],
+  careLow: [
+    "Flowletは少し眠そうだけど、君が来てくれて安心してるよ。",
+    "ゆっくりで大丈夫。Flowletもそばで見守ってるよ。",
+  ],
+  welcomeBack: [
+    "久しぶり。戻ってきてくれてうれしいよ。また少しずつで大丈夫。",
+    "おかえり。今日ここを開いたことから、もう一歩始まってるよ。",
+  ],
+  welcomeToday: [
+    "今日も来てくれたんだね。Flowletもうれしいよ。",
+    "おかえり。今日はどんな一歩にしようか。",
+  ],
+};
+
 const timeDisplay = document.getElementById("time");
 const startBtn = document.getElementById("startBtn");
 const resetBtn = document.getElementById("resetBtn");
@@ -621,6 +685,7 @@ const minutesInput = document.getElementById("minutesInput");
 const manualDurationBtn = document.getElementById("manualDurationBtn");
 const todayTotal = document.getElementById("todayTotal");
 const totalStudy = document.getElementById("totalStudy");
+const allTimeStudyTotal = document.getElementById("allTimeStudyTotal");
 const historyList = document.getElementById("historyList");
 const weekTotal = document.getElementById("weekTotal");
 const weekLabel = document.getElementById("weekLabel");
@@ -742,6 +807,11 @@ function createDefaultState() {
       coins: 0,
       message: "記録すると少しずつ貯まります",
     },
+    encouragement: {
+      lastMessage: "",
+      recentMessages: [],
+      lastShownAt: null,
+    },
   };
 }
 
@@ -820,6 +890,13 @@ function normalizeState(savedState) {
     idleReward: {
       ...defaults.idleReward,
       ...savedState.idleReward,
+    },
+    encouragement: {
+      ...defaults.encouragement,
+      ...(savedState.encouragement || {}),
+      recentMessages: Array.isArray(savedState.encouragement?.recentMessages)
+        ? savedState.encouragement.recentMessages.slice(0, 6)
+        : [],
     },
   };
 }
@@ -1037,11 +1114,9 @@ function applyOwlExpressionState(pet, expressionState) {
 function applyStageCustomization(stageElement, customization = state.customization) {
   if (!stageElement) return;
 
-  const unlocked = getUnlockedRewards();
   const furniture = customization.furniture || customization.decor;
 
-  stageElement.classList.toggle("has-room-decor", unlocked.length >= 2);
-  stageElement.classList.toggle("has-forest-bg", unlocked.length >= 3);
+  stageElement.classList.remove("has-room-decor", "has-forest-bg");
   stageElement.dataset.time = getTimePeriod();
 
   if (furniture) {
@@ -1413,47 +1488,223 @@ function getPetMessage(todayMinutes, streak) {
   return "今日も短くていいから、いっしょに進もう";
 }
 
-function getStudyReactionMood(minutes) {
-  if (minutes >= 60) return "excited";
-  if (minutes >= 25) return "proud";
-  return "happy";
+function fillEncouragementTemplate(template, values = {}) {
+  return template.replace(/\{(\w+)\}/g, (_, key) => {
+    return values[key] ?? "";
+  });
 }
 
-function buildStudyCompleteMessage({ minutes, subject, streakDays }) {
-  if (minutes >= 90) return "すごい集中力！今日は大きく成長したね";
-  if (minutes >= 50) return "かなり頑張ったね！フクロウも喜んでるよ";
-  if (minutes >= 25) return `${subject}を${minutes}分集中できたね！`;
-  if (minutes >= 10) return "いい集中だったね！今日も進められたよ";
-  if (streakDays >= 3) return `連続${streakDays}日目、今日も始められてえらい！`;
-  return "少しでも始められてえらい！";
+function chooseEncouragementMessage(candidates, values = {}) {
+  const messages = candidates
+    .map((template) => fillEncouragementTemplate(template, values).trim())
+    .filter(Boolean);
+
+  if (messages.length === 0) return "今日も来てくれたんだね。Flowletもうれしいよ。";
+
+  const recent = new Set(state.encouragement?.recentMessages || []);
+  const lastMessage = state.encouragement?.lastMessage || "";
+  const freshMessages = messages.filter((message) => message !== lastMessage && !recent.has(message));
+  const nonRepeatingMessages = freshMessages.length
+    ? freshMessages
+    : messages.filter((message) => message !== lastMessage);
+  const pool = nonRepeatingMessages.length ? nonRepeatingMessages : messages;
+
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function rememberEncouragementMessage(message) {
+  if (!message) return;
+
+  const recentMessages = [
+    message,
+    ...(state.encouragement?.recentMessages || []).filter((item) => item !== message),
+  ].slice(0, 6);
+
+  state.encouragement = {
+    ...(state.encouragement || {}),
+    lastMessage: message,
+    recentMessages,
+    lastShownAt: new Date().toISOString(),
+  };
+  saveState();
+}
+
+function getTodayStudyMinutes() {
+  const today = getTodayKey();
+
+  return state.sessions
+    .filter((session) => toDateKey(parseSessionDate(session.date)) === today)
+    .reduce((sum, session) => sum + session.minutes, 0);
+}
+
+function getPreviousStudySession(currentSession) {
+  if (!currentSession) return null;
+
+  return state.sessions.find((session) => session.id !== currentSession.id) || null;
+}
+
+function getRecentSubjectCount(subject, currentSession) {
+  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+
+  return state.sessions.filter((session) => {
+    if (session.id === currentSession?.id) return true;
+    if (session.subject !== subject) return false;
+    return getSessionTime(session) >= weekAgo;
+  }).length;
+}
+
+function getTodayGoalMilestone(todayMinutes, sessionMinutes) {
+  const beforeSessionMinutes = Math.max(0, todayMinutes - sessionMinutes);
+
+  if (beforeSessionMinutes < 60 && todayMinutes >= 60) return 60;
+  if (beforeSessionMinutes < 25 && todayMinutes >= 25) return 25;
+  return null;
+}
+
+function getStudyTimeMessageGroup(minutes) {
+  if (minutes >= 90) return encouragementMessages.huge;
+  if (minutes >= 50) return encouragementMessages.long;
+  if (minutes >= 25) return encouragementMessages.steady;
+  if (minutes >= 10) return encouragementMessages.light;
+  return encouragementMessages.short;
+}
+
+function buildStudySessionContext(session) {
+  const previousSession = getPreviousStudySession(session);
+  const todayMinutes = getTodayStudyMinutes();
+  const streakDays = getStudyStreak();
+  const previousMinutes = previousSession?.minutes || 0;
+  const diffMinutes = previousSession ? session.minutes - previousMinutes : 0;
+  const subjectWeekCount = getRecentSubjectCount(session.subject, session);
+  const fullness = clamp(state.pet.hunger);
+  const affection = clamp(state.pet.happy);
+
+  return {
+    previousSession,
+    previousMinutes,
+    diffMinutes,
+    todayMinutes,
+    todayGoal: getTodayGoalMilestone(todayMinutes, session.minutes),
+    streakDays,
+    subjectWeekCount,
+    fullness,
+    affection,
+    careHigh: fullness >= 75 && affection >= 75,
+    careLow: fullness < 35 || affection < 35,
+  };
+}
+
+function buildStudyMessageCandidates(session, context) {
+  const candidates = [];
+
+  if (context.diffMinutes > 0) candidates.push(...encouragementMessages.improvement);
+  if (context.streakDays >= 7 || (context.streakDays > 0 && context.streakDays % 7 === 0)) {
+    candidates.push(...encouragementMessages.streakMilestone);
+  } else if (context.streakDays >= 3) {
+    candidates.push(...encouragementMessages.streak);
+  }
+  if (context.todayGoal) candidates.push(...encouragementMessages.todayGoal);
+  if (context.subjectWeekCount >= 3) candidates.push(...encouragementMessages.subjectHabit);
+  if (context.careHigh) candidates.push(...encouragementMessages.careHigh);
+  if (context.careLow) candidates.push(...encouragementMessages.careLow);
+
+  candidates.push(...getStudyTimeMessageGroup(session.minutes));
+  return candidates;
+}
+
+function buildStudyCompleteMessage(session, context) {
+  return chooseEncouragementMessage(buildStudyMessageCandidates(session, context), {
+    subject: session.subject,
+    minutes: session.minutes,
+    duration: formatStudyDuration(session.minutes),
+    diff: Math.max(1, context.diffMinutes),
+    streak: context.streakDays,
+    goal: context.todayGoal || 25,
+  });
+}
+
+function buildStudyBonus(session, context) {
+  if (context.todayGoal) return `今日の合計が${formatStudyDuration(context.todayGoal)}に届きました`;
+  if (context.diffMinutes > 0) return `前回より${formatStudyDuration(context.diffMinutes)}長くできました`;
+  if (context.streakDays >= 7) return `連続${context.streakDays}日、しっかり続いています`;
+  if (context.streakDays >= 3) return `連続${context.streakDays}日、習慣になってきています`;
+  if (context.subjectWeekCount >= 3) return `${session.subject}は今週${context.subjectWeekCount}回目です`;
+  if (context.careHigh) return "満腹度と好感度が高く、Flowletはごきげんです";
+  if (context.careLow) return "Flowletは少し眠そうだけど、そばで見守っています";
+  return "今日の積み重ねが力になります";
+}
+
+function getStudyReactionMood(minutes, context = {}) {
+  if (minutes >= 90 || (minutes >= 50 && context.careHigh)) return "excited";
+  if (minutes >= 25 || context.diffMinutes > 0 || context.streakDays >= 3) return "proud";
+  if (minutes >= 10 || context.careHigh) return "happy";
+  if (context.careLow) return "sleepy";
+  return "normal";
 }
 
 function buildStudyReaction(session) {
-  const streakDays = getStudyStreak();
-  const title = buildStudyCompleteMessage({
-    minutes: session.minutes,
-    subject: session.subject,
-    streakDays,
-  });
-  const detail = `${session.subject}を${session.minutes}分記録しました`;
-  const bonus = streakDays >= 7
-    ? `連続${streakDays}日！本当にすごい！`
-    : streakDays >= 3
-      ? `連続${streakDays}日、いい習慣になってきたね`
-      : "今日の積み重ねが力になるよ";
+  const context = buildStudySessionContext(session);
+  const title = buildStudyCompleteMessage(session, context);
+  const detail = `${session.subject}を${formatStudyDuration(session.minutes)}記録しました`;
 
   return {
     title,
     detail,
-    bonus,
+    bonus: buildStudyBonus(session, context),
     reward: `+${session.coins} coin`,
-    mood: getStudyReactionMood(session.minutes),
+    mood: getStudyReactionMood(session.minutes, context),
+  };
+}
+
+function buildLaunchReaction() {
+  const now = Date.now();
+  const lastOpenedTime = state.lastOpenedAt ? Date.parse(state.lastOpenedAt) : NaN;
+  const lastShownTime = state.encouragement?.lastShownAt ? Date.parse(state.encouragement.lastShownAt) : NaN;
+  const latestStudyTime = getSessionTime(state.sessions[0]);
+  const lastOpenedDate = Number.isNaN(lastOpenedTime) ? null : toDateKey(new Date(lastOpenedTime));
+  const openedToday = lastOpenedDate === getTodayKey();
+  const elapsedHours = Number.isNaN(lastOpenedTime) ? Infinity : (now - lastOpenedTime) / (60 * 60 * 1000);
+  const shownRecently = !Number.isNaN(lastShownTime) && now - lastShownTime < 30 * 60 * 1000;
+
+  if (shownRecently || (openedToday && elapsedHours < 6)) return null;
+
+  const daysSinceStudy = latestStudyTime
+    ? Math.floor((now - latestStudyTime) / (24 * 60 * 60 * 1000))
+    : null;
+  const careHigh = state.pet.hunger >= 75 && state.pet.happy >= 75;
+  const careLow = state.pet.hunger < 35 || state.pet.happy < 35;
+  const candidates = daysSinceStudy !== null && daysSinceStudy >= 3
+    ? encouragementMessages.welcomeBack
+    : encouragementMessages.welcomeToday;
+  const title = chooseEncouragementMessage(candidates);
+  let bonus = "今日も少しずつで大丈夫。";
+
+  if (careHigh) {
+    bonus = chooseEncouragementMessage(encouragementMessages.careHigh);
+  } else if (careLow) {
+    bonus = chooseEncouragementMessage(encouragementMessages.careLow);
+  } else if (daysSinceStudy !== null && daysSinceStudy > 0) {
+    bonus = `前回の記録から${daysSinceStudy}日。戻ってきたことが大事です。`;
+  }
+
+  return {
+    title,
+    detail: "Flowletがそっと待っていました",
+    bonus,
+    reward: "",
+    mood: careLow ? "sleepy" : careHigh ? "happy" : "normal",
   };
 }
 
 function triggerStudyReactionMood(mood) {
-  const moodClasses = ["study-reaction-happy", "study-reaction-proud", "study-reaction-excited"];
-  const safeMood = ["happy", "proud", "excited"].includes(mood) ? mood : "happy";
+  const moodClasses = [
+    "study-reaction-happy",
+    "study-reaction-proud",
+    "study-reaction-excited",
+    "study-reaction-sleepy",
+    "study-reaction-normal",
+  ];
+  const safeMood = ["happy", "proud", "excited", "sleepy", "normal"].includes(mood) ? mood : "happy";
 
   clearTimeout(studyReactionMoodTimer);
   petViews.forEach((view) => {
@@ -1477,25 +1728,32 @@ function showStudyReaction(reaction) {
   const body = document.createElement("span");
   const title = document.createElement("strong");
   const detail = document.createElement("small");
-  const reward = document.createElement("span");
 
   icon.className = "study-reaction-icon";
   icon.textContent = "F";
   body.className = "study-reaction-body";
-  reward.className = "study-reaction-reward";
   title.textContent = reaction.title;
   detail.textContent = `${reaction.detail} / ${reaction.bonus}`;
-  reward.textContent = reaction.reward;
 
   body.append(title, detail);
-  studyReaction.replaceChildren(icon, body, reward);
+  studyReaction.replaceChildren(icon, body);
+
+  if (reaction.reward) {
+    const reward = document.createElement("span");
+    reward.className = "study-reaction-reward";
+    reward.textContent = reaction.reward;
+    studyReaction.appendChild(reward);
+  }
+
   studyReaction.className = `study-reaction mood-${reaction.mood}`;
+  studyReaction.classList.toggle("no-reward", !reaction.reward);
   studyReaction.hidden = false;
   window.requestAnimationFrame(() => {
     studyReaction.classList.add("show");
   });
 
   triggerStudyReactionMood(reaction.mood);
+  rememberEncouragementMessage(reaction.title);
 
   if (petMessage) {
     petMessage.textContent = reaction.title;
@@ -2434,7 +2692,8 @@ function render() {
 
   coinCount.textContent = state.coins;
   todayTotal.textContent = `今日 ${todayMinutes}分`;
-  totalStudy.textContent = `累計 ${state.totalMinutes}分`;
+  totalStudy.textContent = `累計 ${formatStudyDuration(state.totalMinutes)}`;
+  allTimeStudyTotal.textContent = formatStudyDuration(state.totalMinutes);
 
   renderDailySummary(todayMinutes);
   renderPet();
@@ -2864,6 +3123,8 @@ motionButtons.forEach((button) => {
   });
 });
 
+const launchReaction = buildLaunchReaction();
+
 grantLoginBonus();
 grantIdleReward();
 grantLevelRewards();
@@ -2875,3 +3136,9 @@ renderStudyModeControls();
 updateDisplay();
 render();
 applyMascotMotion(activeMascotMotion);
+
+if (launchReaction) {
+  window.setTimeout(() => {
+    showStudyReaction(launchReaction);
+  }, 520);
+}
