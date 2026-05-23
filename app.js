@@ -28,8 +28,9 @@ const shopItems = {
     iconClass: "clothing-icon rarity-icon-common",
     assetClass: "wear-simple-scarf",
     layer: "clothing",
+    anchor: "neck",
     offsetX: 0,
-    offsetY: 13,
+    offsetY: 3,
     scale: 1,
     rotation: 0,
   },
@@ -42,9 +43,10 @@ const shopItems = {
     iconClass: "clothing-icon rarity-icon-uncommon",
     assetClass: "wear-study-vest",
     layer: "clothing",
+    anchor: "body",
     offsetX: 0,
-    offsetY: 23,
-    scale: 1,
+    offsetY: 5,
+    scale: 1.05,
     rotation: 0,
   },
   scholarRobe: {
@@ -56,9 +58,10 @@ const shopItems = {
     iconClass: "clothing-icon rarity-icon-rare",
     assetClass: "wear-scholar-robe",
     layer: "clothing",
+    anchor: "body",
     offsetX: 0,
-    offsetY: 27,
-    scale: 1,
+    offsetY: 7,
+    scale: 1.06,
     rotation: 0,
   },
   starMantle: {
@@ -70,9 +73,10 @@ const shopItems = {
     iconClass: "clothing-icon rarity-icon-epic",
     assetClass: "wear-star-mantle",
     layer: "clothing",
+    anchor: "body",
     offsetX: 0,
-    offsetY: 25,
-    scale: 1,
+    offsetY: 7,
+    scale: 1.08,
     rotation: 0,
   },
   sageRobe: {
@@ -84,9 +88,10 @@ const shopItems = {
     iconClass: "clothing-icon rarity-icon-legendary",
     assetClass: "wear-sage-robe",
     layer: "clothing",
+    anchor: "body",
     offsetX: 0,
-    offsetY: 25,
-    scale: 1,
+    offsetY: 7,
+    scale: 1.08,
     rotation: 0,
   },
   pagePoncho: {
@@ -98,9 +103,10 @@ const shopItems = {
     iconClass: "clothing-icon rarity-icon-rare",
     assetClass: "wear-page-poncho",
     layer: "clothing",
+    anchor: "body",
     offsetX: 0,
-    offsetY: 25,
-    scale: 1,
+    offsetY: 5,
+    scale: 1.06,
     rotation: 0,
   },
   auroraCloak: {
@@ -112,9 +118,10 @@ const shopItems = {
     iconClass: "clothing-icon rarity-icon-legendary",
     assetClass: "wear-aurora-cloak",
     layer: "clothing",
+    anchor: "body",
     offsetX: 0,
-    offsetY: 24,
-    scale: 1,
+    offsetY: 7,
+    scale: 1.08,
     rotation: 0,
   },
   cloverCape: {
@@ -127,9 +134,10 @@ const shopItems = {
     iconClass: "accessory-icon rarity-icon-common",
     assetClass: "wear-leaf-brooch",
     layer: "neck",
-    offsetX: 23,
-    offsetY: 18,
-    scale: 1,
+    anchor: "neck",
+    offsetX: 13,
+    offsetY: 9,
+    scale: 0.82,
     rotation: -8,
   },
   acornBeret: {
@@ -142,9 +150,10 @@ const shopItems = {
     iconClass: "accessory-icon rarity-icon-rare",
     assetClass: "wear-acorn-beret",
     layer: "head",
-    offsetX: -6,
-    offsetY: -38,
-    scale: 1,
+    anchor: "head",
+    offsetX: -4,
+    offsetY: -4,
+    scale: 0.96,
     rotation: -4,
   },
   starScarf: {
@@ -157,9 +166,10 @@ const shopItems = {
     iconClass: "accessory-icon rarity-icon-epic",
     assetClass: "wear-star-pin",
     layer: "head",
-    offsetX: 23,
-    offsetY: -31,
-    scale: 1,
+    anchor: "head",
+    offsetX: 18,
+    offsetY: 4,
+    scale: 0.72,
     rotation: 12,
   },
   roundGlasses: {
@@ -172,9 +182,10 @@ const shopItems = {
     iconClass: "accessory-icon rarity-icon-common",
     assetClass: "wear-round-glasses",
     layer: "face",
+    anchor: "face",
     offsetX: 0,
-    offsetY: -16,
-    scale: 1,
+    offsetY: -1,
+    scale: 0.92,
     rotation: 0,
   },
   studyPencil: {
@@ -187,9 +198,10 @@ const shopItems = {
     iconClass: "accessory-icon rarity-icon-uncommon",
     assetClass: "wear-study-pencil",
     layer: "hand",
-    offsetX: -30,
-    offsetY: 25,
-    scale: 1,
+    anchor: "hand",
+    offsetX: -4,
+    offsetY: 5,
+    scale: 0.88,
     rotation: -22,
   },
   smallRibbon: {
@@ -202,9 +214,10 @@ const shopItems = {
     iconClass: "accessory-icon rarity-icon-uncommon",
     assetClass: "wear-small-ribbon",
     layer: "head",
-    offsetX: -24,
-    offsetY: -34,
-    scale: 1,
+    anchor: "head",
+    offsetX: -18,
+    offsetY: 3,
+    scale: 0.78,
     rotation: -8,
   },
   quillHat: {
@@ -217,9 +230,10 @@ const shopItems = {
     iconClass: "accessory-icon rarity-icon-rare",
     assetClass: "wear-quill-hat",
     layer: "head",
+    anchor: "head",
     offsetX: 0,
-    offsetY: -38,
-    scale: 1,
+    offsetY: -4,
+    scale: 0.96,
     rotation: 0,
   },
   moonPin: {
@@ -232,9 +246,10 @@ const shopItems = {
     iconClass: "accessory-icon rarity-icon-epic",
     assetClass: "wear-moon-pin",
     layer: "head",
-    offsetX: 27,
-    offsetY: -30,
-    scale: 1,
+    anchor: "head",
+    offsetX: 19,
+    offsetY: 5,
+    scale: 0.78,
     rotation: 10,
   },
   glowingCrown: {
@@ -247,9 +262,10 @@ const shopItems = {
     iconClass: "accessory-icon rarity-icon-legendary",
     assetClass: "wear-glowing-crown",
     layer: "head",
+    anchor: "head",
     offsetX: 0,
-    offsetY: -38,
-    scale: 1,
+    offsetY: -7,
+    scale: 0.9,
     rotation: 0,
   },
   bookCharm: {
@@ -262,9 +278,10 @@ const shopItems = {
     iconClass: "accessory-icon rarity-icon-rare",
     assetClass: "wear-book-charm",
     layer: "neck",
-    offsetX: -21,
-    offsetY: 20,
-    scale: 1,
+    anchor: "neck",
+    offsetX: -8,
+    offsetY: 12,
+    scale: 0.84,
     rotation: 7,
   },
   starOrbit: {
@@ -277,9 +294,10 @@ const shopItems = {
     iconClass: "accessory-icon rarity-icon-legendary",
     assetClass: "wear-star-orbit",
     layer: "face",
+    anchor: "face",
     offsetX: 0,
-    offsetY: -13,
-    scale: 1,
+    offsetY: 0,
+    scale: 1.02,
     rotation: 0,
   },
   woodenDesk: {
@@ -299,15 +317,6 @@ const shopItems = {
     description: "部屋にやわらかい緑を足す小さな植物。",
     iconClass: "furniture-icon rarity-icon-uncommon",
     assetClass: "furniture-study-plant",
-  },
-  leafDesk: {
-    name: "若葉の机",
-    category: "furniture",
-    rarity: "common",
-    price: 80,
-    description: "背景に置ける、勉強部屋用の小さな机。",
-    iconClass: "furniture-icon rarity-icon-common",
-    assetClass: "furniture-leaf-desk",
   },
   bookShelf: {
     name: "本棚",
@@ -336,23 +345,14 @@ const shopItems = {
     iconClass: "furniture-icon rarity-icon-legendary",
     assetClass: "furniture-floating-books",
   },
-  moonDeskSet: {
-    name: "月窓の学習机",
-    category: "furniture",
-    rarity: "rare",
-    price: 560,
-    description: "小さな月窓と本が付いた、落ち着いた学習机。",
-    iconClass: "furniture-icon rarity-icon-rare",
-    assetClass: "furniture-moon-desk",
-  },
   starlightStudySet: {
-    name: "星明かり書斎セット",
+    name: "星読み天体儀",
     category: "furniture",
     rarity: "legendary",
     price: 2800,
-    description: "浮かぶ本、星の灯り、小さな書斎をまとめた特別な家具。",
+    description: "星と月の動きを眺める、知的で幻想的な天体儀。",
     iconClass: "furniture-icon rarity-icon-legendary",
-    assetClass: "furniture-starlight-study",
+    assetClass: "furniture-celestial-globe",
   },
   simpleRoom: {
     name: "シンプルな部屋",
@@ -426,6 +426,87 @@ const shopItems = {
     iconClass: "background-icon rarity-icon-legendary",
     assetClass: "background-celestial-archive",
   },
+  springPark: {
+    name: "春風の公園",
+    category: "background",
+    rarity: "uncommon",
+    price: 220,
+    description: "桜色の空と若葉が広がる春の背景。",
+    iconClass: "background-icon rarity-icon-uncommon",
+    assetClass: "background-spring-park",
+  },
+  summerSeaside: {
+    name: "夏の海辺",
+    category: "background",
+    rarity: "rare",
+    price: 540,
+    description: "青い海と白い建物が見える、開放的な海辺背景。",
+    iconClass: "background-icon rarity-icon-rare",
+    assetClass: "background-summer-seaside",
+  },
+  autumnTown: {
+    name: "秋色の町",
+    category: "background",
+    rarity: "rare",
+    price: 560,
+    description: "紅葉と石畳が見える、観光地風の町背景。",
+    iconClass: "background-icon rarity-icon-rare",
+    assetClass: "background-autumn-town",
+  },
+  winterSnowCountry: {
+    name: "冬の雪国",
+    category: "background",
+    rarity: "rare",
+    price: 580,
+    description: "雪の家並みと白い地面が広がる冬背景。",
+    iconClass: "background-icon rarity-icon-rare",
+    assetClass: "background-winter-snow",
+  },
+  desertOasis: {
+    name: "砂漠のオアシス",
+    category: "background",
+    rarity: "epic",
+    price: 980,
+    description: "砂丘と小さな水辺が印象的な気候系背景。",
+    iconClass: "background-icon rarity-icon-epic",
+    assetClass: "background-desert-oasis",
+  },
+  japaneseTown: {
+    name: "和風の小路",
+    category: "background",
+    rarity: "epic",
+    price: 1050,
+    description: "格子窓と石畳が並ぶ、落ち着いた和風町背景。",
+    iconClass: "background-icon rarity-icon-epic",
+    assetClass: "background-japanese-town",
+  },
+  thunderSky: {
+    name: "雷雲の夜",
+    category: "background",
+    rarity: "epic",
+    price: 1120,
+    description: "稲妻と濃い雲が走る、天気系の迫力ある背景。",
+    iconClass: "background-icon rarity-icon-epic",
+    assetClass: "background-thunder-sky",
+  },
+  floatingIsland: {
+    name: "雲上の浮遊島",
+    category: "background",
+    rarity: "legendary",
+    price: 2600,
+    description: "雲の上に小さな島が浮かぶ、特別な幻想背景。",
+    iconClass: "background-icon rarity-icon-legendary",
+    assetClass: "background-floating-island",
+  },
+  underwaterTemple: {
+    name: "水中神殿",
+    category: "background",
+    rarity: "legendary",
+    price: 2800,
+    description: "泡と光の柱がゆれる、別世界のような背景。",
+    iconClass: "background-icon rarity-icon-legendary",
+    assetClass: "background-underwater-temple",
+  },
 };
 
 const rarityLabels = {
@@ -454,6 +535,16 @@ const accessorySlotLabels = {
 
 const shopCategoryOrder = ["clothing", "accessory", "furniture", "background"];
 const equipmentLayerOrder = ["clothing", "hand", "neck", "face", "head", "effect"];
+const removedItemIds = ["leafDesk", "moonDeskSet"];
+const equipmentAnchors = {
+  center: { x: 50, y: 50 },
+  body: { x: 50, y: 62 },
+  face: { x: 50, y: 41 },
+  head: { x: 50, y: 25 },
+  neck: { x: 50, y: 53 },
+  hand: { x: 35, y: 63 },
+  effect: { x: 50, y: 43 },
+};
 
 const mascotMotions = ["idle", "headTilt", "eat", "happy", "angry", "sad", "fun", "sleep"];
 const mascotMotionLabels = {
@@ -469,6 +560,8 @@ const mascotMotionLabels = {
 
 const owlMotionStateIds = ["veryHappy", "energetic", "normal", "hungry", "bored", "lowEnergy"];
 const owlMotionStateClasses = owlMotionStateIds.map((id) => `owl-motion-${id}`);
+const owlExpressionStateIds = ["sparkly", "happy", "content", "hungryLoved", "lonely", "low", "normal"];
+const owlExpressionClasses = owlExpressionStateIds.map((id) => `owl-expression-${id}`);
 
 const growthStages = [
   { id: "egg", name: "たまご", min: 0, next: 10, nextName: "ひな" },
@@ -587,23 +680,6 @@ let activeMascotMotion = "idle";
 let activeSubjectInput = null;
 let selectedShopItemId = null;
 let selectedShopCategory = shopCategoryOrder[0];
-let fastScrollDragging = false;
-
-const fastScrollScreens = [
-  document.getElementById("careScreen"),
-  document.getElementById("shopScreen"),
-].filter(Boolean);
-const fastScrollControl = document.createElement("div");
-const fastScrollThumb = document.createElement("button");
-
-fastScrollControl.className = "fast-scrollbar";
-fastScrollControl.hidden = true;
-fastScrollControl.setAttribute("aria-hidden", "true");
-fastScrollThumb.className = "fast-scrollbar-thumb";
-fastScrollThumb.type = "button";
-fastScrollThumb.setAttribute("aria-label", "高速スクロール");
-fastScrollControl.appendChild(fastScrollThumb);
-document.body.appendChild(fastScrollControl);
 
 function createDefaultState() {
   return {
@@ -684,6 +760,20 @@ function normalizeState(savedState) {
     customization.furniture = legacyDecor;
   }
 
+  removedItemIds.forEach((itemId) => {
+    if (customization.furniture === itemId) customization.furniture = null;
+    if (customization.decor === itemId) customization.decor = null;
+  });
+
+  const inventory = {
+    ...defaults.inventory,
+    ...savedState.inventory,
+  };
+
+  removedItemIds.forEach((itemId) => {
+    delete inventory[itemId];
+  });
+
   return {
     ...defaults,
     ...savedState,
@@ -691,10 +781,7 @@ function normalizeState(savedState) {
       ...defaults.pet,
       ...savedState.pet,
     },
-    inventory: {
-      ...defaults.inventory,
-      ...savedState.inventory,
-    },
+    inventory,
     customization: {
       ...customization,
     },
@@ -876,12 +963,33 @@ function getOwlMotionState(fullness, play) {
   return "normal";
 }
 
+function getOwlExpressionState(fullness, affection) {
+  const safeFullness = clamp(Number(fullness) || 0);
+  const safeAffection = clamp(Number(affection) || 0);
+
+  if (safeFullness >= 90 && safeAffection >= 90) return "sparkly";
+  if (safeFullness >= 70 && safeAffection >= 70) return "happy";
+  if (safeFullness < 40 && safeAffection < 40) return "low";
+  if (safeFullness < 40 && safeAffection >= 70) return "hungryLoved";
+  if (safeAffection < 40 && safeFullness >= 40) return "lonely";
+  if (safeFullness >= 70 && safeAffection >= 40) return "content";
+  return "normal";
+}
+
 function applyOwlMotionState(pet, motionState) {
   if (!pet) return;
 
   pet.classList.remove(...owlMotionStateClasses);
   pet.classList.add(`owl-motion-${motionState}`);
   pet.dataset.careMotion = motionState;
+}
+
+function applyOwlExpressionState(pet, expressionState) {
+  if (!pet) return;
+
+  pet.classList.remove(...owlExpressionClasses);
+  pet.classList.add(`owl-expression-${expressionState}`);
+  pet.dataset.expression = expressionState;
 }
 
 function applyStageCustomization(stageElement, customization = state.customization) {
@@ -934,6 +1042,18 @@ function sortItemEntries([idA, itemA], [idB, itemB]) {
 
 function getItemLayer(item) {
   return item.layer || item.accessorySlot || getItemCategory(item);
+}
+
+function getEquipmentAnchorKey(item) {
+  if (item?.anchor && equipmentAnchors[item.anchor]) return item.anchor;
+
+  const category = getItemCategory(item);
+  if (category === "clothing") return "body";
+  if (category === "accessory") {
+    return equipmentAnchors[item.accessorySlot] ? item.accessorySlot : "head";
+  }
+
+  return "center";
 }
 
 function getItemSlotLabel(item) {
@@ -1239,7 +1359,7 @@ function getPetMessage(todayMinutes, streak) {
   const unlocked = getUnlockedRewards();
 
   if (state.pet.hunger <= 15) return "おなかがすいて、ちょっとしょんぼりしています";
-  if (state.pet.happy <= 15) return "少し退屈みたい。あそんであげると元気になります";
+  if (state.pet.happy <= 15) return "少し退屈みたい。ふれあうと好感度が上がります";
   if (state.idleReward.coins > 0) return state.idleReward.message;
   if (todayMinutes >= 60) return "今日は森まで歩けそうなくらい進んだね";
   if (todayMinutes >= 25) return "集中の音、ちゃんと聞こえてたよ";
@@ -1394,6 +1514,7 @@ function renderPet() {
   const stage = getGrowthStage();
   const stageClasses = growthStages.map((item) => `stage-${item.id}`);
   const owlMotionState = getOwlMotionState(state.pet.hunger, state.pet.happy);
+  const owlExpressionState = getOwlExpressionState(state.pet.hunger, state.pet.happy);
 
   petViews.forEach((view) => {
     setCareMeterValue(view.hunger, state.pet.hunger);
@@ -1405,6 +1526,7 @@ function renderPet() {
     view.pet.classList.remove(...stageClasses);
     view.pet.classList.add(`stage-${stage.id}`);
     applyOwlMotionState(view.pet, owlMotionState);
+    applyOwlExpressionState(view.pet, owlExpressionState);
     delete view.pet.dataset.outfit;
     renderEquipment(view.pet);
 
@@ -1538,6 +1660,8 @@ function ensureEquipmentLayers(pet) {
 
 function createEquipmentItem(itemId, item) {
   const element = document.createElement("span");
+  const anchorKey = getEquipmentAnchorKey(item);
+  const anchor = equipmentAnchors[anchorKey] || equipmentAnchors.center;
   const offsetX = Number.isFinite(item.offsetX) ? item.offsetX : 0;
   const offsetY = Number.isFinite(item.offsetY) ? item.offsetY : 0;
   const scale = Number.isFinite(item.scale) ? item.scale : 1;
@@ -1545,6 +1669,9 @@ function createEquipmentItem(itemId, item) {
 
   element.className = `equipment-item ${item.assetClass || item.iconClass || ""} rarity-${item.rarity}`;
   element.dataset.item = itemId;
+  element.dataset.anchor = anchorKey;
+  element.style.setProperty("--anchor-x", `${anchor.x}%`);
+  element.style.setProperty("--anchor-y", `${anchor.y}%`);
   element.style.setProperty("--item-x", `${offsetX}%`);
   element.style.setProperty("--item-y", `${offsetY}%`);
   element.style.setProperty("--item-scale", scale);
@@ -1589,6 +1716,7 @@ function renderPetPreview(stageElement, petElement, itemId) {
   const stageClasses = growthStages.map((item) => `stage-${item.id}`);
   const customization = getCustomizationPreview(itemId);
   const owlMotionState = getOwlMotionState(state.pet.hunger, state.pet.happy);
+  const owlExpressionState = getOwlExpressionState(state.pet.hunger, state.pet.happy);
 
   petElement.classList.toggle("mood-happy", state.pet.happy >= 70);
   petElement.classList.toggle("mood-tired", state.pet.hunger <= 20 || state.pet.happy <= 20);
@@ -1597,6 +1725,7 @@ function renderPetPreview(stageElement, petElement, itemId) {
   petElement.classList.remove(...stageClasses);
   petElement.classList.add(`stage-${stage.id}`);
   applyOwlMotionState(petElement, owlMotionState);
+  applyOwlExpressionState(petElement, owlExpressionState);
   delete petElement.dataset.outfit;
   renderEquipment(petElement, customization);
   applyStageCustomization(stageElement, customization);
@@ -2021,7 +2150,6 @@ function render() {
   renderCustomizationPreviews();
   renderHistory();
   renderWeeklyChart();
-  updateFastScrollBar();
 }
 
 function applyItemEffect(effect) {
@@ -2124,62 +2252,6 @@ function switchScreen(screenId) {
   document.querySelectorAll(".nav-btn").forEach((button) => {
     button.classList.toggle("active", button.dataset.screen === screenId);
   });
-
-  updateFastScrollBar();
-}
-
-function getActiveFastScrollScreen() {
-  return fastScrollScreens.find((screen) => screen.classList.contains("active")) || null;
-}
-
-function getFastScrollMax(screen) {
-  return Math.max(0, screen.scrollHeight - screen.clientHeight);
-}
-
-function updateFastScrollBar() {
-  const screen = getActiveFastScrollScreen();
-
-  if (!screen) {
-    fastScrollControl.hidden = true;
-    fastScrollControl.classList.remove("is-disabled", "is-dragging");
-    return;
-  }
-
-  const rect = screen.getBoundingClientRect();
-  const maxScroll = getFastScrollMax(screen);
-  const trackHeight = Math.max(120, rect.height - 14);
-  const thumbHeight = maxScroll > 0
-    ? Math.max(58, Math.min(trackHeight, Math.round(trackHeight * (screen.clientHeight / screen.scrollHeight))))
-    : trackHeight;
-  const travel = Math.max(1, trackHeight - thumbHeight);
-  const thumbTop = maxScroll > 0 ? Math.round((screen.scrollTop / maxScroll) * travel) : 0;
-
-  fastScrollControl.hidden = false;
-  fastScrollControl.classList.toggle("is-disabled", maxScroll <= 0);
-  fastScrollControl.style.top = `${Math.max(8, Math.round(rect.top + 7))}px`;
-  fastScrollControl.style.height = `${Math.round(trackHeight)}px`;
-  fastScrollThumb.style.height = `${thumbHeight}px`;
-  fastScrollThumb.style.transform = `translateY(${thumbTop}px)`;
-}
-
-function moveFastScrollThumb(clientY) {
-  const screen = getActiveFastScrollScreen();
-  if (!screen) return;
-
-  const maxScroll = getFastScrollMax(screen);
-  if (maxScroll <= 0) {
-    updateFastScrollBar();
-    return;
-  }
-
-  const trackRect = fastScrollControl.getBoundingClientRect();
-  const thumbHeight = fastScrollThumb.getBoundingClientRect().height;
-  const travel = Math.max(1, trackRect.height - thumbHeight);
-  const localY = clientY - trackRect.top - thumbHeight / 2;
-  const ratio = Math.max(0, Math.min(1, localY / travel));
-
-  screen.scrollTop = ratio * maxScroll;
-  updateFastScrollBar();
 }
 
 function stopTimerAtLimit() {
@@ -2419,57 +2491,6 @@ document.querySelectorAll(".nav-btn").forEach((button) => {
   button.addEventListener("click", () => {
     switchScreen(button.dataset.screen);
   });
-});
-
-document.querySelectorAll("#careScreen, #shopScreen").forEach((screen) => {
-  screen.addEventListener("scroll", () => {
-    updateFastScrollBar();
-  });
-
-  screen.addEventListener("wheel", (event) => {
-    if (!screen.classList.contains("active") || event.deltaY === 0) return;
-
-    const deltaUnit = event.deltaMode === 1
-      ? 16
-      : event.deltaMode === 2
-        ? screen.clientHeight
-        : 1;
-
-    event.preventDefault();
-    screen.scrollTop += event.deltaY * deltaUnit * 1.8;
-  }, { passive: false });
-});
-
-fastScrollControl.addEventListener("pointerdown", (event) => {
-  if (fastScrollControl.classList.contains("is-disabled")) return;
-
-  fastScrollDragging = true;
-  fastScrollControl.classList.add("is-dragging");
-  fastScrollControl.setPointerCapture(event.pointerId);
-  event.preventDefault();
-  moveFastScrollThumb(event.clientY);
-});
-
-fastScrollControl.addEventListener("pointermove", (event) => {
-  if (!fastScrollDragging) return;
-
-  event.preventDefault();
-  moveFastScrollThumb(event.clientY);
-});
-
-fastScrollControl.addEventListener("pointerup", (event) => {
-  fastScrollDragging = false;
-  fastScrollControl.classList.remove("is-dragging");
-  fastScrollControl.releasePointerCapture(event.pointerId);
-});
-
-fastScrollControl.addEventListener("pointercancel", () => {
-  fastScrollDragging = false;
-  fastScrollControl.classList.remove("is-dragging");
-});
-
-window.addEventListener("resize", () => {
-  updateFastScrollBar();
 });
 
 motionButtons.forEach((button) => {
