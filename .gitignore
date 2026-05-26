@@ -1,0 +1,40 @@
+# Local secrets and environment files
+.env
+.env.*
+!.env.example
+*.local
+
+# Private keys and certificates
+*.key
+*.pem
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+
+# Dependencies and build output
+node_modules/
+dist/
+build/
+.cache/
+.vite/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+*.bak
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# Accidental screenshots or local notes
+Screenshots/
+screenshots/
+スクリーンショット*
+*.screenshot.*
+notes.local.*
