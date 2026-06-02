@@ -14,10 +14,16 @@ id_ed25519
 
 # Dependencies and build output
 node_modules/
+www/
+ios/
 dist/
 build/
 .cache/
 .vite/
+
+# Package manager artifacts
+npm-debug.log*
+package-lock.json
 
 # Logs and temporary files
 *.log

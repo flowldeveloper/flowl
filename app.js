@@ -172,22 +172,6 @@ const shopItems = {
     scale: 0.72,
     rotation: 12,
   },
-  roundGlasses: {
-    name: "丸メガネ",
-    category: "accessory",
-    accessorySlot: "face",
-    rarity: "common",
-    price: 70,
-    description: "表情を隠しすぎない、小さめの勉強メガネ。",
-    iconClass: "accessory-icon rarity-icon-common",
-    assetClass: "wear-round-glasses",
-    layer: "face",
-    anchor: "face",
-    offsetX: 0,
-    offsetY: -1,
-    scale: 0.92,
-    rotation: 0,
-  },
   studyPencil: {
     name: "小さな鉛筆",
     category: "accessory",
@@ -681,6 +665,7 @@ const subjectOptions = document.getElementById("subjectOptions");
 const subjectTags = document.getElementById("subjectTags");
 const timerSubjectMenu = document.getElementById("timerSubjectMenu");
 const subjectMenu = document.getElementById("subjectMenu");
+const bottomNav = document.querySelector(".bottom-nav");
 const minutesInput = document.getElementById("minutesInput");
 const manualDurationBtn = document.getElementById("manualDurationBtn");
 const todayTotal = document.getElementById("todayTotal");
@@ -2402,11 +2387,35 @@ function renderSubjectMenu(input, menu) {
   });
 }
 
+function positionSubjectMenu(input, menu) {
+  const field = input.closest(".subject-field");
+  if (!field || menu.hidden) return;
+
+  const viewport = window.visualViewport;
+  const viewportHeight = viewport?.height || window.innerHeight || document.documentElement.clientHeight;
+  const viewportTop = viewport?.offsetTop || 0;
+  const inputRect = input.getBoundingClientRect();
+  const navRect = bottomNav?.getBoundingClientRect();
+  const bottomReserve = navRect
+    ? Math.max(12, viewportHeight - navRect.top + 10)
+    : 12;
+  const spaceBelow = viewportHeight - inputRect.bottom - bottomReserve;
+  const spaceAbove = inputRect.top - viewportTop - 10;
+  const openAbove = spaceBelow < 150 && spaceAbove > spaceBelow;
+  const availableSpace = openAbove ? spaceAbove : spaceBelow;
+  const maxHeight = Math.max(112, Math.min(220, availableSpace - 8));
+
+  field.classList.toggle("menu-above", openAbove);
+  menu.style.setProperty("--subject-menu-max-height", `${Math.round(maxHeight)}px`);
+}
+
 function closeSubjectMenus() {
   activeSubjectInput = null;
   subjectFields.forEach(({ input, menu, toggle }) => {
     menu.hidden = true;
-    input.closest(".subject-field")?.classList.remove("menu-open");
+    const field = input.closest(".subject-field");
+    field?.classList.remove("menu-open", "menu-above");
+    menu.style.removeProperty("--subject-menu-max-height");
     if (toggle) {
       toggle.textContent = "▼";
       toggle.setAttribute("aria-expanded", "false");
@@ -2424,6 +2433,8 @@ function openSubjectMenu(input) {
     renderSubjectMenu(field.input, field.menu);
     field.menu.hidden = !canOpen;
     field.input.closest(".subject-field")?.classList.toggle("menu-open", canOpen);
+    field.input.closest(".subject-field")?.classList.remove("menu-above");
+    if (canOpen) positionSubjectMenu(field.input, field.menu);
     if (field.toggle) {
       field.toggle.textContent = canOpen ? "▲" : "▼";
       field.toggle.setAttribute("aria-expanded", String(canOpen));
@@ -2445,6 +2456,15 @@ function toggleSubjectMenu(input) {
   }
 
   openSubjectMenu(input);
+}
+
+function refreshActiveSubjectMenuPosition() {
+  if (!activeSubjectInput) return;
+
+  const field = subjectFields.find((item) => item.input === activeSubjectInput);
+  if (!field || field.menu.hidden) return;
+
+  positionSubjectMenu(field.input, field.menu);
 }
 
 function removeSubject(subject) {
@@ -3000,6 +3020,10 @@ document.addEventListener("click", (event) => {
   closeSubjectMenus();
 });
 
+window.addEventListener("resize", refreshActiveSubjectMenuPosition);
+window.visualViewport?.addEventListener("resize", refreshActiveSubjectMenuPosition);
+window.visualViewport?.addEventListener("scroll", refreshActiveSubjectMenuPosition);
+
 subjectTags.addEventListener("click", (event) => {
   const removeButton = event.target.closest(".tag-remove");
 
@@ -3116,6 +3140,14 @@ document.querySelectorAll(".nav-btn").forEach((button) => {
     switchScreen(button.dataset.screen);
   });
 });
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {
+      // PWA registration can fail on non-HTTPS local network URLs.
+    });
+  });
+}
 
 motionButtons.forEach((button) => {
   button.addEventListener("click", () => {

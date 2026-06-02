@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Flowl icon">
+  <rect width="512" height="512" rx="112" fill="#edf7ef"/>
+  <circle cx="256" cy="260" r="150" fill="#c89b65"/>
+  <path d="M166 162c-9-45 34-70 75-31-35 7-58 25-75 31Zm180 0c9-45-34-70-75-31 35 7 58 25 75 31Z" fill="#a47745"/>
+  <ellipse cx="256" cy="246" rx="102" ry="82" fill="#fffdf8"/>
+  <path d="M255 246c-25-52-85-48-96-5-10 41 23 82 81 70 18-14 25-41 15-65Z" fill="#cfe7bd"/>
+  <path d="M257 246c25-52 85-48 96-5 10 41-23 82-81 70-18-14-25-41-15-65Z" fill="#cfe7bd"/>
+  <ellipse cx="256" cy="337" rx="70" ry="84" fill="#fffdf8"/>
+  <circle cx="207" cy="238" r="18" fill="#223127"/>
+  <circle cx="305" cy="238" r="18" fill="#223127"/>
+  <circle cx="214" cy="231" r="6" fill="#fffdf8"/>
+  <circle cx="312" cy="231" r="6" fill="#fffdf8"/>
+  <path d="M256 279l-34-34h68z" fill="#f3b63f"/>
+  <ellipse cx="158" cy="316" rx="36" ry="64" fill="#bfe6c8" stroke="#6c5436" stroke-width="14"/>
+  <ellipse cx="354" cy="316" rx="36" ry="64" fill="#bfe6c8" stroke="#6c5436" stroke-width="14"/>
+  <path d="M184 407c-26 0-39 12-43 31 23-9 46-9 70 0-2-20-10-31-27-31Zm144 0c26 0 39 12 43 31-23-9-46-9-70 0 2-20 10-31 27-31Z" fill="#f3b63f" stroke="#6c5436" stroke-width="10"/>
+  <path d="M139 184c24-79 82-111 117-111s93 32 117 111" fill="none" stroke="#6c5436" stroke-width="18" stroke-linecap="round"/>
+</svg>

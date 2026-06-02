@@ -1,0 +1,12 @@
+{
+  "appId": "com.flowl.study",
+  "appName": "Flowl",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "ios": {
+    "contentInset": "automatic"
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}

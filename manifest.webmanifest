@@ -1,0 +1,21 @@
+{
+  "name": "Flowl",
+  "short_name": "Flowl",
+  "description": "勉強タイマーとフクロウ育成を組み合わせた学習サポートアプリ",
+  "lang": "ja",
+  "start_url": "./?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#edf7ef",
+  "theme_color": "#edf7ef",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
