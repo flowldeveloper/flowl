@@ -12,7 +12,7 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
   <title>Flowl</title>
-  <link rel="stylesheet" href="style.css?v=pwa-2">
+  <link rel="stylesheet" href="style.css?v=pwa-3">
 </head>
 <body>
   <main class="app-shell">
@@ -82,10 +82,6 @@
             <span>今日のごほうび</span>
             <strong id="todayReward">あと10分</strong>
           </div>
-          <div>
-            <span>放置報酬</span>
-            <strong id="idleReward">0 coin</strong>
-          </div>
         </div>
       </article>
 
@@ -131,11 +127,11 @@
         <h2 id="time">00:00</h2>
         <div class="growth-card">
           <div>
-            <span id="growthStageLabel">たまご</span>
-            <strong id="growthNextLabel">あと10分でひな</strong>
+            <span id="growthStageLabel">成長後</span>
+            <strong id="growthNextLabel">最高レベル</strong>
           </div>
           <div class="growth-track" aria-label="成長ゲージ">
-            <span id="growthProgress"></span>
+            <span id="growthProgress" style="width: 100%;"></span>
           </div>
         </div>
         <div class="level-reward-card">
@@ -350,6 +346,6 @@
     </button>
   </nav>
 
-  <script src="app.js?v=pwa-2"></script>
+  <script src="app.js?v=pwa-3"></script>
 </body>
 </html>

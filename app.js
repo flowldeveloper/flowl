@@ -553,6 +553,7 @@ const growthStages = [
   { id: "child", name: "こども", min: 60, next: 180, nextName: "成長後" },
   { id: "grown", name: "成長後", min: 180, next: null, nextName: "" },
 ];
+const STARTING_GROWTH_MINUTES = growthStages.find((stage) => stage.id === "grown")?.min || 0;
 
 const unlockRewards = [
   {
@@ -691,7 +692,6 @@ const motionLabel = document.getElementById("motionLabel");
 const motionButtons = document.querySelectorAll(".motion-btn");
 const streakCount = document.getElementById("streakCount");
 const todayReward = document.getElementById("todayReward");
-const idleReward = document.getElementById("idleReward");
 const growthStageLabel = document.getElementById("growthStageLabel");
 const growthNextLabel = document.getElementById("growthNextLabel");
 const growthProgress = document.getElementById("growthProgress");
@@ -788,10 +788,6 @@ function createDefaultState() {
       message: "Lv.100で100 coin",
     },
     lastOpenedAt: null,
-    idleReward: {
-      coins: 0,
-      message: "記録すると少しずつ貯まります",
-    },
     encouragement: {
       lastMessage: "",
       recentMessages: [],
@@ -802,6 +798,7 @@ function createDefaultState() {
 
 function normalizeState(savedState) {
   savedState = savedState || {};
+  const { idleReward: _legacyIdleReward, ...persistedState } = savedState;
   const defaults = createDefaultState();
   const savedCustomization = savedState.customization || {};
   const customization = {
@@ -849,7 +846,7 @@ function normalizeState(savedState) {
 
   return {
     ...defaults,
-    ...savedState,
+    ...persistedState,
     pet: {
       ...defaults.pet,
       ...savedState.pet,
@@ -872,10 +869,6 @@ function normalizeState(savedState) {
       ...savedState.levelReward,
     },
     lastOpenedAt: savedState.lastOpenedAt || null,
-    idleReward: {
-      ...defaults.idleReward,
-      ...savedState.idleReward,
-    },
     encouragement: {
       ...defaults.encouragement,
       ...(savedState.encouragement || {}),
@@ -1046,8 +1039,10 @@ function getNextLevelRewardLevel() {
 }
 
 function getGrowthStage() {
+  const growthMinutes = Math.max(state.totalMinutes, STARTING_GROWTH_MINUTES);
+
   return growthStages.reduce((current, stage) => {
-    return state.totalMinutes >= stage.min ? stage : current;
+    return growthMinutes >= stage.min ? stage : current;
   }, growthStages[0]);
 }
 
@@ -1423,36 +1418,8 @@ function grantLevelRewards() {
   };
 }
 
-function grantIdleReward() {
-  const latestStudyTime = getSessionTime(state.sessions[0]);
-  const now = Date.now();
-
-  if (!latestStudyTime) {
-    state.lastOpenedAt = new Date(now).toISOString();
-    return;
-  }
-
-  const lastOpenedTime = state.lastOpenedAt ? Date.parse(state.lastOpenedAt) : latestStudyTime;
-  const rewardStartTime = Number.isNaN(lastOpenedTime)
-    ? latestStudyTime
-    : Math.max(lastOpenedTime, latestStudyTime);
-  const elapsedHours = Math.floor((now - rewardStartTime) / (60 * 60 * 1000));
-  const rewardCoins = Math.min(12, Math.floor(elapsedHours / 2));
-
-  if (rewardCoins > 0) {
-    state.coins += rewardCoins;
-    state.idleReward = {
-      coins: rewardCoins,
-      message: `お留守番で${rewardCoins} coin見つけました`,
-    };
-  } else {
-    state.idleReward = {
-      coins: 0,
-      message: "少し休んでいます",
-    };
-  }
-
-  state.lastOpenedAt = new Date(now).toISOString();
+function rememberAppOpen() {
+  state.lastOpenedAt = new Date().toISOString();
   saveState();
 }
 
@@ -1462,7 +1429,6 @@ function getPetMessage(todayMinutes, streak) {
 
   if (state.pet.hunger <= 15) return "おなかがすいて、ちょっとしょんぼりしています";
   if (state.pet.happy <= 15) return "少し退屈みたい。ふれあうと好感度が上がります";
-  if (state.idleReward.coins > 0) return state.idleReward.message;
   if (todayMinutes >= 60) return "今日は森まで歩けそうなくらい進んだね";
   if (todayMinutes >= 25) return "集中の音、ちゃんと聞こえてたよ";
   if (todayMinutes >= 10) return "ふわベリーのにおいがするかも";
@@ -2125,9 +2091,6 @@ function renderDailySummary(todayMinutes) {
 
   streakCount.textContent = `${streak}日`;
   todayReward.textContent = getTodayRewardText(todayMinutes);
-  idleReward.textContent = state.idleReward.coins > 0
-    ? `+${state.idleReward.coins} coin`
-    : "待機中";
   petMessage.textContent = getPetMessage(todayMinutes, streak);
 }
 
@@ -3154,7 +3117,7 @@ motionButtons.forEach((button) => {
 const launchReaction = buildLaunchReaction();
 
 grantLoginBonus();
-grantIdleReward();
+rememberAppOpen();
 grantLevelRewards();
 saveState();
 createDurationWheelOptions(durationHourWheel, 12);
