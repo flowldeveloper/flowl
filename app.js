@@ -1709,19 +1709,16 @@ function showStudyReaction(reaction) {
 
   clearTimeout(studyReactionTimer);
 
-  const icon = document.createElement("span");
   const body = document.createElement("span");
   const title = document.createElement("strong");
   const detail = document.createElement("small");
 
-  icon.className = "study-reaction-icon";
-  icon.textContent = "F";
   body.className = "study-reaction-body";
   title.textContent = reaction.title;
   detail.textContent = `${reaction.detail} / ${reaction.bonus}`;
 
   body.append(title, detail);
-  studyReaction.replaceChildren(icon, body);
+  studyReaction.replaceChildren(body);
 
   if (reaction.reward) {
     const reward = document.createElement("span");
@@ -2975,12 +2972,11 @@ studyForm.addEventListener("submit", (event) => {
 
   if (!Number.isFinite(minutes) || minutes <= 0) return;
 
-  const session = addStudySession(Math.round(minutes), subject);
+  addStudySession(Math.round(minutes), subject);
   subjectInput.value = "";
   manualStudyMinutes = 25;
   minutesInput.value = 25;
   updateDurationButtons();
-  showStudyReaction(buildStudyReaction(session));
 });
 
 subjectFields.forEach(({ input, menu, toggle }) => {

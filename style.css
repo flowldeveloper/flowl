@@ -8247,25 +8247,38 @@ input:focus {
 
 /* Gentle study-complete reaction shown after a successful record. */
 .study-reaction {
-  position: fixed;
+  position: absolute;
   left: 50%;
-  bottom: calc(86px + env(safe-area-inset-bottom));
-  z-index: 80;
+  top: 8px;
+  z-index: 12;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 10px;
-  width: min(390px, calc(100% - 24px));
-  padding: 10px 12px;
+  gap: 8px;
+  width: min(310px, calc(100% - 22px));
+  padding: 8px 10px;
   border: 1px solid rgba(143, 207, 145, 0.45);
-  border-radius: 8px;
+  border-radius: 14px 14px 14px 6px;
   background:
     linear-gradient(135deg, rgba(255, 253, 248, 0.96), rgba(239, 249, 240, 0.96));
   box-shadow: 0 14px 34px rgba(39, 79, 50, 0.16);
   opacity: 0;
   pointer-events: none;
-  transform: translate(-50%, 10px);
+  transform: translate(-50%, -6px) scale(0.98);
   transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.study-reaction::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  width: 13px;
+  height: 13px;
+  border-right: 1px solid rgba(143, 207, 145, 0.36);
+  border-bottom: 1px solid rgba(143, 207, 145, 0.36);
+  background: rgba(255, 253, 248, 0.96);
+  transform: translateX(-50%) rotate(45deg);
 }
 
 .study-reaction[hidden] {
@@ -8274,26 +8287,11 @@ input:focus {
 
 .study-reaction.show {
   opacity: 1;
-  transform: translate(-50%, 0);
+  transform: translate(-50%, 0) scale(1);
 }
 
 .study-reaction.no-reward {
-  grid-template-columns: auto minmax(0, 1fr);
-}
-
-.study-reaction-icon {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border: 2px solid #6c5436;
-  border-radius: 50%;
-  color: #5a432a;
-  background:
-    radial-gradient(circle at 50% 68%, #fffdf8 0 35%, transparent 36%),
-    #f2c57f;
-  font-size: 14px;
-  font-weight: 900;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .study-reaction-body {
@@ -8303,12 +8301,14 @@ input:focus {
 }
 
 .study-reaction strong {
+  display: -webkit-box;
   overflow: hidden;
   color: #24442f;
   font-size: 14px;
   line-height: 1.25;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .study-reaction small {
@@ -8404,12 +8404,13 @@ input:focus {
 
 @media (max-width: 520px) {
   .study-reaction {
-    bottom: calc(76px + env(safe-area-inset-bottom));
-    grid-template-columns: auto minmax(0, 1fr);
+    top: 6px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    width: min(286px, calc(100% - 18px));
+    padding: 7px 9px;
   }
 
   .study-reaction-reward {
-    grid-column: 2;
     justify-self: start;
     padding: 4px 7px;
     font-size: 11px;

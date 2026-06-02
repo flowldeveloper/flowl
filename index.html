@@ -12,7 +12,7 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
   <title>Flowl</title>
-  <link rel="stylesheet" href="style.css?v=pwa-1">
+  <link rel="stylesheet" href="style.css?v=pwa-2">
 </head>
 <body>
   <main class="app-shell">
@@ -95,6 +95,7 @@
           <span>一緒に集中</span>
         </div>
         <div class="pet-stage" aria-label="育成中の動物">
+          <div id="studyReaction" class="study-reaction" role="status" aria-live="polite" hidden></div>
           <div id="petActionProp" class="pet-action-prop" aria-hidden="true"></div>
           <div class="pet-shadow"></div>
           <div class="pet idle" id="pet" data-asset="flowl-owl">
@@ -330,8 +331,6 @@
     </div>
   </div>
 
-  <div id="studyReaction" class="study-reaction" role="status" aria-live="polite" hidden></div>
-
   <nav class="bottom-nav" aria-label="画面切り替え">
     <button class="nav-btn active" type="button" data-screen="timerScreen">
       <span>Study</span>
@@ -351,6 +350,6 @@
     </button>
   </nav>
 
-  <script src="app.js?v=pwa-1"></script>
+  <script src="app.js?v=pwa-2"></script>
 </body>
 </html>
