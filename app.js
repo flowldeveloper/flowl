@@ -1,4 +1,12 @@
 const STORAGE_KEY = "flowl-study-pet";
+const STORAGE_VERSION = 2;
+const STORAGE_BACKUP_KEY = `${STORAGE_KEY}:backup`;
+const STORAGE_LAST_GOOD_KEY = `${STORAGE_KEY}:last-good`;
+const STORAGE_TEMP_KEY = `${STORAGE_KEY}:temp`;
+const STORAGE_META_KEY = `${STORAGE_KEY}:meta`;
+const STORAGE_CORRUPT_PREFIX = `${STORAGE_KEY}:corrupt`;
+const STORAGE_TEST_KEY = `${STORAGE_KEY}:storage-test`;
+const APP_NAME = "Flowl";
 const TIMER_MAX_SECONDS = 12 * 60 * 60;
 const COINS_PER_MINUTE = 1;
 const HUNGER_DECAY_MS = 7 * 24 * 60 * 60 * 1000;
@@ -732,6 +740,7 @@ const subjectFields = [
   toggle: field.input?.closest(".subject-field")?.querySelector(".subject-toggle") || null,
 })).filter(({ input, menu }) => input && menu);
 
+const storageStatus = getLocalStorageStatus();
 let time = 0;
 let timer = null;
 let state = loadState();
@@ -749,8 +758,20 @@ let activeSubjectInput = null;
 let selectedShopItemId = null;
 let selectedShopCategory = shopCategoryOrder[0];
 
+function createStateMeta(existingMeta = {}) {
+  const now = new Date().toISOString();
+
+  return {
+    version: STORAGE_VERSION,
+    createdAt: existingMeta.createdAt || now,
+    updatedAt: existingMeta.updatedAt || now,
+    appName: APP_NAME,
+  };
+}
+
 function createDefaultState() {
   return {
+    meta: createStateMeta(),
     coins: 0,
     totalMinutes: 0,
     pet: {
@@ -794,6 +815,164 @@ function createDefaultState() {
       lastShownAt: null,
     },
   };
+}
+
+function getLocalStorageStatus() {
+  try {
+    if (!window.localStorage) {
+      return { available: false, error: "localStorage is not available" };
+    }
+
+    window.localStorage.setItem(STORAGE_TEST_KEY, "1");
+    window.localStorage.removeItem(STORAGE_TEST_KEY);
+    return { available: true, error: "" };
+  } catch (error) {
+    return { available: false, error: error?.message || "localStorage is blocked" };
+  }
+}
+
+function setStorageWarning(message) {
+  console.warn(message);
+}
+
+function safeGetStorageItem(key) {
+  if (!storageStatus.available) return null;
+
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    setStorageWarning("このブラウザでは記録を読み込めない可能性があります。通常モードのSafariまたはChromeで開いてください。");
+    return null;
+  }
+}
+
+function safeSetStorageItem(key, value) {
+  if (!storageStatus.available) return false;
+
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch {
+    setStorageWarning("データ保存に失敗しました。ブラウザの空き容量やプライベートモードを確認してください。");
+    return false;
+  }
+}
+
+function safeRemoveStorageItem(key) {
+  if (!storageStatus.available) return;
+
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // Removing a temporary key is best-effort only.
+  }
+}
+
+function archiveCorruptStorage(key, rawValue) {
+  if (!rawValue || !storageStatus.available) return;
+
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const archiveKey = `${STORAGE_CORRUPT_PREFIX}:${timestamp}`;
+  const archiveValue = JSON.stringify({
+    appName: APP_NAME,
+    capturedAt: new Date().toISOString(),
+    sourceKey: key,
+    rawValue,
+  });
+
+  safeSetStorageItem(archiveKey, archiveValue);
+}
+
+function parseStoredState(rawValue, key, { archiveCorrupt = false } = {}) {
+  if (!rawValue) return null;
+
+  try {
+    const parsed = JSON.parse(rawValue);
+    if (!isLikelyFlowlState(parsed)) {
+      if (archiveCorrupt) archiveCorruptStorage(key, rawValue);
+      return null;
+    }
+    return normalizeState(parsed);
+  } catch {
+    if (archiveCorrupt) archiveCorruptStorage(key, rawValue);
+    return null;
+  }
+}
+
+function loadStoredStateFromKey(key, options = {}) {
+  return parseStoredState(safeGetStorageItem(key), key, options);
+}
+
+function isPlainObject(value) {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function isLikelyFlowlState(value) {
+  if (!isPlainObject(value)) return false;
+  if (value.meta?.appName === APP_NAME) return true;
+  return Array.isArray(value.sessions) && (
+    isPlainObject(value.pet)
+    || isPlainObject(value.inventory)
+    || isPlainObject(value.customization)
+    || Array.isArray(value.subjects)
+    || Number.isFinite(Number(value.totalMinutes))
+    || Number.isFinite(Number(value.coins))
+  );
+}
+
+function getSafeMode(mode) {
+  return ["timer", "stopwatch", "manual"].includes(mode) ? mode : "manual";
+}
+
+function normalizeSession(session, index) {
+  if (!isPlainObject(session)) return null;
+
+  const minutes = Math.round(Number(session.minutes) || 0);
+  if (minutes <= 0) return null;
+
+  const createdDate = parseSessionDate(session.createdAt || session.date);
+  const createdAt = Number.isNaN(Date.parse(session.createdAt))
+    ? createdDate.toISOString()
+    : session.createdAt;
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(session.date || "")
+    ? session.date
+    : toDateKey(createdDate);
+  const coinsEarned = Math.max(
+    0,
+    Math.round(Number(session.coinsEarned ?? session.coins ?? getEarnedCoins(minutes)) || 0)
+  );
+  const subject = String(session.subject || "集中学習").trim() || "集中学習";
+
+  return {
+    ...session,
+    id: String(session.id || `session-${Date.parse(createdAt) || Date.now()}-${index}`),
+    subject,
+    minutes,
+    mode: getSafeMode(session.mode),
+    date,
+    createdAt,
+    coinsEarned,
+    coins: coinsEarned,
+  };
+}
+
+function prepareStateForSave(sourceState = state) {
+  const normalized = normalizeState(sourceState);
+  normalized.meta = {
+    ...createStateMeta(normalized.meta),
+    version: STORAGE_VERSION,
+    updatedAt: new Date().toISOString(),
+    appName: APP_NAME,
+  };
+  return normalized;
+}
+
+function backupCurrentStoredState() {
+  const currentRaw = safeGetStorageItem(STORAGE_KEY);
+  if (!currentRaw || !parseStoredState(currentRaw, STORAGE_KEY)) return;
+
+  safeSetStorageItem(STORAGE_LAST_GOOD_KEY, currentRaw);
+  safeSetStorageItem(STORAGE_BACKUP_KEY, currentRaw);
 }
 
 function normalizeState(savedState) {
@@ -844,19 +1023,35 @@ function normalizeState(savedState) {
     delete inventory[itemId];
   });
 
+  const sessions = Array.isArray(savedState.sessions)
+    ? savedState.sessions.map(normalizeSession).filter(Boolean)
+    : [];
+  const savedTotalMinutes = Number(savedState.totalMinutes);
+  const totalMinutes = Number.isFinite(savedTotalMinutes)
+    ? Math.max(0, Math.round(savedTotalMinutes))
+    : sessions.reduce((sum, session) => sum + session.minutes, 0);
+  const coins = Math.max(0, Math.round(Number(savedState.coins ?? defaults.coins) || 0));
+  const savedMeta = isPlainObject(savedState.meta) ? savedState.meta : {};
+
   return {
     ...defaults,
     ...persistedState,
+    meta: createStateMeta(savedMeta),
+    coins,
+    totalMinutes,
     pet: {
       ...defaults.pet,
       ...savedState.pet,
+      hunger: clamp(savedState.pet?.hunger ?? defaults.pet.hunger),
+      happy: clamp(savedState.pet?.happy ?? defaults.pet.happy),
+      energy: clamp(savedState.pet?.energy ?? defaults.pet.energy),
     },
     inventory,
     customization: {
       ...customization,
     },
     subjects: Array.isArray(savedState.subjects) ? savedState.subjects : [],
-    sessions: Array.isArray(savedState.sessions) ? savedState.sessions : [],
+    sessions,
     loginBonus: {
       ...defaults.loginBonus,
       ...savedState.loginBonus,
@@ -880,20 +1075,60 @@ function normalizeState(savedState) {
 }
 
 function loadState() {
-  const saved = localStorage.getItem(STORAGE_KEY);
+  if (!storageStatus.available) return createDefaultState();
 
-  if (!saved) return createDefaultState();
+  const mainState = loadStoredStateFromKey(STORAGE_KEY, { archiveCorrupt: true });
+  if (mainState) return mainState;
 
-  try {
-    return normalizeState(JSON.parse(saved));
-  } catch {
-    localStorage.removeItem(STORAGE_KEY);
-    return createDefaultState();
+  const lastGoodState = loadStoredStateFromKey(STORAGE_LAST_GOOD_KEY);
+  if (lastGoodState) {
+    return lastGoodState;
   }
+
+  const backupState = loadStoredStateFromKey(STORAGE_BACKUP_KEY);
+  if (backupState) {
+    return backupState;
+  }
+
+  return createDefaultState();
 }
 
 function saveState() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  if (!storageStatus.available) return false;
+
+  backupCurrentStoredState();
+
+  const nextState = prepareStateForSave(state);
+  let serialized = "";
+
+  try {
+    serialized = JSON.stringify(nextState);
+  } catch {
+    setStorageWarning("データ保存に失敗しました。記録データの形式を確認してください。");
+    return false;
+  }
+
+  if (!safeSetStorageItem(STORAGE_TEMP_KEY, serialized)) return false;
+
+  try {
+    const verifiedState = JSON.parse(safeGetStorageItem(STORAGE_TEMP_KEY));
+    if (!isLikelyFlowlState(verifiedState)) throw new Error("Saved data verification failed");
+  } catch {
+    safeRemoveStorageItem(STORAGE_TEMP_KEY);
+    setStorageWarning("データ保存の検証に失敗しました。もう一度お試しください。");
+    return false;
+  }
+
+  if (!safeSetStorageItem(STORAGE_KEY, serialized)) {
+    safeRemoveStorageItem(STORAGE_TEMP_KEY);
+    return false;
+  }
+
+  safeSetStorageItem(STORAGE_LAST_GOOD_KEY, serialized);
+  safeSetStorageItem(STORAGE_META_KEY, JSON.stringify(nextState.meta));
+  safeRemoveStorageItem(STORAGE_TEMP_KEY);
+  state = nextState;
+  return true;
 }
 
 function clamp(value) {
@@ -1602,7 +1837,7 @@ function buildStudyReaction(session) {
     title,
     detail,
     bonus: buildStudyBonus(session, context),
-    reward: `+${session.coins} coin`,
+    reward: `+${session.coinsEarned ?? session.coins ?? getEarnedCoins(session.minutes)} coin`,
     mood: getStudyReactionMood(session.minutes, context),
   };
 }
@@ -1885,15 +2120,18 @@ function confirmDurationPicker() {
   closeDurationPicker();
 }
 
-function addStudySession(minutes, subject) {
+function addStudySession(minutes, subject, mode = "manual") {
   const earnedCoins = getEarnedCoins(minutes);
   const normalizedSubject = subject || "集中学習";
+  const createdAt = new Date().toISOString();
   const session = {
-    id: Date.now(),
+    id: `session-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     date: getTodayKey(),
-    createdAt: new Date().toISOString(),
+    createdAt,
     subject: normalizedSubject,
     minutes,
+    mode: getSafeMode(mode),
+    coinsEarned: earnedCoins,
     coins: earnedCoins,
   };
 
@@ -1958,7 +2196,7 @@ function renderHistory() {
 
     title.textContent = session.subject;
     meta.textContent = `${formatDateLabel(parseSessionDate(session.date))}${timeLabel} ・ ${formatStudyDuration(session.minutes)}`;
-    coins.textContent = `+${session.coins} coin`;
+    coins.textContent = `+${session.coinsEarned ?? session.coins ?? getEarnedCoins(session.minutes)} coin`;
 
     detail.append(title, meta);
     item.append(detail, coins);
@@ -2909,7 +3147,7 @@ timerRecordForm.addEventListener("submit", (event) => {
     return;
   }
 
-  const session = addStudySession(minutes, timerSubjectInput.value.trim() || getCurrentStudyRecordLabel());
+  const session = addStudySession(minutes, timerSubjectInput.value.trim() || getCurrentStudyRecordLabel(), studyMode);
   resetTimer();
   setFocusMode(false);
   timerSubjectInput.value = "";
@@ -2935,7 +3173,7 @@ studyForm.addEventListener("submit", (event) => {
 
   if (!Number.isFinite(minutes) || minutes <= 0) return;
 
-  addStudySession(Math.round(minutes), subject);
+  addStudySession(Math.round(minutes), subject, "manual");
   subjectInput.value = "";
   manualStudyMinutes = 25;
   minutesInput.value = 25;
@@ -3102,9 +3340,13 @@ document.querySelectorAll(".nav-btn").forEach((button) => {
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js").catch(() => {
-      // PWA registration can fail on non-HTTPS local network URLs.
-    });
+    navigator.serviceWorker.register("./sw.js")
+      .then(() => {
+        // Service Worker updates stay silent because the data management UI was removed.
+      })
+      .catch(() => {
+        // PWA registration can fail on non-HTTPS local network URLs.
+      });
   });
 }
 
