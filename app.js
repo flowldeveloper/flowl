@@ -2857,6 +2857,136 @@ function drawShareOwl(context, summary, centerX, centerY) {
   context.restore();
 }
 
+function getShareDocumentCssText() {
+  return Array.from(document.styleSheets)
+    .map((styleSheet) => {
+      try {
+        return Array.from(styleSheet.cssRules, (rule) => rule.cssText).join("\n");
+      } catch {
+        return "";
+      }
+    })
+    .filter(Boolean)
+    .join("\n");
+}
+
+function escapeShareXmlText(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
+function createShareStageMarkup(width, height) {
+  const sourceStage = document.querySelector("#timerScreen .pet-stage");
+  if (!sourceStage) throw new Error("Share stage source is missing");
+
+  const stage = sourceStage.cloneNode(true);
+  stage.className = "pet-stage share-export-stage";
+  stage.removeAttribute("aria-label");
+  stage.querySelector(".study-reaction")?.remove();
+  stage.querySelector(".pet-action-prop")?.remove();
+
+  const pet = stage.querySelector('.pet[data-asset="flowl-owl"]');
+  if (!pet) throw new Error("Share owl source is missing");
+
+  pet.className = "pet idle";
+  pet.dataset.asset = "flowl-owl";
+  pet.querySelectorAll(".pet-equipment").forEach((layer) => layer.remove());
+  renderPetPreview(stage, pet, null);
+
+  stage.querySelectorAll("[id]").forEach((element) => element.removeAttribute("id"));
+  stage.style.width = `${width}px`;
+  stage.style.height = `${height}px`;
+  stage.style.minHeight = `${height}px`;
+  stage.style.maxHeight = `${height}px`;
+
+  return new XMLSerializer().serializeToString(stage);
+}
+
+function createShareStageSvg(summary, width, height) {
+  const stageMarkup = createShareStageMarkup(width, height);
+  const documentCss = escapeShareXmlText(getShareDocumentCssText());
+  const exportCss = escapeShareXmlText(`
+    * { box-sizing: border-box; }
+    html, body, .share-stage-export-host {
+      width: ${width}px;
+      height: ${height}px;
+      margin: 0;
+      overflow: hidden;
+    }
+    .share-export-stage {
+      position: relative !important;
+      display: grid !important;
+      place-items: center !important;
+      width: ${width}px !important;
+      height: ${height}px !important;
+      min-height: ${height}px !important;
+      max-height: ${height}px !important;
+      padding: 8px !important;
+      overflow: hidden !important;
+      border: 0 !important;
+      border-radius: 18px !important;
+      box-shadow: none !important;
+    }
+    .share-export-stage .pet[data-asset="flowl-owl"] {
+      position: relative !important;
+      width: 170px !important;
+      height: 180px !important;
+      margin: 0 !important;
+      animation: none !important;
+      transform: none !important;
+    }
+    .share-export-stage .owl-svg,
+    .share-export-stage .owl-root,
+    .share-export-stage .owl-head,
+    .share-export-stage .pet-wing,
+    .share-export-stage .eye,
+    .share-export-stage .owl-beak {
+      animation: none !important;
+    }
+    .share-export-stage .pet-shadow {
+      bottom: 17px !important;
+      width: 124px !important;
+      height: 14px !important;
+    }
+  `);
+
+  return `
+    <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+      <foreignObject x="0" y="0" width="${width}" height="${height}">
+        <div xmlns="http://www.w3.org/1999/xhtml" class="share-stage-export-host">
+          <style>${documentCss}\n${exportCss}</style>
+          ${stageMarkup}
+        </div>
+      </foreignObject>
+    </svg>
+  `;
+}
+
+function drawShareStageFromApp(context, summary, box) {
+  const sourceWidth = Math.round(box.width / 2);
+  const sourceHeight = Math.round(box.height / 2);
+  const svg = createShareStageSvg(summary, sourceWidth, sourceHeight);
+  const imageUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => {
+      context.save();
+      createRoundedPath(context, box.x, box.y, box.width, box.height, 36);
+      context.clip();
+      context.drawImage(image, box.x, box.y, box.width, box.height);
+      context.restore();
+      resolve();
+    };
+    image.onerror = () => {
+      reject(new Error("Share stage rendering failed"));
+    };
+    image.src = imageUrl;
+  });
+}
+
 function drawShareMetric(context, label, value, x, y, width, accent) {
   fillRoundedRect(context, x, y, width, 130, 24, "rgba(255, 255, 255, 0.84)");
   context.fillStyle = accent;
@@ -2869,7 +2999,7 @@ function drawShareMetric(context, label, value, x, y, width, accent) {
   context.fillText(value, x + 34, y + 96);
 }
 
-function createShareCanvas(summary = getShareSummary()) {
+async function createShareCanvas(summary = getShareSummary()) {
   const canvas = document.createElement("canvas");
   canvas.width = 1200;
   canvas.height = 1200;
@@ -2904,28 +3034,12 @@ function createShareCanvas(summary = getShareSummary()) {
   drawShareMetric(context, "LEVEL", String(summary.level), 806, 252, 330, "#f3b63f");
 
   const stageBox = { x: 64, y: 414, width: 1072, height: 470 };
-  drawShareStageBackground(context, summary, stageBox);
-  drawShareFurniture(context, summary.furnitureId, 270, 824);
-  drawShareOwl(context, summary, 820, 642);
-
-  fillRoundedRect(context, 92, 450, 430, 108, 22, "rgba(255, 255, 255, 0.84)");
-  context.fillStyle = "#5b7562";
-  setShareCanvasFont(context, 20, 900);
-  context.fillText("TODAY'S NOTE", 120, 484);
-  context.fillStyle = "#294b33";
-  setShareCanvasFont(context, 28, 800);
-  drawWrappedCanvasText(context, summary.praise, 120, 524, 374, 36, 2);
-
-  if (summary.weekDifference > 0 && summary.previousWeeklyMinutes > 0) {
-    fillRoundedRect(context, 92, 590, 330, 58, 29, "rgba(255, 248, 218, 0.92)");
-    context.fillStyle = "#8a691d";
-    setShareCanvasFont(context, 23, 900);
-    context.fillText(`前週より +${formatStudyDuration(summary.weekDifference)}`, 122, 628);
-  } else if (summary.streak >= 2) {
-    fillRoundedRect(context, 92, 590, 300, 58, 29, "rgba(229, 246, 232, 0.94)");
-    context.fillStyle = "#42724d";
-    setShareCanvasFont(context, 23, 900);
-    context.fillText(`${summary.streak}日連続で学習中`, 122, 628);
+  try {
+    await drawShareStageFromApp(context, summary, stageBox);
+  } catch {
+    drawShareStageBackground(context, summary, stageBox);
+    drawShareFurniture(context, summary.furnitureId, 270, 824);
+    drawShareOwl(context, summary, 820, 642);
   }
 
   context.fillStyle = "#718078";
@@ -2954,8 +3068,8 @@ function createShareCanvas(summary = getShareSummary()) {
   return canvas;
 }
 
-function createShareImageBlob(summary = getShareSummary()) {
-  const canvas = createShareCanvas(summary);
+async function createShareImageBlob(summary = getShareSummary()) {
+  const canvas = await createShareCanvas(summary);
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {
       if (blob) resolve(blob);
