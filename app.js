@@ -2656,6 +2656,71 @@ function drawShareFurniture(context, furnitureId, x, floorY) {
   context.restore();
 }
 
+function drawShareOwlSvgPath(context, pathData, fill, stroke = "#6c5436", lineWidth = 4.5) {
+  const path = new Path2D(pathData);
+
+  context.fillStyle = fill;
+  context.fill(path);
+  if (!stroke) return;
+
+  context.strokeStyle = stroke;
+  context.lineWidth = lineWidth;
+  context.lineCap = "round";
+  context.lineJoin = "round";
+  context.stroke(path);
+}
+
+function inShareOwlSvgSpace(context, drawLayer) {
+  context.save();
+  context.scale(2.3, 2.3);
+  context.translate(-90, -95);
+  drawLayer();
+  context.restore();
+}
+
+function drawShareOwlBack(context) {
+  inShareOwlSvgSpace(context, () => {
+    drawShareOwlSvgPath(context, "M57 43 C51 26 62 18 77 33 C68 36 62 41 58 51 Z", "#edc77e");
+    drawShareOwlSvgPath(context, "M123 43 C129 26 118 18 103 33 C112 36 118 41 122 51 Z", "#edc77e");
+    drawShareOwlSvgPath(context, "M90 18 C126 18 151 46 151 90 C151 139 126 166 90 166 C54 166 29 139 29 90 C29 46 54 18 90 18 Z", "#edc77e");
+    drawShareOwlSvgPath(context, "M47 88 C30 97 28 125 41 142 C55 132 58 108 56 92 Z", "#cfe7bd");
+    drawShareOwlSvgPath(context, "M133 88 C150 97 152 125 139 142 C125 132 122 108 124 92 Z", "#cfe7bd");
+  });
+}
+
+function drawShareOwlFront(context) {
+  inShareOwlSvgSpace(context, () => {
+    drawShareOwlSvgPath(context, "M90 37 C115 37 132 55 132 78 C132 101 114 116 90 116 C66 116 48 101 48 78 C48 55 65 37 90 37 Z", "#f8e2b5");
+    drawShareOwlSvgPath(context, "M89 76 C80 55 58 52 51 68 C43 87 58 108 82 108 C90 101 94 88 89 76 Z", "#fffdf7");
+    drawShareOwlSvgPath(context, "M91 76 C100 55 122 52 129 68 C137 87 122 108 98 108 C90 101 86 88 91 76 Z", "#fffdf7");
+    drawShareOwlSvgPath(context, "M90 92 C112 92 127 111 127 133 C127 154 112 165 90 165 C68 165 53 154 53 133 C53 111 68 92 90 92 Z", "#fffdf7");
+
+    context.fillStyle = "#dceecf";
+    context.globalAlpha = 0.9;
+    context.beginPath();
+    context.arc(64, 94, 7, 0, Math.PI * 2);
+    context.arc(116, 94, 7, 0, Math.PI * 2);
+    context.fill();
+    context.globalAlpha = 1;
+
+    context.fillStyle = "#263126";
+    context.beginPath();
+    context.arc(68, 77, 6.5, 0, Math.PI * 2);
+    context.arc(112, 77, 6.5, 0, Math.PI * 2);
+    context.fill();
+
+    context.fillStyle = "#fffdf7";
+    context.beginPath();
+    context.arc(70.5, 74.5, 1.7, 0, Math.PI * 2);
+    context.arc(114.5, 74.5, 1.7, 0, Math.PI * 2);
+    context.fill();
+
+    drawShareOwlSvgPath(context, "M90 93 L78 80 L102 80 Z", "#f3b63f", "#6c5436", 3.5);
+    drawShareOwlSvgPath(context, "M63 160 C55 160 51 164 51 171 C58 168 65 168 72 171 C73 164 70 160 63 160 Z", "#f3b63f");
+    drawShareOwlSvgPath(context, "M117 160 C125 160 129 164 129 171 C122 168 115 168 108 171 C107 164 110 160 117 160 Z", "#f3b63f");
+  });
+}
+
 function drawShareOwl(context, summary, centerX, centerY) {
   const clothing = shopItems[summary.clothingId];
   const accessoryIds = summary.accessoryIds;
@@ -2674,20 +2739,7 @@ function drawShareOwl(context, summary, centerX, centerY) {
   context.ellipse(0, 168, 138, 24, 0, 0, Math.PI * 2);
   context.fill();
 
-  context.fillStyle = "#e8b86f";
-  context.strokeStyle = "#6c4a2d";
-  context.lineWidth = 9;
-  context.beginPath();
-  context.ellipse(0, 24, 150, 178, 0, 0, Math.PI * 2);
-  context.fill();
-  context.stroke();
-
-  context.fillStyle = "#d69c5d";
-  context.beginPath();
-  context.ellipse(-130, 52, 47, 94, -0.18, 0, Math.PI * 2);
-  context.ellipse(130, 52, 47, 94, 0.18, 0, Math.PI * 2);
-  context.fill();
-  context.stroke();
+  drawShareOwlBack(context);
 
   if (clothing) {
     const clothingColor = rarityColors[clothing.rarity] || rarityColors.common;
@@ -2723,54 +2775,7 @@ function drawShareOwl(context, summary, centerX, centerY) {
     }
   }
 
-  context.fillStyle = "#fffdf8";
-  context.beginPath();
-  context.ellipse(0, -28, 118, 108, 0, 0, Math.PI * 2);
-  context.fill();
-  context.beginPath();
-  context.ellipse(0, 102, 84, 78, 0, 0, Math.PI * 2);
-  context.fill();
-
-  context.fillStyle = "#ffffff";
-  context.beginPath();
-  context.arc(-47, -36, 34, 0, Math.PI * 2);
-  context.arc(47, -36, 34, 0, Math.PI * 2);
-  context.fill();
-  context.strokeStyle = "#6c4a2d";
-  context.lineWidth = 6;
-  context.stroke();
-
-  context.fillStyle = "#2f322e";
-  context.beginPath();
-  context.arc(-47, -32, 16, 0, Math.PI * 2);
-  context.arc(47, -32, 16, 0, Math.PI * 2);
-  context.fill();
-  context.fillStyle = "#ffffff";
-  context.beginPath();
-  context.arc(-41, -39, 5, 0, Math.PI * 2);
-  context.arc(53, -39, 5, 0, Math.PI * 2);
-  context.fill();
-
-  context.fillStyle = "#f2b63f";
-  context.beginPath();
-  context.moveTo(0, 4);
-  context.lineTo(-18, -14);
-  context.lineTo(18, -14);
-  context.closePath();
-  context.fill();
-  context.strokeStyle = "#6c4a2d";
-  context.lineWidth = 5;
-  context.stroke();
-
-  context.strokeStyle = "#6c4a2d";
-  context.lineWidth = 8;
-  context.lineCap = "round";
-  context.beginPath();
-  context.moveTo(-62, 176);
-  context.lineTo(-88, 188);
-  context.moveTo(62, 176);
-  context.lineTo(88, 188);
-  context.stroke();
+  drawShareOwlFront(context);
 
   accessoryIds.forEach((itemId) => {
     if (itemId === "acornBeret" || itemId === "quillHat") {
