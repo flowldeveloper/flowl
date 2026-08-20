@@ -1,7 +1,7 @@
 const STORAGE_KEY = "flowl-study-pet";
 const STORAGE_VERSION = 2;
 const ANALYTICS_CONSENT_KEY = window.FLOWL_ANALYTICS_CONSENT_KEY || "flowl-analytics-consent";
-const ANALYTICS_APP_VERSION = "pwa-13";
+const ANALYTICS_APP_VERSION = "pwa-14";
 const ANALYTICS_SCREEN_NAMES = { timerScreen: "study", logScreen: "log", careScreen: "care", shopScreen: "shop" };
 const STORAGE_BACKUP_KEY = `${STORAGE_KEY}:backup`;
 const STORAGE_LAST_GOOD_KEY = `${STORAGE_KEY}:last-good`;
