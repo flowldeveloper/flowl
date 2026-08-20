@@ -1,5 +1,8 @@
 const STORAGE_KEY = "flowl-study-pet";
 const STORAGE_VERSION = 2;
+const ANALYTICS_CONSENT_KEY = window.FLOWL_ANALYTICS_CONSENT_KEY || "flowl-analytics-consent";
+const ANALYTICS_APP_VERSION = "pwa-13";
+const ANALYTICS_SCREEN_NAMES = { timerScreen: "study", logScreen: "log", careScreen: "care", shopScreen: "shop" };
 const STORAGE_BACKUP_KEY = `${STORAGE_KEY}:backup`;
 const STORAGE_LAST_GOOD_KEY = `${STORAGE_KEY}:last-good`;
 const STORAGE_TEMP_KEY = `${STORAGE_KEY}:temp`;
@@ -730,6 +733,10 @@ const sharePet = document.getElementById("sharePet");
 const shareToXBtn = document.getElementById("shareToXBtn");
 const saveShareImageBtn = document.getElementById("saveShareImageBtn");
 const shareStatus = document.getElementById("shareStatus");
+const analyticsConsent = document.getElementById("analyticsConsent");
+const analyticsAcceptBtn = document.getElementById("analyticsAcceptBtn");
+const analyticsDeclineBtn = document.getElementById("analyticsDeclineBtn");
+const analyticsSettingsBtn = document.getElementById("analyticsSettingsBtn");
 
 const petViews = [
   {
@@ -758,6 +765,7 @@ const storageStatus = getLocalStorageStatus();
 let time = 0;
 let timer = null;
 let state = loadState();
+let analyticsSessionTracked = false;
 let animationTimer = null;
 let timerBeatId = 0;
 let studyReactionTimer = null;
@@ -771,6 +779,120 @@ let activeMascotMotion = "idle";
 let activeSubjectInput = null;
 let selectedShopItemId = null;
 let selectedShopCategory = shopCategoryOrder[0];
+
+function getAnalyticsConsentChoice() {
+  try {
+    return window.localStorage.getItem(ANALYTICS_CONSENT_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function storeAnalyticsConsentChoice(choice) {
+  try {
+    window.localStorage.setItem(ANALYTICS_CONSENT_KEY, choice);
+  } catch {
+    // Consent still applies to the current page when storage is unavailable.
+  }
+}
+
+function trackFlowlEvent(eventName, parameters = {}) {
+  if (!window.FLOWL_ANALYTICS_ENABLED || getAnalyticsConsentChoice() !== "granted") return;
+  if (typeof window.gtag !== "function" || !/^[a-z][a-z0-9_]{0,39}$/.test(eventName)) return;
+
+  const safeParameters = Object.fromEntries(
+    Object.entries(parameters)
+      .filter(([, value]) => ["string", "number", "boolean"].includes(typeof value))
+      .map(([key, value]) => [key, typeof value === "string" ? value.slice(0, 50) : value]),
+  );
+
+  window.gtag("event", eventName, safeParameters);
+}
+
+function getAnalyticsDurationBucket(minutes) {
+  const safeMinutes = Math.max(0, Number(minutes) || 0);
+
+  if (safeMinutes >= 90) return "90_plus";
+  if (safeMinutes >= 50) return "50_89";
+  if (safeMinutes >= 25) return "25_49";
+  if (safeMinutes >= 10) return "10_24";
+  return "1_9";
+}
+
+function getActiveAnalyticsScreen() {
+  const activeScreen = document.querySelector(".screen.active");
+  return ANALYTICS_SCREEN_NAMES[activeScreen?.id] || "study";
+}
+
+function trackAnalyticsScreen(screenId) {
+  const screenName = ANALYTICS_SCREEN_NAMES[screenId];
+  if (!screenName) return;
+
+  trackFlowlEvent("screen_view", {
+    app_name: APP_NAME,
+    screen_name: screenName,
+  });
+}
+
+function trackAnalyticsSession() {
+  if (analyticsSessionTracked || getAnalyticsConsentChoice() !== "granted") return;
+
+  analyticsSessionTracked = true;
+  trackFlowlEvent("app_open", {
+    app_version: ANALYTICS_APP_VERSION,
+    display_mode: window.matchMedia("(display-mode: standalone)").matches ? "standalone" : "browser",
+  });
+  trackFlowlEvent("screen_view", {
+    app_name: APP_NAME,
+    screen_name: getActiveAnalyticsScreen(),
+  });
+}
+
+function openAnalyticsConsent() {
+  if (!analyticsConsent || !window.FLOWL_ANALYTICS_ENABLED) return;
+  analyticsConsent.hidden = false;
+  analyticsAcceptBtn?.focus({ preventScroll: true });
+}
+
+function closeAnalyticsConsent() {
+  if (analyticsConsent) analyticsConsent.hidden = true;
+}
+
+function updateAnalyticsConsent(choice) {
+  const granted = choice === "granted";
+  storeAnalyticsConsentChoice(granted ? "granted" : "denied");
+
+  window.gtag?.("consent", "update", {
+    ad_storage: "denied",
+    ad_user_data: "denied",
+    ad_personalization: "denied",
+    analytics_storage: granted ? "granted" : "denied",
+  });
+
+  if (granted) {
+    window.loadFlowlAnalytics?.();
+    trackAnalyticsSession();
+  }
+
+  closeAnalyticsConsent();
+}
+
+function initializeAnalytics() {
+  if (!window.FLOWL_ANALYTICS_ENABLED) {
+    analyticsSettingsBtn?.setAttribute("hidden", "");
+    return;
+  }
+
+  const choice = getAnalyticsConsentChoice();
+  if (choice === "granted") {
+    trackAnalyticsSession();
+    return;
+  }
+
+  if (choice !== "denied") {
+    window.setTimeout(openAnalyticsConsent, 650);
+  }
+}
 
 function createStateMeta(existingMeta = {}) {
   const now = new Date().toISOString();
@@ -2161,6 +2283,11 @@ function addStudySession(minutes, subject, mode = "manual") {
 
   saveState();
   render();
+  trackFlowlEvent("study_complete", {
+    study_mode: session.mode,
+    duration_bucket: getAnalyticsDurationBucket(minutes),
+  });
+
   return session;
 }
 
@@ -3156,12 +3283,14 @@ async function shareProgressToX() {
         files: [file],
       });
       shareStatus.textContent = "共有画面を開きました。今日の積み重ねを見せよう。";
+      trackFlowlEvent("share_progress", { share_method: "native" });
       return;
     }
 
     downloadShareImage(blob);
     openXComposer(summary, targetWindow);
     shareStatus.textContent = "画像を保存しました。開いたXの投稿に画像を添付してください。";
+    trackFlowlEvent("share_progress", { share_method: "x_composer" });
   } catch (error) {
     if (error?.name === "AbortError") {
       if (targetWindow && !targetWindow.closed) targetWindow.close();
@@ -3183,6 +3312,7 @@ async function saveProgressImage() {
     const blob = await createShareImageBlob();
     downloadShareImage(blob);
     shareStatus.textContent = "共有画像を保存しました。";
+    trackFlowlEvent("share_image_save");
   } catch {
     shareStatus.textContent = "画像を保存できませんでした。もう一度お試しください。";
   } finally {
@@ -3973,6 +4103,7 @@ function switchScreen(screenId) {
   document.querySelectorAll(".nav-btn").forEach((button) => {
     button.classList.toggle("active", button.dataset.screen === screenId);
   });
+  trackAnalyticsScreen(screenId);
 }
 
 function stopTimerAtLimit() {
@@ -4066,6 +4197,8 @@ startBtn.addEventListener("click", () => {
   }
 
   timerStatus.textContent = "";
+  const timerEventName = time > 0 ? "study_resume" : "study_start";
+  trackFlowlEvent(timerEventName, { study_mode: studyMode });
   updateTimerButton("一時停止");
   setFocusMode(true);
   timer = setInterval(() => {
@@ -4202,6 +4335,7 @@ document.querySelectorAll(".care-btn").forEach((button) => {
 
     saveState();
     render();
+    trackFlowlEvent("care_action", { care_action: action });
   });
 });
 
@@ -4219,6 +4353,11 @@ function applySelectedItem(itemId) {
     }
     saveState();
     render();
+    trackFlowlEvent("customization_change", {
+      item_category: category,
+      item_rarity: item.rarity,
+      change_type: isItemEquipped(itemId) ? "equip" : "remove",
+    });
     return true;
   }
 
@@ -4238,6 +4377,16 @@ function applySelectedItem(itemId) {
   }
   saveState();
   render();
+  trackFlowlEvent("shop_purchase", {
+    item_category: category,
+    item_rarity: item.rarity,
+    coin_price: cost,
+  });
+  trackFlowlEvent("customization_change", {
+    item_category: category,
+    item_rarity: item.rarity,
+    change_type: "equip",
+  });
   return true;
 }
 
@@ -4287,6 +4436,9 @@ document.querySelectorAll(".nav-btn").forEach((button) => {
 
 shareToXBtn?.addEventListener("click", shareProgressToX);
 saveShareImageBtn?.addEventListener("click", saveProgressImage);
+analyticsAcceptBtn?.addEventListener("click", () => updateAnalyticsConsent("granted"));
+analyticsDeclineBtn?.addEventListener("click", () => updateAnalyticsConsent("denied"));
+analyticsSettingsBtn?.addEventListener("click", openAnalyticsConsent);
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
@@ -4307,6 +4459,7 @@ motionButtons.forEach((button) => {
 });
 
 const launchReaction = buildLaunchReaction();
+initializeAnalytics();
 
 grantLoginBonus();
 rememberAppOpen();

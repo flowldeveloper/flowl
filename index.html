@@ -23,7 +23,60 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
   <title>Flowl</title>
-  <link rel="stylesheet" href="style.css?v=pwa-12">
+  <link rel="stylesheet" href="style.css?v=pwa-13">
+  <script>
+    (() => {
+      const measurementId = "G-LHDDBCXE7T";
+      const consentKey = "flowl-analytics-consent";
+      const productionHosts = new Set([
+        "flowldeveloper.github.io",
+        "flowl.com",
+        "www.flowl.com",
+      ]);
+
+      window.FLOWL_ANALYTICS_ID = measurementId;
+      window.FLOWL_ANALYTICS_CONSENT_KEY = consentKey;
+      window.FLOWL_ANALYTICS_ENABLED = productionHosts.has(window.location.hostname);
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = window.gtag || function () {
+        window.dataLayer.push(arguments);
+      };
+
+      let consentChoice = null;
+      try {
+        consentChoice = window.localStorage.getItem(consentKey);
+      } catch {
+        consentChoice = null;
+      }
+
+      window.gtag("consent", "default", {
+        ad_storage: "denied",
+        ad_user_data: "denied",
+        ad_personalization: "denied",
+        analytics_storage: consentChoice === "granted" ? "granted" : "denied",
+      });
+      window.gtag("set", "ads_data_redaction", true);
+
+      window.loadFlowlAnalytics = () => {
+        if (!window.FLOWL_ANALYTICS_ENABLED || window.FLOWL_ANALYTICS_LOADED) return;
+        window.FLOWL_ANALYTICS_LOADED = true;
+
+        const tag = document.createElement("script");
+        tag.async = true;
+        tag.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
+        document.head.appendChild(tag);
+        window.gtag("js", new Date());
+        window.gtag("config", measurementId, {
+          send_page_view: false,
+          page_location: `${window.location.origin}${window.location.pathname}`,
+          allow_google_signals: false,
+          allow_ad_personalization_signals: false,
+        });
+      };
+
+      if (consentChoice === "granted") window.loadFlowlAnalytics();
+    })();
+  </script>
 </head>
 <body>
   <main class="app-shell">
@@ -259,6 +312,9 @@
       <article class="panel total-study-panel" aria-label="今までの総勉強時間">
         <span>今までの総勉強時間</span>
         <strong id="allTimeStudyTotal">0分</strong>
+        <button id="analyticsSettingsBtn" class="analytics-settings-button" type="button">
+          アクセス解析設定
+        </button>
       </article>
     </section>
 
@@ -392,6 +448,17 @@
     </div>
   </div>
 
+  <aside id="analyticsConsent" class="analytics-consent" role="dialog" aria-labelledby="analyticsConsentTitle" hidden>
+    <div class="analytics-consent-copy">
+      <strong id="analyticsConsentTitle">Flowlの改善にご協力ください</strong>
+      <p>個人を特定しない利用状況を集計します。科目名・勉強内容・保存データは送信しません。</p>
+    </div>
+    <div class="analytics-consent-actions">
+      <button id="analyticsDeclineBtn" type="button">許可しない</button>
+      <button id="analyticsAcceptBtn" type="button">許可する</button>
+    </div>
+  </aside>
+
   <nav class="bottom-nav" aria-label="画面切り替え">
     <button class="nav-btn active" type="button" data-screen="timerScreen">
       <span>Study</span>
@@ -411,6 +478,6 @@
     </button>
   </nav>
 
-  <script src="app.js?v=pwa-12"></script>
+  <script src="app.js?v=pwa-13"></script>
 </body>
 </html>

@@ -1158,6 +1158,89 @@ input:focus {
   white-space: nowrap;
 }
 
+.analytics-settings-button {
+  grid-column: 1 / -1;
+  justify-self: end;
+  min-height: 32px;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.analytics-settings-button:hover,
+.analytics-settings-button:focus-visible {
+  color: var(--leaf);
+}
+
+.analytics-consent {
+  position: fixed;
+  right: max(12px, env(safe-area-inset-right));
+  bottom: calc(86px + env(safe-area-inset-bottom));
+  left: max(12px, env(safe-area-inset-left));
+  z-index: 80;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  width: min(620px, calc(100% - 24px));
+  margin: 0 auto;
+  padding: 14px;
+  border: 1px solid rgba(91, 140, 99, 0.32);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 14px 38px rgba(32, 65, 42, 0.2);
+  backdrop-filter: blur(14px);
+}
+
+.analytics-consent[hidden] {
+  display: none;
+}
+
+.analytics-consent-copy {
+  min-width: 0;
+}
+
+.analytics-consent-copy strong {
+  display: block;
+  color: var(--leaf);
+  font-size: 14px;
+}
+
+.analytics-consent-copy p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.analytics-consent-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(100px, 1fr));
+  gap: 8px;
+}
+
+.analytics-consent-actions button {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.analytics-consent-actions button:last-child {
+  border-color: var(--leaf);
+  background: var(--leaf);
+  color: #fff;
+}
+
 .week-controls {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -9419,6 +9502,23 @@ input:focus {
 
   .share-metrics strong {
     font-size: 14px;
+  }
+}
+
+@media (max-width: 520px) {
+  .analytics-consent {
+    bottom: calc(72px + env(safe-area-inset-bottom));
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .analytics-consent-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .analytics-consent-actions button {
+    width: 100%;
   }
 }
 
