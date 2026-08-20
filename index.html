@@ -23,7 +23,7 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
   <title>Flowl</title>
-  <link rel="stylesheet" href="style.css?v=pwa-4">
+  <link rel="stylesheet" href="style.css?v=pwa-9">
 </head>
 <body>
   <main class="app-shell">
@@ -202,6 +202,60 @@
         <p id="weekCompare" class="week-compare">前週との差 0分</p>
       </article>
 
+      <article class="panel share-panel" aria-labelledby="sharePanelTitle">
+        <div class="section-title">
+          <p id="sharePanelTitle">Share progress</p>
+          <span>今の頑張りを1枚に</span>
+        </div>
+        <div id="shareCardPreview" class="study-share-card">
+          <div class="share-card-copy">
+            <span class="share-card-kicker">MY STUDY WEEK</span>
+            <h2 id="shareHeadline">今日も一歩、積み上げました</h2>
+            <p id="sharePraise">短い時間も、続けた記録として残っています。</p>
+          </div>
+          <div class="share-metrics" aria-label="共有する学習記録">
+            <div>
+              <span>今日</span>
+              <strong id="shareToday">0分</strong>
+            </div>
+            <div>
+              <span>今週</span>
+              <strong id="shareWeek">0分</strong>
+            </div>
+            <div>
+              <span>LEVEL</span>
+              <strong id="shareLevel">1</strong>
+            </div>
+          </div>
+          <div id="sharePetStage" class="pet-stage share-pet-stage" aria-label="共有するフクロウの姿">
+            <div class="pet-shadow"></div>
+            <div class="pet idle" id="sharePet" data-asset="flowl-owl"></div>
+          </div>
+          <div class="share-loadout">
+            <div>
+              <span>STYLE</span>
+              <strong id="shareOutfit">いつものスタイル</strong>
+            </div>
+            <div>
+              <span>PLACE</span>
+              <strong id="shareBackground">いつもの勉強部屋</strong>
+            </div>
+          </div>
+          <div class="share-card-footer">
+            <strong>Flowl</strong>
+            <span>勉強すると、フクロウが育つ。</span>
+          </div>
+        </div>
+        <div class="share-actions">
+          <button id="shareToXBtn" class="share-x-button" type="button">
+            <span aria-hidden="true">X</span>
+            Xで共有
+          </button>
+          <button id="saveShareImageBtn" class="share-save-button" type="button">画像を保存</button>
+        </div>
+        <p id="shareStatus" class="share-status" role="status" aria-live="polite">科目名や詳しいログは共有画像に含まれません。</p>
+      </article>
+
       <article class="panel total-study-panel" aria-label="今までの総勉強時間">
         <span>今までの総勉強時間</span>
         <strong id="allTimeStudyTotal">0分</strong>
@@ -357,6 +411,6 @@
     </button>
   </nav>
 
-  <script src="app.js?v=pwa-4"></script>
+  <script src="app.js?v=pwa-9"></script>
 </body>
 </html>

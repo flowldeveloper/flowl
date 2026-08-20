@@ -7,6 +7,7 @@ const STORAGE_META_KEY = `${STORAGE_KEY}:meta`;
 const STORAGE_CORRUPT_PREFIX = `${STORAGE_KEY}:corrupt`;
 const STORAGE_TEST_KEY = `${STORAGE_KEY}:storage-test`;
 const APP_NAME = "Flowl";
+const FLOWL_PUBLIC_URL = "https://flowldeveloper.github.io/flowl/";
 const TIMER_MAX_SECONDS = 12 * 60 * 60;
 const COINS_PER_MINUTE = 1;
 const HUNGER_DECAY_MS = 7 * 24 * 60 * 60 * 1000;
@@ -716,6 +717,19 @@ const durationHourWheel = document.getElementById("durationHourWheel");
 const durationMinuteWheel = document.getElementById("durationMinuteWheel");
 const durationCancelBtn = document.getElementById("durationCancelBtn");
 const durationConfirmBtn = document.getElementById("durationConfirmBtn");
+const shareCardPreview = document.getElementById("shareCardPreview");
+const shareHeadline = document.getElementById("shareHeadline");
+const sharePraise = document.getElementById("sharePraise");
+const shareToday = document.getElementById("shareToday");
+const shareWeek = document.getElementById("shareWeek");
+const shareLevel = document.getElementById("shareLevel");
+const shareOutfit = document.getElementById("shareOutfit");
+const shareBackground = document.getElementById("shareBackground");
+const sharePetStage = document.getElementById("sharePetStage");
+const sharePet = document.getElementById("sharePet");
+const shareToXBtn = document.getElementById("shareToXBtn");
+const saveShareImageBtn = document.getElementById("saveShareImageBtn");
+const shareStatus = document.getElementById("shareStatus");
 
 const petViews = [
   {
@@ -2244,6 +2258,819 @@ function getDayTotal(day) {
     .reduce((sum, session) => sum + session.minutes, 0);
 }
 
+function shortenShareLabel(value, maxLength = 24) {
+  const label = String(value || "").trim();
+  return label.length > maxLength ? `${label.slice(0, maxLength - 1)}…` : label;
+}
+
+function getShareSummary() {
+  const todayMinutes = getDayTotal(new Date());
+  const weekDays = getWeekDays(0);
+  const previousWeekDays = getWeekDays(-1);
+  const weeklyMinutes = weekDays.reduce((sum, day) => sum + getDayTotal(day), 0);
+  const previousWeeklyMinutes = previousWeekDays.reduce((sum, day) => sum + getDayTotal(day), 0);
+  const weekDifference = weeklyMinutes - previousWeeklyMinutes;
+  const streak = getStudyStreak();
+  const clothingId = state.customization.clothing || null;
+  const accessoryIds = getEquippedAccessoryIds().filter((id) => shopItems[id]);
+  const equippedNames = [clothingId, ...accessoryIds]
+    .filter((id) => id && shopItems[id])
+    .map((id) => shopItems[id].name);
+  const furnitureId = state.customization.furniture || null;
+  const backgroundId = state.customization.background || null;
+  const furnitureName = shopItems[furnitureId]?.name || "";
+  const backgroundName = shopItems[backgroundId]?.name || "いつもの勉強部屋";
+  const outfitLabel = equippedNames.length > 0
+    ? equippedNames.length > 2
+      ? `${equippedNames.slice(0, 2).join("・")}ほか`
+      : equippedNames.join("・")
+    : "いつものスタイル";
+  const placeLabel = [backgroundName, furnitureName].filter(Boolean).join("・");
+  let headline = "ここから最初の一歩";
+  let praise = "これからの積み重ねが、Flowletの成長につながります。";
+
+  if (weeklyMinutes >= 1200) {
+    headline = `今週${formatStudyDuration(weeklyMinutes)}を達成！`;
+    praise = "大きな積み重ねになりました。Flowletも誇らしそうです。";
+  } else if (streak >= 7) {
+    headline = `${streak}日連続で積み上げ中！`;
+    praise = "続けてきた日々が、しっかり記録に残っています。";
+  } else if (todayMinutes >= 180) {
+    headline = `今日${formatStudyDuration(todayMinutes)}、やり切りました！`;
+    praise = "集中した時間が、今日の大きな成果になりました。";
+  } else if (weekDifference > 0 && previousWeeklyMinutes > 0) {
+    headline = `前週より${formatStudyDuration(weekDifference)}アップ！`;
+    praise = "先週の自分を少し越えた記録です。";
+  } else if (todayMinutes >= 25) {
+    headline = "今日も集中を積み上げました";
+    praise = "取り組んだ時間が、Flowletの成長につながっています。";
+  } else if (todayMinutes > 0) {
+    headline = "今日も一歩、進みました";
+    praise = "短い時間も、続けた記録として残っています。";
+  } else if (weeklyMinutes > 0) {
+    headline = "今週の頑張りを記録しました";
+    praise = "今週ここまで進めた時間を、1枚にまとめました。";
+  }
+
+  return {
+    todayMinutes,
+    weeklyMinutes,
+    previousWeeklyMinutes,
+    weekDifference,
+    streak,
+    level: getLevel(),
+    headline,
+    praise,
+    clothingId,
+    accessoryIds,
+    furnitureId,
+    backgroundId,
+    outfitLabel: shortenShareLabel(outfitLabel),
+    placeLabel: shortenShareLabel(placeLabel),
+  };
+}
+
+function renderSharePanel() {
+  if (!shareCardPreview) return;
+
+  const summary = getShareSummary();
+  shareHeadline.textContent = summary.headline;
+  sharePraise.textContent = summary.praise;
+  shareToday.textContent = formatStudyDuration(summary.todayMinutes);
+  shareWeek.textContent = formatStudyDuration(summary.weeklyMinutes);
+  shareLevel.textContent = summary.level;
+  shareOutfit.textContent = summary.outfitLabel;
+  shareBackground.textContent = summary.placeLabel;
+  shareCardPreview.dataset.hasProgress = summary.weeklyMinutes > 0 ? "true" : "false";
+  renderPetPreview(sharePetStage, sharePet, null);
+}
+
+function createRoundedPath(context, x, y, width, height, radius) {
+  const safeRadius = Math.min(radius, width / 2, height / 2);
+  context.beginPath();
+  context.moveTo(x + safeRadius, y);
+  context.lineTo(x + width - safeRadius, y);
+  context.quadraticCurveTo(x + width, y, x + width, y + safeRadius);
+  context.lineTo(x + width, y + height - safeRadius);
+  context.quadraticCurveTo(x + width, y + height, x + width - safeRadius, y + height);
+  context.lineTo(x + safeRadius, y + height);
+  context.quadraticCurveTo(x, y + height, x, y + height - safeRadius);
+  context.lineTo(x, y + safeRadius);
+  context.quadraticCurveTo(x, y, x + safeRadius, y);
+  context.closePath();
+}
+
+function fillRoundedRect(context, x, y, width, height, radius, fillStyle) {
+  createRoundedPath(context, x, y, width, height, radius);
+  context.fillStyle = fillStyle;
+  context.fill();
+}
+
+function setShareCanvasFont(context, size, weight = 700) {
+  context.font = `${weight} ${size}px system-ui, -apple-system, "Yu Gothic", "Meiryo", sans-serif`;
+}
+
+function drawWrappedCanvasText(context, text, x, y, maxWidth, lineHeight, maxLines = 2) {
+  const characters = Array.from(String(text));
+  const lines = [];
+  let line = "";
+
+  characters.forEach((character) => {
+    const nextLine = line + character;
+    if (line && context.measureText(nextLine).width > maxWidth) {
+      lines.push(line);
+      line = character;
+    } else {
+      line = nextLine;
+    }
+  });
+
+  if (line) lines.push(line);
+  const visibleLines = lines.slice(0, maxLines);
+
+  if (lines.length > maxLines && visibleLines.length > 0) {
+    visibleLines[maxLines - 1] = `${visibleLines[maxLines - 1].slice(0, -1)}…`;
+  }
+
+  visibleLines.forEach((visibleLine, index) => {
+    context.fillText(visibleLine, x, y + index * lineHeight);
+  });
+}
+
+function drawShareStar(context, x, y, radius, color = "#f3b63f") {
+  context.save();
+  context.translate(x, y);
+  context.beginPath();
+  for (let index = 0; index < 10; index += 1) {
+    const angle = -Math.PI / 2 + (Math.PI * index) / 5;
+    const pointRadius = index % 2 === 0 ? radius : radius * 0.42;
+    const pointX = Math.cos(angle) * pointRadius;
+    const pointY = Math.sin(angle) * pointRadius;
+    if (index === 0) context.moveTo(pointX, pointY);
+    else context.lineTo(pointX, pointY);
+  }
+  context.closePath();
+  context.fillStyle = color;
+  context.fill();
+  context.restore();
+}
+
+function getShareBackgroundTheme(backgroundId) {
+  const fallbackByTime = {
+    morning: { sky: "#f5dfae", ground: "#d9edc9", accent: "#f4b65a", motif: "room" },
+    day: { sky: "#d9eef5", ground: "#dff0d5", accent: "#7fbf87", motif: "room" },
+    night: { sky: "#d8d5ef", ground: "#eee2bd", accent: "#8b78b7", motif: "night" },
+  };
+  const themes = {
+    simpleRoom: { sky: "#dceef3", ground: "#dfeeda", accent: "#7fbf87", motif: "room" },
+    focusRoom: { sky: "#eadfcf", ground: "#e4cda8", accent: "#bf8b55", motif: "room" },
+    morningForest: { sky: "#d8eef0", ground: "#b9d7a5", accent: "#5f9a68", motif: "forest" },
+    libraryStudy: { sky: "#d9c8a7", ground: "#ba8e5d", accent: "#805737", motif: "library" },
+    moonLibrary: { sky: "#2e3456", ground: "#6f6380", accent: "#f1d889", motif: "library" },
+    starMagicLibrary: { sky: "#282347", ground: "#574777", accent: "#f4df83", motif: "magic" },
+    rainyWindowRoom: { sky: "#a9c6d5", ground: "#c7d9d5", accent: "#6e94aa", motif: "rain" },
+    celestialArchive: { sky: "#171d42", ground: "#3d4174", accent: "#f1d77b", motif: "magic" },
+    springPark: { sky: "#f4dce5", ground: "#cde4bd", accent: "#e79eae", motif: "spring" },
+    summerSeaside: { sky: "#a9dcf1", ground: "#f1dea4", accent: "#3e9fc8", motif: "sea" },
+    autumnTown: { sky: "#eed3a2", ground: "#b8906d", accent: "#c4693f", motif: "town" },
+    winterSnowCountry: { sky: "#cbdce8", ground: "#f5f8fa", accent: "#7ba3bd", motif: "snow" },
+    desertOasis: { sky: "#f3d38d", ground: "#d8a45d", accent: "#4ca9a1", motif: "desert" },
+    japaneseTown: { sky: "#e4c8b5", ground: "#9d8c83", accent: "#a9473f", motif: "japanese" },
+    thunderSky: { sky: "#34374f", ground: "#6d7280", accent: "#f1cf58", motif: "thunder" },
+    floatingIsland: { sky: "#9dd5e9", ground: "#dbe9e8", accent: "#7fbd82", motif: "floating" },
+    underwaterTemple: { sky: "#63b5c8", ground: "#287e98", accent: "#c4eddf", motif: "underwater" },
+  };
+
+  return themes[backgroundId] || fallbackByTime[getTimePeriod()] || fallbackByTime.day;
+}
+
+function drawShareStageBackground(context, summary, box) {
+  const theme = getShareBackgroundTheme(summary.backgroundId);
+  const { x, y, width, height } = box;
+  context.save();
+  createRoundedPath(context, x, y, width, height, 36);
+  context.clip();
+  const gradient = context.createLinearGradient(0, y, 0, y + height);
+  gradient.addColorStop(0, theme.sky);
+  gradient.addColorStop(0.6, theme.sky);
+  gradient.addColorStop(0.605, theme.ground);
+  gradient.addColorStop(1, theme.ground);
+  context.fillStyle = gradient;
+  context.fillRect(x, y, width, height);
+
+  if (["library", "magic"].includes(theme.motif)) {
+    context.fillStyle = "rgba(73, 49, 46, 0.58)";
+    for (let shelf = 0; shelf < 3; shelf += 1) {
+      const shelfY = y + 78 + shelf * 88;
+      context.fillRect(x + 40, shelfY, 268, 12);
+      for (let book = 0; book < 7; book += 1) {
+        context.fillStyle = ["#8eb7a0", "#d39a67", "#8b80aa"][book % 3];
+        context.fillRect(x + 48 + book * 36, shelfY - 52 - (book % 2) * 8, 25, 52 + (book % 2) * 8);
+      }
+      context.fillStyle = "rgba(73, 49, 46, 0.58)";
+    }
+  } else if (theme.motif === "forest" || theme.motif === "spring") {
+    for (let tree = 0; tree < 4; tree += 1) {
+      const treeX = x + 60 + tree * 150;
+      context.fillStyle = "#765c42";
+      context.fillRect(treeX, y + 145, 18, 190);
+      context.fillStyle = theme.motif === "spring" ? "#e8a8b7" : "#71ad76";
+      context.beginPath();
+      context.arc(treeX + 9, y + 125, 58, 0, Math.PI * 2);
+      context.fill();
+    }
+  } else if (theme.motif === "sea") {
+    context.strokeStyle = "rgba(255, 255, 255, 0.8)";
+    context.lineWidth = 8;
+    for (let wave = 0; wave < 3; wave += 1) {
+      context.beginPath();
+      context.moveTo(x, y + 260 + wave * 34);
+      context.bezierCurveTo(x + 220, y + 220 + wave * 34, x + 420, y + 300 + wave * 34, x + width, y + 255 + wave * 34);
+      context.stroke();
+    }
+  } else if (theme.motif === "snow") {
+    context.fillStyle = "rgba(255, 255, 255, 0.92)";
+    for (let index = 0; index < 18; index += 1) {
+      context.beginPath();
+      context.arc(x + 40 + (index * 71) % width, y + 36 + (index * 53) % 230, 4 + (index % 3), 0, Math.PI * 2);
+      context.fill();
+    }
+  } else if (theme.motif === "rain") {
+    context.strokeStyle = "rgba(255, 255, 255, 0.58)";
+    context.lineWidth = 4;
+    for (let index = 0; index < 18; index += 1) {
+      const rainX = x + 24 + index * 62;
+      context.beginPath();
+      context.moveTo(rainX, y + 28 + (index % 4) * 24);
+      context.lineTo(rainX - 14, y + 78 + (index % 4) * 24);
+      context.stroke();
+    }
+  } else if (theme.motif === "desert") {
+    context.fillStyle = "rgba(255, 238, 182, 0.65)";
+    context.beginPath();
+    context.ellipse(x + 260, y + 345, 310, 98, -0.08, 0, Math.PI * 2);
+    context.fill();
+    context.fillStyle = theme.accent;
+    context.beginPath();
+    context.ellipse(x + 190, y + 372, 88, 25, 0, 0, Math.PI * 2);
+    context.fill();
+  } else if (theme.motif === "thunder") {
+    context.fillStyle = theme.accent;
+    context.beginPath();
+    context.moveTo(x + 230, y + 38);
+    context.lineTo(x + 185, y + 168);
+    context.lineTo(x + 245, y + 152);
+    context.lineTo(x + 202, y + 284);
+    context.lineTo(x + 326, y + 118);
+    context.lineTo(x + 257, y + 131);
+    context.closePath();
+    context.fill();
+  } else if (theme.motif === "underwater") {
+    context.strokeStyle = "rgba(215, 244, 238, 0.72)";
+    context.lineWidth = 10;
+    for (let column = 0; column < 3; column += 1) {
+      context.strokeRect(x + 72 + column * 190, y + 140, 62, 245);
+    }
+    context.strokeStyle = "rgba(255, 255, 255, 0.7)";
+    context.lineWidth = 4;
+    for (let bubble = 0; bubble < 12; bubble += 1) {
+      context.beginPath();
+      context.arc(x + 35 + (bubble * 91) % width, y + 45 + (bubble * 47) % 265, 7 + bubble % 5, 0, Math.PI * 2);
+      context.stroke();
+    }
+  } else if (theme.motif === "floating") {
+    context.fillStyle = "rgba(255, 255, 255, 0.78)";
+    for (let cloud = 0; cloud < 4; cloud += 1) {
+      context.beginPath();
+      context.ellipse(x + 130 + cloud * 245, y + 290 - (cloud % 2) * 78, 120, 38, 0, 0, Math.PI * 2);
+      context.fill();
+    }
+    context.fillStyle = theme.accent;
+    context.beginPath();
+    context.ellipse(x + 250, y + 170, 130, 48, -0.1, 0, Math.PI * 2);
+    context.fill();
+  } else if (theme.motif === "japanese" || theme.motif === "town") {
+    context.fillStyle = "rgba(91, 61, 49, 0.68)";
+    for (let house = 0; house < 3; house += 1) {
+      const houseX = x + 42 + house * 172;
+      context.fillRect(houseX, y + 185, 132, 165);
+      context.beginPath();
+      context.moveTo(houseX - 18, y + 188);
+      context.lineTo(houseX + 66, y + 122);
+      context.lineTo(houseX + 150, y + 188);
+      context.closePath();
+      context.fill();
+    }
+  } else {
+    context.fillStyle = "rgba(255, 255, 255, 0.55)";
+    context.fillRect(x + 64, y + 58, 210, 150);
+    context.strokeStyle = "rgba(88, 112, 91, 0.25)";
+    context.lineWidth = 6;
+    context.strokeRect(x + 64, y + 58, 210, 150);
+    context.beginPath();
+    context.moveTo(x + 169, y + 58);
+    context.lineTo(x + 169, y + 208);
+    context.moveTo(x + 64, y + 133);
+    context.lineTo(x + 274, y + 133);
+    context.stroke();
+  }
+
+  if (["night", "magic"].includes(theme.motif)) {
+    for (let index = 0; index < 13; index += 1) {
+      drawShareStar(context, x + 40 + (index * 79) % width, y + 32 + (index * 57) % 225, 5 + index % 4, theme.accent);
+    }
+  }
+
+  context.restore();
+  createRoundedPath(context, x, y, width, height, 36);
+  context.strokeStyle = "rgba(255, 255, 255, 0.72)";
+  context.lineWidth = 4;
+  context.stroke();
+}
+
+function drawShareFurniture(context, furnitureId, x, floorY) {
+  if (!furnitureId) return;
+
+  context.save();
+  context.fillStyle = "rgba(53, 58, 48, 0.18)";
+  context.beginPath();
+  context.ellipse(x, floorY + 8, 92, 18, 0, 0, Math.PI * 2);
+  context.fill();
+
+  if (furnitureId === "studyPlant") {
+    context.fillStyle = "#b67f4b";
+    fillRoundedRect(context, x - 42, floorY - 92, 84, 88, 18, "#b67f4b");
+    context.fillStyle = "#6aaa72";
+    [-48, -20, 18, 48].forEach((offset, index) => {
+      context.beginPath();
+      context.ellipse(x + offset / 2, floorY - 125 - (index % 2) * 25, 30, 58, offset / 95, 0, Math.PI * 2);
+      context.fill();
+    });
+  } else if (furnitureId === "bookShelf") {
+    fillRoundedRect(context, x - 82, floorY - 210, 164, 206, 10, "#805737");
+    for (let shelf = 0; shelf < 3; shelf += 1) {
+      context.fillStyle = "#f4e5bd";
+      context.fillRect(x - 66, floorY - 188 + shelf * 61, 132, 43);
+      for (let book = 0; book < 4; book += 1) {
+        context.fillStyle = ["#79aa82", "#d68e62", "#8c81ad"][book % 3];
+        context.fillRect(x - 57 + book * 30, floorY - 181 + shelf * 61, 20, 36);
+      }
+    }
+  } else if (furnitureId === "studyLamp") {
+    context.fillStyle = "rgba(255, 228, 137, 0.28)";
+    context.beginPath();
+    context.arc(x, floorY - 145, 92, 0, Math.PI * 2);
+    context.fill();
+    context.strokeStyle = "#795f43";
+    context.lineWidth = 12;
+    context.beginPath();
+    context.moveTo(x, floorY - 120);
+    context.lineTo(x, floorY - 12);
+    context.stroke();
+    fillRoundedRect(context, x - 54, floorY - 176, 108, 62, 28, "#f3c65e");
+  } else if (furnitureId === "floatingBooks") {
+    for (let book = 0; book < 4; book += 1) {
+      context.save();
+      context.translate(x - 65 + book * 42, floorY - 85 - (book % 2) * 60);
+      context.rotate((book - 1.5) * 0.13);
+      fillRoundedRect(context, -38, -14, 76, 28, 6, ["#78a881", "#cf8d64", "#8478aa"][book % 3]);
+      context.restore();
+    }
+  } else if (furnitureId === "starlightStudySet") {
+    context.strokeStyle = "#6d5a43";
+    context.lineWidth = 9;
+    context.beginPath();
+    context.arc(x, floorY - 116, 68, 0, Math.PI * 2);
+    context.stroke();
+    context.fillStyle = "#7fb7cf";
+    context.beginPath();
+    context.arc(x, floorY - 116, 45, 0, Math.PI * 2);
+    context.fill();
+    drawShareStar(context, x + 4, floorY - 120, 17, "#f4dc80");
+  } else {
+    context.fillStyle = "#8c623f";
+    context.fillRect(x - 105, floorY - 92, 210, 24);
+    context.fillRect(x - 82, floorY - 70, 18, 70);
+    context.fillRect(x + 64, floorY - 70, 18, 70);
+  }
+  context.restore();
+}
+
+function drawShareOwl(context, summary, centerX, centerY) {
+  const clothing = shopItems[summary.clothingId];
+  const accessoryIds = summary.accessoryIds;
+  const rarityColors = {
+    common: "#9bcd9d",
+    uncommon: "#73b797",
+    rare: "#6f92c8",
+    epic: "#8c73bd",
+    legendary: "#f1c95f",
+  };
+  context.save();
+  context.translate(centerX, centerY);
+
+  context.fillStyle = "rgba(54, 68, 49, 0.18)";
+  context.beginPath();
+  context.ellipse(0, 168, 138, 24, 0, 0, Math.PI * 2);
+  context.fill();
+
+  context.fillStyle = "#e8b86f";
+  context.strokeStyle = "#6c4a2d";
+  context.lineWidth = 9;
+  context.beginPath();
+  context.ellipse(0, 24, 150, 178, 0, 0, Math.PI * 2);
+  context.fill();
+  context.stroke();
+
+  context.fillStyle = "#d69c5d";
+  context.beginPath();
+  context.ellipse(-130, 52, 47, 94, -0.18, 0, Math.PI * 2);
+  context.ellipse(130, 52, 47, 94, 0.18, 0, Math.PI * 2);
+  context.fill();
+  context.stroke();
+
+  if (clothing) {
+    const clothingColor = rarityColors[clothing.rarity] || rarityColors.common;
+    if (summary.clothingId === "simpleScarf") {
+      fillRoundedRect(context, -128, 26, 256, 48, 24, clothingColor);
+      fillRoundedRect(context, 72, 56, 48, 102, 20, clothingColor);
+    } else {
+      context.fillStyle = clothingColor;
+      context.beginPath();
+      context.moveTo(-116, 46);
+      context.quadraticCurveTo(-132, 154, -76, 178);
+      context.quadraticCurveTo(0, 204, 76, 178);
+      context.quadraticCurveTo(132, 154, 116, 46);
+      context.quadraticCurveTo(0, 88, -116, 46);
+      context.fill();
+      context.strokeStyle = "rgba(77, 67, 52, 0.62)";
+      context.lineWidth = 6;
+      context.stroke();
+      context.fillStyle = "rgba(255, 255, 255, 0.55)";
+      context.beginPath();
+      context.moveTo(-52, 54);
+      context.lineTo(0, 92);
+      context.lineTo(52, 54);
+      context.lineTo(35, 116);
+      context.lineTo(-35, 116);
+      context.closePath();
+      context.fill();
+      if (["starMantle", "sageRobe", "auroraCloak"].includes(summary.clothingId)) {
+        [[-62, 132], [2, 154], [66, 126], [-6, 112]].forEach(([starX, starY]) => {
+          drawShareStar(context, starX, starY, 10, summary.clothingId === "auroraCloak" ? "#d6f4ec" : "#fff0a8");
+        });
+      }
+    }
+  }
+
+  context.fillStyle = "#fffdf8";
+  context.beginPath();
+  context.ellipse(0, -28, 118, 108, 0, 0, Math.PI * 2);
+  context.fill();
+  context.beginPath();
+  context.ellipse(0, 102, 84, 78, 0, 0, Math.PI * 2);
+  context.fill();
+
+  context.fillStyle = "#ffffff";
+  context.beginPath();
+  context.arc(-47, -36, 34, 0, Math.PI * 2);
+  context.arc(47, -36, 34, 0, Math.PI * 2);
+  context.fill();
+  context.strokeStyle = "#6c4a2d";
+  context.lineWidth = 6;
+  context.stroke();
+
+  context.fillStyle = "#2f322e";
+  context.beginPath();
+  context.arc(-47, -32, 16, 0, Math.PI * 2);
+  context.arc(47, -32, 16, 0, Math.PI * 2);
+  context.fill();
+  context.fillStyle = "#ffffff";
+  context.beginPath();
+  context.arc(-41, -39, 5, 0, Math.PI * 2);
+  context.arc(53, -39, 5, 0, Math.PI * 2);
+  context.fill();
+
+  context.fillStyle = "#f2b63f";
+  context.beginPath();
+  context.moveTo(0, 4);
+  context.lineTo(-18, -14);
+  context.lineTo(18, -14);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = "#6c4a2d";
+  context.lineWidth = 5;
+  context.stroke();
+
+  context.strokeStyle = "#6c4a2d";
+  context.lineWidth = 8;
+  context.lineCap = "round";
+  context.beginPath();
+  context.moveTo(-62, 176);
+  context.lineTo(-88, 188);
+  context.moveTo(62, 176);
+  context.lineTo(88, 188);
+  context.stroke();
+
+  accessoryIds.forEach((itemId) => {
+    if (itemId === "acornBeret" || itemId === "quillHat") {
+      fillRoundedRect(context, -98, -180, 196, 48, 24, itemId === "acornBeret" ? "#9a6844" : "#5d7c60");
+      context.fillStyle = itemId === "acornBeret" ? "#7b5034" : "#415c47";
+      context.beginPath();
+      context.ellipse(0, -156, 110, 28, 0, 0, Math.PI * 2);
+      context.fill();
+      if (itemId === "quillHat") {
+        context.strokeStyle = "#f2d590";
+        context.lineWidth = 9;
+        context.beginPath();
+        context.moveTo(62, -174);
+        context.quadraticCurveTo(118, -244, 138, -196);
+        context.stroke();
+      }
+    } else if (itemId === "smallRibbon") {
+      context.fillStyle = "#f1c75f";
+      context.beginPath();
+      context.ellipse(-70, -142, 34, 22, -0.35, 0, Math.PI * 2);
+      context.ellipse(-18, -142, 34, 22, 0.35, 0, Math.PI * 2);
+      context.fill();
+      context.beginPath();
+      context.arc(-44, -140, 13, 0, Math.PI * 2);
+      context.fill();
+    } else if (["starScarf", "moonPin"].includes(itemId)) {
+      if (itemId === "starScarf") drawShareStar(context, 88, -125, 26, "#f5d45f");
+      else {
+        context.fillStyle = "#f5d879";
+        context.beginPath();
+        context.arc(88, -125, 27, 0, Math.PI * 2);
+        context.fill();
+        context.fillStyle = "#e8b86f";
+        context.beginPath();
+        context.arc(100, -136, 24, 0, Math.PI * 2);
+        context.fill();
+      }
+    } else if (itemId === "glowingCrown") {
+      context.fillStyle = "rgba(255, 224, 108, 0.24)";
+      context.beginPath();
+      context.arc(0, -154, 108, 0, Math.PI * 2);
+      context.fill();
+      context.fillStyle = "#f3cb55";
+      context.beginPath();
+      context.moveTo(-82, -132);
+      context.lineTo(-72, -204);
+      context.lineTo(-28, -166);
+      context.lineTo(0, -220);
+      context.lineTo(34, -166);
+      context.lineTo(76, -204);
+      context.lineTo(84, -132);
+      context.closePath();
+      context.fill();
+    } else if (itemId === "studyPencil") {
+      context.save();
+      context.translate(-114, 82);
+      context.rotate(-0.55);
+      fillRoundedRect(context, -8, -58, 16, 116, 7, "#f1b84b");
+      context.restore();
+    } else if (itemId === "cloverCape") {
+      context.fillStyle = "#66a96e";
+      context.beginPath();
+      context.arc(72, 50, 15, 0, Math.PI * 2);
+      context.arc(94, 50, 15, 0, Math.PI * 2);
+      context.arc(82, 32, 15, 0, Math.PI * 2);
+      context.fill();
+    } else if (itemId === "bookCharm") {
+      fillRoundedRect(context, -34, 58, 68, 54, 8, "#6e9d78");
+      context.strokeStyle = "#f1d58c";
+      context.lineWidth = 4;
+      context.strokeRect(-27, 65, 54, 40);
+    } else if (itemId === "starOrbit") {
+      [[-142, -36], [142, -10], [-112, 86], [126, 104]].forEach(([starX, starY], index) => {
+        drawShareStar(context, starX, starY, 13 + index % 2 * 4, "#f5d45f");
+      });
+    }
+  });
+
+  context.restore();
+}
+
+function drawShareMetric(context, label, value, x, y, width, accent) {
+  fillRoundedRect(context, x, y, width, 130, 24, "rgba(255, 255, 255, 0.84)");
+  context.fillStyle = accent;
+  fillRoundedRect(context, x, y, 9, 130, 5, accent);
+  context.fillStyle = "#6b7c70";
+  setShareCanvasFont(context, 24, 800);
+  context.fillText(label, x + 34, y + 42);
+  context.fillStyle = "#203f2a";
+  setShareCanvasFont(context, 42, 900);
+  context.fillText(value, x + 34, y + 96);
+}
+
+function createShareCanvas(summary = getShareSummary()) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1200;
+  canvas.height = 1200;
+  const context = canvas.getContext("2d");
+  const background = context.createLinearGradient(0, 0, 1200, 1200);
+  background.addColorStop(0, "#f7fcf8");
+  background.addColorStop(0.58, "#edf7ef");
+  background.addColorStop(1, "#eeeafa");
+  context.fillStyle = background;
+  context.fillRect(0, 0, 1200, 1200);
+  context.fillStyle = "#f3b63f";
+  context.fillRect(0, 0, 310, 14);
+  context.fillStyle = "#70b17e";
+  context.fillRect(310, 0, 790, 14);
+  context.fillStyle = "#8cc7e8";
+  context.fillRect(790, 0, 410, 14);
+
+  context.fillStyle = "#3f8f5b";
+  setShareCanvasFont(context, 42, 900);
+  context.fillText("Flowl", 64, 78);
+  context.fillStyle = "#688073";
+  setShareCanvasFont(context, 22, 800);
+  context.textAlign = "right";
+  context.fillText("MY STUDY WEEK", 1136, 72);
+  context.textAlign = "left";
+  context.fillStyle = "#1f3d29";
+  setShareCanvasFont(context, 52, 900);
+  drawWrappedCanvasText(context, summary.headline, 64, 154, 1072, 64, 2);
+
+  drawShareMetric(context, "今日", formatStudyDuration(summary.todayMinutes), 64, 252, 330, "#78b984");
+  drawShareMetric(context, "今週", formatStudyDuration(summary.weeklyMinutes), 435, 252, 330, "#8cc7e8");
+  drawShareMetric(context, "LEVEL", String(summary.level), 806, 252, 330, "#f3b63f");
+
+  const stageBox = { x: 64, y: 414, width: 1072, height: 470 };
+  drawShareStageBackground(context, summary, stageBox);
+  drawShareFurniture(context, summary.furnitureId, 270, 824);
+  drawShareOwl(context, summary, 820, 642);
+
+  fillRoundedRect(context, 92, 450, 430, 108, 22, "rgba(255, 255, 255, 0.84)");
+  context.fillStyle = "#5b7562";
+  setShareCanvasFont(context, 20, 900);
+  context.fillText("TODAY'S NOTE", 120, 484);
+  context.fillStyle = "#294b33";
+  setShareCanvasFont(context, 28, 800);
+  drawWrappedCanvasText(context, summary.praise, 120, 524, 374, 36, 2);
+
+  if (summary.weekDifference > 0 && summary.previousWeeklyMinutes > 0) {
+    fillRoundedRect(context, 92, 590, 330, 58, 29, "rgba(255, 248, 218, 0.92)");
+    context.fillStyle = "#8a691d";
+    setShareCanvasFont(context, 23, 900);
+    context.fillText(`前週より +${formatStudyDuration(summary.weekDifference)}`, 122, 628);
+  } else if (summary.streak >= 2) {
+    fillRoundedRect(context, 92, 590, 300, 58, 29, "rgba(229, 246, 232, 0.94)");
+    context.fillStyle = "#42724d";
+    setShareCanvasFont(context, 23, 900);
+    context.fillText(`${summary.streak}日連続で学習中`, 122, 628);
+  }
+
+  context.fillStyle = "#718078";
+  setShareCanvasFont(context, 19, 900);
+  context.fillText("STYLE", 76, 950);
+  context.fillText("PLACE", 612, 950);
+  context.fillStyle = "#294b33";
+  setShareCanvasFont(context, 27, 800);
+  drawWrappedCanvasText(context, summary.outfitLabel, 76, 990, 470, 34, 2);
+  drawWrappedCanvasText(context, summary.placeLabel, 612, 990, 512, 34, 2);
+
+  context.strokeStyle = "rgba(92, 126, 99, 0.2)";
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(64, 1082);
+  context.lineTo(1136, 1082);
+  context.stroke();
+  context.fillStyle = "#3f8f5b";
+  setShareCanvasFont(context, 34, 900);
+  context.fillText("勉強すると、フクロウが育つ。", 64, 1136);
+  context.fillStyle = "#687970";
+  setShareCanvasFont(context, 20, 800);
+  context.textAlign = "right";
+  context.fillText("flowldeveloper.github.io/flowl/  #Flowl", 1136, 1134);
+  context.textAlign = "left";
+  return canvas;
+}
+
+function createShareImageBlob(summary = getShareSummary()) {
+  const canvas = createShareCanvas(summary);
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) resolve(blob);
+      else reject(new Error("Share image creation failed"));
+    }, "image/png");
+  });
+}
+
+function getShareImageFileName() {
+  return `flowl-study-${getTodayKey()}.png`;
+}
+
+function downloadShareImage(blob) {
+  const downloadUrl = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = downloadUrl;
+  link.download = getShareImageFileName();
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+}
+
+function buildSharePostText(summary = getShareSummary()) {
+  return [
+    summary.headline,
+    `今日 ${formatStudyDuration(summary.todayMinutes)}｜今週 ${formatStudyDuration(summary.weeklyMinutes)}｜Lv.${summary.level}`,
+    `Flowlet：${summary.outfitLabel}`,
+    `背景：${summary.placeLabel}`,
+    "",
+    "勉強するとフクロウが育つ学習記録アプリ「Flowl」",
+    FLOWL_PUBLIC_URL,
+    "#Flowl #勉強記録",
+  ].join("\n");
+}
+
+function openXComposer(summary, targetWindow = null) {
+  const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(buildSharePostText(summary))}`;
+
+  if (targetWindow && !targetWindow.closed) {
+    targetWindow.location.href = intentUrl;
+    targetWindow.opener = null;
+    return;
+  }
+
+  window.open(intentUrl, "_blank", "noopener,noreferrer");
+}
+
+function supportsShareFiles() {
+  if (typeof File !== "function" || typeof navigator.share !== "function" || typeof navigator.canShare !== "function") {
+    return false;
+  }
+
+  try {
+    const testFile = new File([new Blob(["flowl"], { type: "image/png" })], "flowl.png", { type: "image/png" });
+    return navigator.canShare({ files: [testFile] });
+  } catch {
+    return false;
+  }
+}
+
+function setShareButtonsBusy(isBusy) {
+  [shareToXBtn, saveShareImageBtn].forEach((button) => {
+    if (button) button.disabled = isBusy;
+  });
+}
+
+async function shareProgressToX() {
+  const summary = getShareSummary();
+  const canShareFiles = supportsShareFiles();
+  const targetWindow = canShareFiles ? null : window.open("about:blank", "_blank");
+  setShareButtonsBusy(true);
+  shareStatus.textContent = "共有画像を作っています…";
+
+  try {
+    const blob = await createShareImageBlob(summary);
+
+    if (canShareFiles) {
+      const file = new File([blob], getShareImageFileName(), { type: "image/png" });
+      shareStatus.textContent = "共有先でXを選んでください。";
+      await navigator.share({
+        title: "Flowl 学習記録",
+        text: buildSharePostText(summary),
+        files: [file],
+      });
+      shareStatus.textContent = "共有画面を開きました。今日の積み重ねを見せよう。";
+      return;
+    }
+
+    downloadShareImage(blob);
+    openXComposer(summary, targetWindow);
+    shareStatus.textContent = "画像を保存しました。開いたXの投稿に画像を添付してください。";
+  } catch (error) {
+    if (error?.name === "AbortError") {
+      if (targetWindow && !targetWindow.closed) targetWindow.close();
+      shareStatus.textContent = "共有をキャンセルしました。記録はそのまま残っています。";
+    } else {
+      if (targetWindow && !targetWindow.closed) targetWindow.close();
+      shareStatus.textContent = "共有画像を作れませんでした。もう一度お試しください。";
+    }
+  } finally {
+    setShareButtonsBusy(false);
+  }
+}
+
+async function saveProgressImage() {
+  setShareButtonsBusy(true);
+  shareStatus.textContent = "共有画像を作っています…";
+
+  try {
+    const blob = await createShareImageBlob();
+    downloadShareImage(blob);
+    shareStatus.textContent = "共有画像を保存しました。";
+  } catch {
+    shareStatus.textContent = "画像を保存できませんでした。もう一度お試しください。";
+  } finally {
+    setShareButtonsBusy(false);
+  }
+}
+
 function renderPet() {
   applyCareDecay();
   state.pet.hunger = clamp(state.pet.hunger);
@@ -2922,6 +3749,7 @@ function render() {
   renderInventory();
   renderShop();
   renderCustomizationPreviews();
+  renderSharePanel();
   renderHistory();
   renderWeeklyChart();
 }
@@ -3337,6 +4165,9 @@ document.querySelectorAll(".nav-btn").forEach((button) => {
     switchScreen(button.dataset.screen);
   });
 });
+
+shareToXBtn?.addEventListener("click", shareProgressToX);
+saveShareImageBtn?.addEventListener("click", saveProgressImage);
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
