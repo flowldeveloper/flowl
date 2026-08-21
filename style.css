@@ -9689,6 +9689,358 @@ input:focus {
   }
 }
 
+/* Manual Study Log reward: a centered, game-like 10-minute charge result. */
+.tank-reward-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 180;
+  display: grid;
+  place-items: center;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  background: rgba(25, 46, 34, 0.38);
+  backdrop-filter: blur(5px);
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.tank-reward-backdrop[hidden] {
+  display: none;
+}
+
+.tank-reward-backdrop.show {
+  opacity: 1;
+}
+
+.tank-reward-card {
+  position: relative;
+  width: min(342px, 100%);
+  min-height: 286px;
+  padding: 24px 20px 20px;
+  overflow: hidden;
+  border: 2px solid rgba(121, 194, 166, 0.78);
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, transparent 49.5%, rgba(105, 174, 153, 0.07) 50%, transparent 50.5%) 0 0 / 32px 100%,
+    linear-gradient(180deg, #fbfff9 0%, #edf9f1 62%, #f8f7e8 100%);
+  box-shadow: 0 24px 64px rgba(20, 54, 35, 0.3), inset 0 0 0 4px rgba(255, 255, 255, 0.82);
+  color: #244a34;
+  text-align: center;
+  transform: translateY(18px) scale(0.88);
+  transition: transform 220ms cubic-bezier(0.2, 0.9, 0.3, 1.12);
+}
+
+.tank-reward-backdrop.show .tank-reward-card {
+  transform: translateY(0) scale(1);
+}
+
+.tank-reward-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 6px;
+  background: linear-gradient(90deg, #75c9ae, #77bad6 55%, #f1c95e);
+}
+
+.tank-reward-card::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border: 1px solid rgba(100, 161, 127, 0.18);
+  border-radius: 5px;
+  pointer-events: none;
+}
+
+.tank-reward-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 5;
+  width: 36px;
+  min-height: 36px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #64816c;
+  font-size: 25px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.tank-reward-kicker {
+  position: relative;
+  z-index: 2;
+  display: block;
+  color: #56806a;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.tank-reward-minutes {
+  position: relative;
+  z-index: 2;
+  display: block;
+  margin: 4px 0 12px;
+  color: #275c3e;
+  font-size: 36px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.tank-reward-vessel-wrap {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 8px;
+}
+
+.tank-reward-vessel {
+  position: relative;
+  height: 48px;
+  padding: 4px;
+  overflow: visible;
+  border: 3px solid #557565;
+  border-radius: 8px 5px 5px 8px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: inset 0 4px 9px rgba(41, 88, 60, 0.16), 0 4px 0 rgba(73, 103, 85, 0.12);
+}
+
+.tank-reward-vessel::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  z-index: 3;
+  border-radius: 4px 2px 2px 4px;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0 calc(10% - 2px),
+    rgba(45, 78, 59, 0.22) calc(10% - 2px) 10%
+  );
+  pointer-events: none;
+}
+
+.tank-reward-vessel::after {
+  content: "";
+  position: absolute;
+  top: 12px;
+  right: -13px;
+  width: 10px;
+  height: 18px;
+  border: 3px solid #557565;
+  border-left: 0;
+  border-radius: 0 5px 5px 0;
+  background: #edf5ee;
+}
+
+.tank-reward-fill {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 0;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 4px 2px 2px 4px;
+  background: linear-gradient(90deg, #77d5ae, #65bdd5 62%, #f4cc55);
+  box-shadow: 0 0 16px rgba(83, 193, 171, 0.42);
+  transition: width 50ms linear;
+}
+
+.tank-reward-fill::before,
+.tank-reward-fill::after {
+  content: "";
+  position: absolute;
+  inset: 5px 0 auto;
+  height: 7px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.94) 0 2px, transparent 2.5px) 0 0 / 28px 7px repeat-x;
+}
+
+.tank-reward-fill::after {
+  inset: auto 0 5px;
+  background-position: 14px 0;
+  opacity: 0.65;
+}
+
+.tank-reward-backdrop.is-charging .tank-reward-fill::before {
+  animation: tank-reward-bubbles 0.48s linear infinite;
+}
+
+.tank-reward-backdrop.is-charging .tank-reward-fill::after {
+  animation: tank-reward-bubbles 0.68s linear infinite reverse;
+}
+
+.tank-reward-level {
+  color: #315f43;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tank-reward-combo {
+  position: absolute;
+  top: 130px;
+  left: 50%;
+  z-index: 7;
+  width: max-content;
+  max-width: calc(100% - 30px);
+  padding: 6px 13px;
+  border: 2px solid #fff7c9;
+  border-radius: 6px;
+  background: #e4a93a;
+  box-shadow: 0 5px 0 #a86f24, 0 8px 18px rgba(96, 69, 22, 0.22);
+  color: #fffdf2;
+  font-size: 14px;
+  font-weight: 900;
+  opacity: 0;
+  transform: translate(-50%, 8px) scale(0.72);
+  pointer-events: none;
+}
+
+.tank-reward-combo.show {
+  animation: tank-reward-combo-pop 720ms ease-out both;
+}
+
+.tank-reward-result {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 3px;
+  margin-top: 12px;
+}
+
+.tank-reward-result strong {
+  font-size: 17px;
+}
+
+.tank-reward-result span {
+  min-height: 18px;
+  color: #668071;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.tank-reward-coins {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+  padding: 5px 14px;
+  border: 1px solid #e5bd4a;
+  border-radius: 999px;
+  background: #fff3bd;
+  color: #815d12;
+  font-size: 14px;
+  font-weight: 900;
+  opacity: 0.58;
+  transform: scale(0.94);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.tank-reward-backdrop.is-result .tank-reward-coins {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.tank-reward-sparks,
+.tank-reward-sparks i {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.tank-reward-sparks i::before {
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border: 2px solid #e5b739;
+  background: #fff8ce;
+  transform: rotate(45deg);
+  opacity: 0;
+}
+
+.tank-reward-sparks i:nth-child(1)::before { top: 48px; left: 26px; }
+.tank-reward-sparks i:nth-child(2)::before { top: 84px; right: 23px; border-color: #66bda4; }
+.tank-reward-sparks i:nth-child(3)::before { top: 159px; left: 17px; border-color: #67b5ce; }
+.tank-reward-sparks i:nth-child(4)::before { top: 174px; right: 22px; }
+.tank-reward-sparks i:nth-child(5)::before { bottom: 27px; left: 49px; border-color: #66bda4; }
+.tank-reward-sparks i:nth-child(6)::before { bottom: 31px; right: 52px; border-color: #67b5ce; }
+
+.tank-reward-card.tank-pulse {
+  animation: tank-reward-card-pulse 480ms ease-out;
+}
+
+.tank-reward-card.tank-pulse .tank-reward-sparks i::before,
+.tank-reward-backdrop.is-result .tank-reward-sparks i::before {
+  animation: tank-reward-spark 680ms ease-out both;
+}
+
+.tank-reward-card.tank-pulse .tank-reward-sparks i:nth-child(2)::before,
+.tank-reward-backdrop.is-result .tank-reward-sparks i:nth-child(2)::before { animation-delay: 50ms; }
+.tank-reward-card.tank-pulse .tank-reward-sparks i:nth-child(3)::before,
+.tank-reward-backdrop.is-result .tank-reward-sparks i:nth-child(3)::before { animation-delay: 100ms; }
+.tank-reward-card.tank-pulse .tank-reward-sparks i:nth-child(4)::before,
+.tank-reward-backdrop.is-result .tank-reward-sparks i:nth-child(4)::before { animation-delay: 140ms; }
+
+@keyframes tank-reward-bubbles {
+  to { background-position: 28px 0; }
+}
+
+@keyframes tank-reward-card-pulse {
+  0%, 100% { transform: translateY(0) scale(1); }
+  45% { transform: translateY(-4px) scale(1.035); box-shadow: 0 24px 64px rgba(20, 54, 35, 0.3), 0 0 0 8px rgba(244, 204, 85, 0.25); }
+}
+
+@keyframes tank-reward-combo-pop {
+  0% { opacity: 0; transform: translate(-50%, 9px) scale(0.68); }
+  34%, 70% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -8px) scale(0.92); }
+}
+
+@keyframes tank-reward-spark {
+  0% { opacity: 0; transform: rotate(45deg) scale(0.2); }
+  35% { opacity: 1; transform: rotate(90deg) scale(1); }
+  100% { opacity: 0; transform: rotate(150deg) scale(0.4); }
+}
+
+@media (max-width: 360px), (max-height: 620px) {
+  .tank-reward-card {
+    min-height: 258px;
+    padding: 19px 16px 15px;
+  }
+
+  .tank-reward-minutes {
+    margin-bottom: 9px;
+    font-size: 31px;
+  }
+
+  .tank-reward-vessel {
+    height: 42px;
+  }
+
+  .tank-reward-result {
+    margin-top: 9px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tank-reward-backdrop,
+  .tank-reward-card,
+  .tank-reward-fill,
+  .tank-reward-coins {
+    transition: none;
+  }
+
+  .tank-reward-fill::before,
+  .tank-reward-fill::after,
+  .tank-reward-combo.show,
+  .tank-reward-card.tank-pulse,
+  .tank-reward-sparks i::before {
+    animation: none;
+  }
+}
+
 /* Keep sharing easy to find and balanced on current phone sizes. */
 @media (max-width: 800px) {
   #logScreen.active > .record-panel {

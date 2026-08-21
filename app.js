@@ -1,7 +1,7 @@
 const STORAGE_KEY = "flowl-study-pet";
 const STORAGE_VERSION = 2;
 const ANALYTICS_CONSENT_KEY = window.FLOWL_ANALYTICS_CONSENT_KEY || "flowl-analytics-consent";
-const ANALYTICS_APP_VERSION = "pwa-15";
+const ANALYTICS_APP_VERSION = "pwa-16";
 const STUDY_TANK_CAPACITY_MINUTES = 10;
 const ANALYTICS_SCREEN_NAMES = { timerScreen: "study", logScreen: "log", careScreen: "care", shopScreen: "shop" };
 const STORAGE_BACKUP_KEY = `${STORAGE_KEY}:backup`;
@@ -710,6 +710,16 @@ const studyTankVessel = document.getElementById("studyTankVessel");
 const studyTankFill = document.getElementById("studyTankFill");
 const studyTankStatus = document.getElementById("studyTankStatus");
 const studyTankMessage = document.getElementById("studyTankMessage");
+const studyTankReward = document.getElementById("studyTankReward");
+const studyTankRewardClose = document.getElementById("studyTankRewardClose");
+const studyTankRewardVessel = document.getElementById("studyTankRewardVessel");
+const studyTankRewardFill = document.getElementById("studyTankRewardFill");
+const studyTankRewardLevel = document.getElementById("studyTankRewardLevel");
+const studyTankRewardMinutes = document.getElementById("studyTankRewardMinutes");
+const studyTankRewardCombo = document.getElementById("studyTankRewardCombo");
+const studyTankRewardTitle = document.getElementById("studyTankRewardTitle");
+const studyTankRewardMessage = document.getElementById("studyTankRewardMessage");
+const studyTankRewardCoins = document.getElementById("studyTankRewardCoins");
 const growthStageLabel = document.getElementById("growthStageLabel");
 const growthNextLabel = document.getElementById("growthNextLabel");
 const growthProgress = document.getElementById("growthProgress");
@@ -777,6 +787,10 @@ let studyTankResetTimer = null;
 let studyTankPulseTimer = null;
 let studyTankAnimationToken = 0;
 let studyTankAnimating = false;
+let studyTankRewardAnimationFrame = null;
+let studyTankRewardCloseTimer = null;
+let studyTankRewardHideTimer = null;
+let studyTankRewardToken = 0;
 let animationTimer = null;
 let timerBeatId = 0;
 let studyReactionTimer = null;
@@ -2301,6 +2315,10 @@ function addStudySession(minutes, subject, mode = "manual") {
   });
   animateStudyTank(previousTotalMinutes, minutes);
 
+  if (session.mode === "manual") {
+    showStudyTankReward(previousTotalMinutes, session);
+  }
+
   return session;
 }
 
@@ -2444,6 +2462,155 @@ function animateStudyTank(previousTotalMinutes, addedMinutes) {
 
   setStudyTankVisual(startRemainder);
   studyTankAnimationFrame = requestAnimationFrame(runAnimation);
+}
+
+function setStudyTankRewardVisual(minutes) {
+  if (!studyTankRewardFill || !studyTankRewardLevel || !studyTankRewardVessel) return;
+
+  const safeMinutes = Math.max(0, Math.min(STUDY_TANK_CAPACITY_MINUTES, Number(minutes) || 0));
+  const displayMinutes = safeMinutes <= 0
+    ? 0
+    : Math.min(STUDY_TANK_CAPACITY_MINUTES, Math.ceil(safeMinutes - 0.001));
+  const percentage = (safeMinutes / STUDY_TANK_CAPACITY_MINUTES) * 100;
+
+  studyTankRewardFill.style.width = `${percentage}%`;
+  studyTankRewardLevel.textContent = `${displayMinutes} / ${STUDY_TANK_CAPACITY_MINUTES}分`;
+  studyTankRewardVessel.setAttribute("aria-valuenow", String(displayMinutes));
+  studyTankRewardVessel.setAttribute("aria-valuetext", `${displayMinutes}分充填`);
+}
+
+function pulseStudyTankReward(completedTanks) {
+  const card = studyTankReward?.querySelector(".tank-reward-card");
+  if (!card || !studyTankRewardCombo) return;
+
+  card.classList.remove("tank-pulse");
+  void card.offsetWidth;
+  card.classList.add("tank-pulse");
+  studyTankRewardCombo.textContent = completedTanks > 1 ? `${completedTanks} TANK COMBO!` : "TANK FULL!";
+  studyTankRewardCombo.classList.remove("show");
+  void studyTankRewardCombo.offsetWidth;
+  studyTankRewardCombo.classList.add("show");
+}
+
+function closeStudyTankReward() {
+  if (!studyTankReward || studyTankReward.hidden) return;
+
+  studyTankRewardToken += 1;
+  cancelAnimationFrame(studyTankRewardAnimationFrame);
+  clearTimeout(studyTankRewardCloseTimer);
+  clearTimeout(studyTankRewardHideTimer);
+  studyTankReward.classList.remove("show", "is-charging", "is-result");
+  studyTankRewardHideTimer = window.setTimeout(() => {
+    studyTankReward.hidden = true;
+  }, 180);
+}
+
+function finishStudyTankReward(token, previousTotalMinutes, addedMinutes, earnedCoins) {
+  if (token !== studyTankRewardToken || !studyTankReward) return;
+
+  const startRemainder = previousTotalMinutes % STUDY_TANK_CAPACITY_MINUTES;
+  const completedTanks = Math.floor((startRemainder + addedMinutes) / STUDY_TANK_CAPACITY_MINUTES);
+  const finalLevel = getStudyTankLevel(previousTotalMinutes + addedMinutes);
+
+  setStudyTankRewardVisual(finalLevel);
+  studyTankReward.classList.remove("is-charging");
+  studyTankReward.classList.add("is-result");
+  studyTankRewardCoins.textContent = `+${earnedCoins} coin`;
+
+  if (completedTanks > 0) {
+    studyTankRewardTitle.textContent = completedTanks > 1 ? `${completedTanks}タンク達成！` : "タンク満タン！";
+    studyTankRewardMessage.textContent = finalLevel < STUDY_TANK_CAPACITY_MINUTES
+      ? `次のタンクに${finalLevel}分チャージ済み`
+      : "10分の学習エネルギーが満タンです";
+    pulseStudyTankReward(completedTanks);
+  } else {
+    studyTankRewardTitle.textContent = "学習エネルギー獲得！";
+    studyTankRewardMessage.textContent = `${finalLevel} / ${STUDY_TANK_CAPACITY_MINUTES}分までチャージしました`;
+  }
+
+  clearTimeout(studyTankRewardCloseTimer);
+  studyTankRewardCloseTimer = window.setTimeout(closeStudyTankReward, 1700);
+}
+
+function showStudyTankReward(previousTotalMinutes, session) {
+  if (!studyTankReward || !session) return;
+
+  cancelAnimationFrame(studyTankRewardAnimationFrame);
+  clearTimeout(studyTankRewardCloseTimer);
+  clearTimeout(studyTankRewardHideTimer);
+  studyTankRewardToken += 1;
+  const token = studyTankRewardToken;
+  const safePreviousTotal = Math.max(0, Math.round(Number(previousTotalMinutes) || 0));
+  const safeAddedMinutes = Math.max(1, Math.round(Number(session.minutes) || 1));
+  const startRemainder = safePreviousTotal % STUDY_TANK_CAPACITY_MINUTES;
+  const visualAddedMinutes = Math.min(safeAddedMinutes, STUDY_TANK_CAPACITY_MINUTES * 3);
+  const earnedCoins = Math.max(0, Math.round(Number(session.coinsEarned) || 0));
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  studyTankReward.hidden = false;
+  studyTankReward.classList.remove("show", "is-result");
+  studyTankReward.classList.add("is-charging");
+  studyTankRewardMinutes.textContent = `+${safeAddedMinutes}分`;
+  studyTankRewardTitle.textContent = "学習エネルギーを充填中";
+  studyTankRewardMessage.textContent = "記録した時間が1分ずつたまります";
+  studyTankRewardCoins.textContent = `+${earnedCoins} coin`;
+  studyTankRewardCombo.textContent = "";
+  studyTankRewardCombo.classList.remove("show");
+
+  requestAnimationFrame(() => studyTankReward.classList.add("show"));
+
+  if (reduceMotion) {
+    finishStudyTankReward(token, safePreviousTotal, safeAddedMinutes, earnedCoins);
+    return;
+  }
+
+  const runAnimation = () => {
+    const duration = Math.min(2550, 720 + visualAddedMinutes * 58);
+    const startedAt = performance.now();
+    let previousCycle = 0;
+
+    const step = (now) => {
+      if (token !== studyTankRewardToken) return;
+
+      const progress = Math.min(1, (now - startedAt) / duration);
+      const easedProgress = 1 - Math.pow(1 - progress, 3);
+      const visualMinutes = startRemainder + visualAddedMinutes * easedProgress;
+      const currentCycle = Math.floor(visualMinutes / STUDY_TANK_CAPACITY_MINUTES);
+
+      if (currentCycle > previousCycle && progress < 1) {
+        previousCycle = currentCycle;
+        setStudyTankRewardVisual(STUDY_TANK_CAPACITY_MINUTES);
+        pulseStudyTankReward(currentCycle);
+        studyTankRewardAnimationFrame = requestAnimationFrame(step);
+        return;
+      }
+
+      setStudyTankRewardVisual(visualMinutes % STUDY_TANK_CAPACITY_MINUTES);
+
+      if (progress < 1) {
+        studyTankRewardAnimationFrame = requestAnimationFrame(step);
+        return;
+      }
+
+      finishStudyTankReward(token, safePreviousTotal, safeAddedMinutes, earnedCoins);
+    };
+
+    studyTankRewardAnimationFrame = requestAnimationFrame(step);
+  };
+
+  if (safePreviousTotal > 0 && startRemainder === 0) {
+    setStudyTankRewardVisual(STUDY_TANK_CAPACITY_MINUTES);
+    pulseStudyTankReward(1);
+    window.setTimeout(() => {
+      if (token !== studyTankRewardToken) return;
+      setStudyTankRewardVisual(0);
+      runAnimation();
+    }, 280);
+    return;
+  }
+
+  setStudyTankRewardVisual(startRemainder);
+  studyTankRewardAnimationFrame = requestAnimationFrame(runAnimation);
 }
 
 function updateDisplay() {
@@ -4414,6 +4581,11 @@ studyForm.addEventListener("submit", (event) => {
   manualStudyMinutes = 25;
   minutesInput.value = 25;
   updateDurationButtons();
+});
+
+studyTankRewardClose?.addEventListener("click", (event) => {
+  event.stopPropagation();
+  closeStudyTankReward();
 });
 
 subjectFields.forEach(({ input, menu, toggle }) => {

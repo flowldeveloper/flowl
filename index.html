@@ -23,7 +23,7 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
   <title>Flowl</title>
-  <link rel="stylesheet" href="style.css?v=pwa-15">
+  <link rel="stylesheet" href="style.css?v=pwa-16">
   <script>
     (() => {
       const measurementId = "G-EE6MQ7M7Z2";
@@ -439,6 +439,29 @@
     </section>
   </main>
 
+  <div id="studyTankReward" class="tank-reward-backdrop" hidden>
+    <section class="tank-reward-card" role="status" aria-live="assertive" aria-atomic="true">
+      <button id="studyTankRewardClose" class="tank-reward-close" type="button" aria-label="充填演出を閉じる" title="閉じる">&times;</button>
+      <span class="tank-reward-kicker">STUDY CHARGE</span>
+      <strong id="studyTankRewardMinutes" class="tank-reward-minutes">+0分</strong>
+      <div class="tank-reward-vessel-wrap">
+        <div id="studyTankRewardVessel" class="tank-reward-vessel" role="progressbar" aria-label="記録した学習時間の10分タンク" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0">
+          <span id="studyTankRewardFill" class="tank-reward-fill"></span>
+        </div>
+        <strong id="studyTankRewardLevel" class="tank-reward-level">0 / 10分</strong>
+      </div>
+      <div id="studyTankRewardCombo" class="tank-reward-combo" aria-hidden="true"></div>
+      <div class="tank-reward-result">
+        <strong id="studyTankRewardTitle">学習エネルギーを充填中</strong>
+        <span id="studyTankRewardMessage">記録した時間がタンクにたまります</span>
+      </div>
+      <span id="studyTankRewardCoins" class="tank-reward-coins">+0 coin</span>
+      <span class="tank-reward-sparks" aria-hidden="true">
+        <i></i><i></i><i></i><i></i><i></i><i></i>
+      </span>
+    </section>
+  </div>
+
   <div id="durationPicker" class="duration-picker-backdrop" hidden>
     <div class="duration-picker-sheet" role="dialog" aria-modal="true" aria-labelledby="durationPickerTitle">
       <div class="duration-picker-head">
@@ -490,6 +513,6 @@
     </button>
   </nav>
 
-  <script src="app.js?v=pwa-15"></script>
+  <script src="app.js?v=pwa-16"></script>
 </body>
 </html>
