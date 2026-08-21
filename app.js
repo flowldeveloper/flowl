@@ -1,7 +1,7 @@
 const STORAGE_KEY = "flowl-study-pet";
 const STORAGE_VERSION = 2;
 const ANALYTICS_CONSENT_KEY = window.FLOWL_ANALYTICS_CONSENT_KEY || "flowl-analytics-consent";
-const ANALYTICS_APP_VERSION = "pwa-17";
+const ANALYTICS_APP_VERSION = "pwa-18";
 const STUDY_TANK_CAPACITY_MINUTES = 10;
 const ANALYTICS_SCREEN_NAMES = { timerScreen: "study", logScreen: "log", careScreen: "care", shopScreen: "shop" };
 const STORAGE_BACKUP_KEY = `${STORAGE_KEY}:backup`;
@@ -2712,7 +2712,8 @@ function renderWeeklyChart() {
     const label = document.createElement("small");
 
     bar.className = "week-bar";
-    fill.style.height = `${Math.max(8, (minutes / maxMinutes) * 100)}%`;
+    fill.hidden = minutes <= 0;
+    fill.style.height = minutes > 0 ? `${Math.max(8, (minutes / maxMinutes) * 100)}%` : "0%";
     renderWeeklyDurationLabel(value, minutes);
     label.textContent = labels[index];
     bar.setAttribute("aria-label", `${labels[index]}曜日 ${formatStudyDuration(minutes)}`);
