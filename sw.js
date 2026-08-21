@@ -1,10 +1,10 @@
-const FLOWL_CACHE = "flowl-pwa-v16";
+const FLOWL_CACHE = "flowl-pwa-v17";
 const FLOWL_ASSETS = [
   "./",
   "./?source=pwa",
   "./index.html",
-  "./style.css?v=pwa-16",
-  "./app.js?v=pwa-16",
+  "./style.css?v=pwa-17",
+  "./app.js?v=pwa-17",
   "./manifest.webmanifest",
   "./icon.svg"
 ];

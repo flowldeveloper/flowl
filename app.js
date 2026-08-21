@@ -1,7 +1,7 @@
 const STORAGE_KEY = "flowl-study-pet";
 const STORAGE_VERSION = 2;
 const ANALYTICS_CONSENT_KEY = window.FLOWL_ANALYTICS_CONSENT_KEY || "flowl-analytics-consent";
-const ANALYTICS_APP_VERSION = "pwa-16";
+const ANALYTICS_APP_VERSION = "pwa-17";
 const STUDY_TANK_CAPACITY_MINUTES = 10;
 const ANALYTICS_SCREEN_NAMES = { timerScreen: "study", logScreen: "log", careScreen: "care", shopScreen: "shop" };
 const STORAGE_BACKUP_KEY = `${STORAGE_KEY}:backup`;
@@ -2667,6 +2667,28 @@ function renderHistory() {
   });
 }
 
+function renderWeeklyDurationLabel(element, minutes) {
+  const totalMinutes = Math.max(0, Math.round(Number(minutes) || 0));
+  const hours = Math.floor(totalMinutes / 60);
+  const remainingMinutes = totalMinutes % 60;
+  const fullLabel = formatStudyDuration(totalMinutes);
+  const parts = hours > 0
+    ? [`${hours}時間`, ...(remainingMinutes > 0 ? [`${remainingMinutes}分`] : [])]
+    : [`${remainingMinutes}分`];
+
+  element.className = `week-bar-value${parts.length > 1 ? " is-split" : ""}`;
+  element.textContent = "";
+  element.setAttribute("aria-label", fullLabel);
+  element.title = fullLabel;
+
+  parts.forEach((part) => {
+    const line = document.createElement("span");
+    line.className = "week-time-part";
+    line.textContent = part;
+    element.appendChild(line);
+  });
+}
+
 function renderWeeklyChart() {
   const days = getWeekDays(weekOffset);
   const previousDays = getWeekDays(weekOffset - 1);
@@ -2691,8 +2713,10 @@ function renderWeeklyChart() {
 
     bar.className = "week-bar";
     fill.style.height = `${Math.max(8, (minutes / maxMinutes) * 100)}%`;
-    value.textContent = formatStudyDuration(minutes);
+    renderWeeklyDurationLabel(value, minutes);
     label.textContent = labels[index];
+    bar.setAttribute("aria-label", `${labels[index]}曜日 ${formatStudyDuration(minutes)}`);
+    bar.title = `${labels[index]}曜日 ${formatStudyDuration(minutes)}`;
 
     bar.append(value, fill, label);
     weekChart.appendChild(bar);

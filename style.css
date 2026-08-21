@@ -10147,3 +10147,59 @@ input:focus {
     margin-top: 4px;
   }
 }
+
+/* Weekly graph labels: keep hour/minute values readable inside seven narrow columns. */
+.week-bar strong.week-bar-value {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  min-height: 34px;
+  align-content: end;
+  justify-items: center;
+  gap: 0;
+  overflow: hidden;
+  line-height: 1.05;
+}
+
+.week-time-part {
+  display: block;
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+@media (max-width: 800px) {
+  .week-chart {
+    gap: 5px;
+    padding-inline: 5px;
+  }
+
+  .week-bar {
+    grid-template-rows: 38px minmax(42px, 1fr) 18px;
+  }
+
+  .week-bar strong.week-bar-value {
+    min-height: 38px;
+    font-size: 10px;
+  }
+
+  .week-bar small {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 360px) {
+  .week-chart {
+    gap: 2px;
+    padding-inline: 3px;
+  }
+
+  .week-bar strong.week-bar-value {
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 330px) {
+  .week-bar strong.week-bar-value {
+    font-size: 8px;
+  }
+}
