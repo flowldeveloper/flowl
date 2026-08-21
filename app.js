@@ -1,7 +1,7 @@
 const STORAGE_KEY = "flowl-study-pet";
 const STORAGE_VERSION = 2;
 const ANALYTICS_CONSENT_KEY = window.FLOWL_ANALYTICS_CONSENT_KEY || "flowl-analytics-consent";
-const ANALYTICS_APP_VERSION = "pwa-21";
+const ANALYTICS_APP_VERSION = "pwa-22";
 const STUDY_TANK_CAPACITY_MINUTES = 10;
 const WEEKLY_SUBJECT_COLORS = [
   "#4f9d69",
@@ -825,6 +825,131 @@ let activeMascotMotion = "idle";
 let activeSubjectInput = null;
 let selectedShopItemId = null;
 let selectedShopCategory = shopCategoryOrder[0];
+let flowlAudioContext = null;
+let lastTankSoundAt = 0;
+
+function getFlowlAudioContext() {
+  if (flowlAudioContext) return flowlAudioContext;
+
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return null;
+
+  try {
+    flowlAudioContext = new AudioContextClass();
+  } catch {
+    flowlAudioContext = null;
+  }
+
+  return flowlAudioContext;
+}
+
+function withFlowlAudio(callback) {
+  const context = getFlowlAudioContext();
+  if (!context) return;
+
+  if (context.state === "suspended") {
+    context.resume()
+      .then(() => callback(context))
+      .catch(() => {});
+    return;
+  }
+
+  callback(context);
+}
+
+function unlockFlowlSound() {
+  const context = getFlowlAudioContext();
+  if (context?.state === "suspended") {
+    context.resume().catch(() => {});
+  }
+}
+
+function scheduleFlowlTone(context, options) {
+  const {
+    frequency,
+    delay = 0,
+    duration = 0.1,
+    volume = 0.025,
+    type = "sine",
+    endFrequency = frequency,
+  } = options;
+  const startedAt = context.currentTime + delay;
+  const oscillator = context.createOscillator();
+  const gain = context.createGain();
+
+  oscillator.type = type;
+  oscillator.frequency.setValueAtTime(frequency, startedAt);
+  oscillator.frequency.exponentialRampToValueAtTime(Math.max(1, endFrequency), startedAt + duration);
+  gain.gain.setValueAtTime(0.0001, startedAt);
+  gain.gain.exponentialRampToValueAtTime(volume, startedAt + Math.min(0.018, duration / 3));
+  gain.gain.exponentialRampToValueAtTime(0.0001, startedAt + duration);
+  oscillator.connect(gain);
+  gain.connect(context.destination);
+  oscillator.start(startedAt);
+  oscillator.stop(startedAt + duration + 0.02);
+}
+
+function playTimerCompleteSound() {
+  withFlowlAudio((context) => {
+    [
+      { frequency: 523.25, delay: 0 },
+      { frequency: 659.25, delay: 0.16 },
+      { frequency: 783.99, delay: 0.32 },
+      { frequency: 1046.5, delay: 0.52, duration: 0.42 },
+    ].forEach((tone) => scheduleFlowlTone(context, {
+      duration: 0.24,
+      volume: 0.055,
+      type: "sine",
+      ...tone,
+    }));
+  });
+
+  if (typeof navigator.vibrate === "function") {
+    navigator.vibrate([90, 70, 150]);
+  }
+}
+
+function playTankChargeStartSound() {
+  withFlowlAudio((context) => {
+    scheduleFlowlTone(context, {
+      frequency: 330,
+      endFrequency: 520,
+      duration: 0.16,
+      volume: 0.022,
+      type: "triangle",
+    });
+  });
+}
+
+function playTankChargeTickSound(level) {
+  const now = performance.now();
+  if (now - lastTankSoundAt < 72) return;
+  lastTankSoundAt = now;
+
+  withFlowlAudio((context) => {
+    scheduleFlowlTone(context, {
+      frequency: 410 + Math.max(1, level) * 28,
+      endFrequency: 470 + Math.max(1, level) * 30,
+      duration: 0.075,
+      volume: 0.016,
+      type: "triangle",
+    });
+  });
+}
+
+function playTankFullSound() {
+  withFlowlAudio((context) => {
+    scheduleFlowlTone(context, { frequency: 659.25, duration: 0.2, volume: 0.035, type: "triangle" });
+    scheduleFlowlTone(context, { frequency: 987.77, delay: 0.08, duration: 0.28, volume: 0.04, type: "sine" });
+  });
+}
+
+function playTankRewardCompleteSound() {
+  withFlowlAudio((context) => {
+    scheduleFlowlTone(context, { frequency: 587.33, duration: 0.13, volume: 0.024, type: "triangle" });
+    scheduleFlowlTone(context, { frequency: 783.99, delay: 0.1, duration: 0.2, volume: 0.028, type: "sine" });
+  });
+}
 
 function getAnalyticsConsentChoice() {
   try {
@@ -2523,7 +2648,7 @@ function closeStudyTankReward() {
   }, 180);
 }
 
-function finishStudyTankReward(token, previousTotalMinutes, addedMinutes, earnedCoins) {
+function finishStudyTankReward(token, previousTotalMinutes, addedMinutes, earnedCoins, playedFullSound = false) {
   if (token !== studyTankRewardToken || !studyTankReward) return;
 
   const startRemainder = previousTotalMinutes % STUDY_TANK_CAPACITY_MINUTES;
@@ -2541,9 +2666,11 @@ function finishStudyTankReward(token, previousTotalMinutes, addedMinutes, earned
       ? `次のタンクに${finalLevel}分チャージ済み`
       : "10分の学習エネルギーが満タンです";
     pulseStudyTankReward(completedTanks);
+    if (!playedFullSound) playTankFullSound();
   } else {
     studyTankRewardTitle.textContent = "学習エネルギー獲得！";
     studyTankRewardMessage.textContent = `${finalLevel} / ${STUDY_TANK_CAPACITY_MINUTES}分までチャージしました`;
+    playTankRewardCompleteSound();
   }
 
   clearTimeout(studyTankRewardCloseTimer);
@@ -2576,6 +2703,7 @@ function showStudyTankReward(previousTotalMinutes, session) {
   studyTankRewardCombo.classList.remove("show");
 
   requestAnimationFrame(() => studyTankReward.classList.add("show"));
+  playTankChargeStartSound();
 
   if (reduceMotion) {
     finishStudyTankReward(token, safePreviousTotal, safeAddedMinutes, earnedCoins);
@@ -2586,6 +2714,8 @@ function showStudyTankReward(previousTotalMinutes, session) {
     const duration = Math.min(2550, 720 + visualAddedMinutes * 58);
     const startedAt = performance.now();
     let previousCycle = 0;
+    let previousSoundMinute = Math.floor(startRemainder);
+    let playedFullSound = false;
 
     const step = (now) => {
       if (token !== studyTankRewardToken) return;
@@ -2599,18 +2729,26 @@ function showStudyTankReward(previousTotalMinutes, session) {
         previousCycle = currentCycle;
         setStudyTankRewardVisual(STUDY_TANK_CAPACITY_MINUTES);
         pulseStudyTankReward(currentCycle);
+        playTankFullSound();
+        playedFullSound = true;
+        previousSoundMinute = Math.max(previousSoundMinute, currentCycle * STUDY_TANK_CAPACITY_MINUTES);
         studyTankRewardAnimationFrame = requestAnimationFrame(step);
         return;
       }
 
       setStudyTankRewardVisual(visualMinutes % STUDY_TANK_CAPACITY_MINUTES);
+      const soundMinute = Math.floor(visualMinutes + 0.001);
+      if (soundMinute > previousSoundMinute) {
+        previousSoundMinute = soundMinute;
+        playTankChargeTickSound(soundMinute % STUDY_TANK_CAPACITY_MINUTES);
+      }
 
       if (progress < 1) {
         studyTankRewardAnimationFrame = requestAnimationFrame(step);
         return;
       }
 
-      finishStudyTankReward(token, safePreviousTotal, safeAddedMinutes, earnedCoins);
+      finishStudyTankReward(token, safePreviousTotal, safeAddedMinutes, earnedCoins, playedFullSound);
     };
 
     studyTankRewardAnimationFrame = requestAnimationFrame(step);
@@ -4593,6 +4731,9 @@ function stopTimerAtLimit() {
   updateDisplay();
   updateTimerButton("記録待ち");
   setFocusMode(false);
+  if (studyMode === "timer") {
+    playTimerCompleteSound();
+  }
   timerStatus.textContent = studyMode === "timer"
     ? "タイマー終了。記録できます。"
     : "12時間に到達しました";
@@ -4659,6 +4800,7 @@ durationPicker?.addEventListener("click", (event) => {
 });
 
 startBtn.addEventListener("click", () => {
+  unlockFlowlSound();
   if (timer !== null) {
     clearInterval(timer);
     timer = null;
@@ -4700,6 +4842,7 @@ resetBtn.addEventListener("click", () => {
 
 timerRecordForm.addEventListener("submit", (event) => {
   event.preventDefault();
+  unlockFlowlSound();
   const minutes = getElapsedTimerMinutes();
 
   if (minutes <= 0) {
@@ -4728,6 +4871,7 @@ nextWeekBtn.addEventListener("click", () => {
 
 studyForm.addEventListener("submit", (event) => {
   event.preventDefault();
+  unlockFlowlSound();
   const minutes = Number(minutesInput.value);
   const subject = subjectInput.value.trim();
 
