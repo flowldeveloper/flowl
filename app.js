@@ -1,7 +1,7 @@
 const STORAGE_KEY = "flowl-study-pet";
 const STORAGE_VERSION = 2;
 const ANALYTICS_CONSENT_KEY = window.FLOWL_ANALYTICS_CONSENT_KEY || "flowl-analytics-consent";
-const ANALYTICS_APP_VERSION = "pwa-20";
+const ANALYTICS_APP_VERSION = "pwa-21";
 const STUDY_TANK_CAPACITY_MINUTES = 10;
 const WEEKLY_SUBJECT_COLORS = [
   "#4f9d69",
@@ -2335,10 +2335,7 @@ function addStudySession(minutes, subject, mode = "manual") {
     duration_bucket: getAnalyticsDurationBucket(minutes),
   });
   animateStudyTank(previousTotalMinutes, minutes);
-
-  if (session.mode === "manual") {
-    showStudyTankReward(previousTotalMinutes, session);
-  }
+  showStudyTankReward(previousTotalMinutes, session);
 
   return session;
 }
