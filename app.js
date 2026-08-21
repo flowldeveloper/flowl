@@ -1,8 +1,28 @@
 const STORAGE_KEY = "flowl-study-pet";
 const STORAGE_VERSION = 2;
 const ANALYTICS_CONSENT_KEY = window.FLOWL_ANALYTICS_CONSENT_KEY || "flowl-analytics-consent";
-const ANALYTICS_APP_VERSION = "pwa-18";
+const ANALYTICS_APP_VERSION = "pwa-20";
 const STUDY_TANK_CAPACITY_MINUTES = 10;
+const WEEKLY_SUBJECT_COLORS = [
+  "#4f9d69",
+  "#4f86c6",
+  "#d7972f",
+  "#c7607c",
+  "#7868bd",
+  "#2f9b98",
+  "#d06f45",
+  "#718e3f",
+  "#8b6f47",
+  "#5f73cf",
+  "#d08db5",
+  "#4ba7c7",
+  "#b37d2d",
+  "#7b9b68",
+  "#b85b50",
+  "#637f99",
+  "#9a6bb1",
+  "#2e8b6d",
+];
 const ANALYTICS_SCREEN_NAMES = { timerScreen: "study", logScreen: "log", careScreen: "care", shopScreen: "shop" };
 const STORAGE_BACKUP_KEY = `${STORAGE_KEY}:backup`;
 const STORAGE_LAST_GOOD_KEY = `${STORAGE_KEY}:last-good`;
@@ -689,6 +709,7 @@ const historyList = document.getElementById("historyList");
 const weekTotal = document.getElementById("weekTotal");
 const weekLabel = document.getElementById("weekLabel");
 const weekChart = document.getElementById("weekChart");
+const weekLegend = document.getElementById("weekLegend");
 const weekCompare = document.getElementById("weekCompare");
 const prevWeekBtn = document.getElementById("prevWeekBtn");
 const nextWeekBtn = document.getElementById("nextWeekBtn");
@@ -2689,17 +2710,110 @@ function renderWeeklyDurationLabel(element, minutes) {
   });
 }
 
+function getSessionSubject(session) {
+  return String(session?.subject || "").trim() || "集中学習";
+}
+
+function getDaySubjectTotals(day) {
+  const key = toDateKey(day);
+  const totals = new Map();
+
+  state.sessions.forEach((session) => {
+    if (toDateKey(parseSessionDate(session.date)) !== key) return;
+
+    const subject = getSessionSubject(session);
+    totals.set(subject, (totals.get(subject) || 0) + session.minutes);
+  });
+
+  return totals;
+}
+
+function getKnownSubjectOrder() {
+  const ordered = [];
+  const seen = new Set();
+  const addSubject = (subject) => {
+    const name = String(subject || "").trim();
+    if (!name || seen.has(name)) return;
+    seen.add(name);
+    ordered.push(name);
+  };
+
+  [...state.sessions].reverse().forEach((session) => addSubject(getSessionSubject(session)));
+  [...state.subjects].reverse().forEach(addSubject);
+  return ordered;
+}
+
+function getWeeklySubjectVisual(subject, knownSubjectOrder) {
+  const knownIndex = knownSubjectOrder.indexOf(subject);
+  const index = knownIndex >= 0 ? knownIndex : knownSubjectOrder.length;
+
+  return {
+    color: WEEKLY_SUBJECT_COLORS[index % WEEKLY_SUBJECT_COLORS.length],
+    pattern: Math.floor(index / WEEKLY_SUBJECT_COLORS.length) % 3,
+  };
+}
+
+function renderWeeklyLegend(subjectNames, subjectTotals, subjectVisuals) {
+  if (!weekLegend) return;
+
+  weekLegend.innerHTML = "";
+  weekLegend.hidden = subjectNames.length === 0;
+
+  subjectNames.forEach((subject) => {
+    const visual = subjectVisuals.get(subject);
+    const item = document.createElement("div");
+    const swatch = document.createElement("span");
+    const name = document.createElement("strong");
+    const duration = document.createElement("small");
+    const subjectMinutes = subjectTotals.get(subject) || 0;
+
+    item.className = "week-legend-item";
+    item.title = `${subject} ${formatStudyDuration(subjectMinutes)}`;
+    swatch.className = `week-legend-swatch week-pattern-${visual.pattern}`;
+    swatch.style.setProperty("--subject-color", visual.color);
+    swatch.setAttribute("aria-hidden", "true");
+    name.textContent = subject;
+    duration.textContent = formatStudyDuration(subjectMinutes);
+
+    item.append(swatch, name, duration);
+    weekLegend.appendChild(item);
+  });
+}
+
 function renderWeeklyChart() {
   const days = getWeekDays(weekOffset);
   const previousDays = getWeekDays(weekOffset - 1);
-  const totals = days.map((day) => getDayTotal(day));
+  const daySubjectTotals = days.map((day) => getDaySubjectTotals(day));
+  const totals = daySubjectTotals.map((subjectTotals) => (
+    [...subjectTotals.values()].reduce((sum, minutes) => sum + minutes, 0)
+  ));
   const previousTotal = previousDays.reduce((sum, day) => sum + getDayTotal(day), 0);
   const weeklyTotal = totals.reduce((sum, minutes) => sum + minutes, 0);
   const weekDifference = weeklyTotal - previousTotal;
   const maxMinutes = Math.max(60, ...totals);
   const labels = ["月", "火", "水", "木", "金", "土", "日"];
+  const weeklySubjectTotals = new Map();
+
+  daySubjectTotals.forEach((subjectTotals) => {
+    subjectTotals.forEach((minutes, subject) => {
+      weeklySubjectTotals.set(subject, (weeklySubjectTotals.get(subject) || 0) + minutes);
+    });
+  });
+
+  const knownSubjectOrder = getKnownSubjectOrder();
+  const subjectNames = [...weeklySubjectTotals.keys()].sort((subjectA, subjectB) => {
+    const indexA = knownSubjectOrder.indexOf(subjectA);
+    const indexB = knownSubjectOrder.indexOf(subjectB);
+    if (indexA !== indexB) return indexA - indexB;
+    return subjectA.localeCompare(subjectB, "ja");
+  });
+  const subjectVisuals = new Map(subjectNames.map((subject) => [
+    subject,
+    getWeeklySubjectVisual(subject, knownSubjectOrder),
+  ]));
 
   weekChart.innerHTML = "";
+  renderWeeklyLegend(subjectNames, weeklySubjectTotals, subjectVisuals);
   weekTotal.textContent = `週合計 ${formatStudyDuration(weeklyTotal)}`;
   weekLabel.textContent = `${formatDateLabel(days[0])} - ${formatDateLabel(days[6])}`;
   weekCompare.textContent = `前週との差 ${weekDifference >= 0 ? "+" : "-"}${formatStudyDuration(Math.abs(weekDifference))}`;
@@ -2707,19 +2821,40 @@ function renderWeeklyChart() {
 
   totals.forEach((minutes, index) => {
     const bar = document.createElement("div");
-    const fill = document.createElement("span");
+    const stack = document.createElement("div");
     const value = document.createElement("strong");
     const label = document.createElement("small");
+    const subjectTotals = daySubjectTotals[index];
 
     bar.className = "week-bar";
-    fill.hidden = minutes <= 0;
-    fill.style.height = minutes > 0 ? `${Math.max(8, (minutes / maxMinutes) * 100)}%` : "0%";
+    stack.className = "week-bar-stack";
+    stack.hidden = minutes <= 0;
+    stack.style.height = minutes > 0 ? `${Math.max(8, (minutes / maxMinutes) * 100)}%` : "0%";
+
+    subjectNames.forEach((subject) => {
+      const subjectMinutes = subjectTotals.get(subject) || 0;
+      if (subjectMinutes <= 0 || minutes <= 0) return;
+
+      const visual = subjectVisuals.get(subject);
+      const segment = document.createElement("span");
+      segment.className = `week-subject-segment week-pattern-${visual.pattern}`;
+      segment.style.setProperty("--subject-color", visual.color);
+      segment.style.flexBasis = `${(subjectMinutes / minutes) * 100}%`;
+      segment.title = `${subject} ${formatStudyDuration(subjectMinutes)}`;
+      segment.setAttribute("aria-hidden", "true");
+      stack.appendChild(segment);
+    });
+
     renderWeeklyDurationLabel(value, minutes);
     label.textContent = labels[index];
-    bar.setAttribute("aria-label", `${labels[index]}曜日 ${formatStudyDuration(minutes)}`);
+    const breakdown = subjectNames
+      .filter((subject) => (subjectTotals.get(subject) || 0) > 0)
+      .map((subject) => `${subject} ${formatStudyDuration(subjectTotals.get(subject))}`)
+      .join("、");
+    bar.setAttribute("aria-label", `${labels[index]}曜日 合計${formatStudyDuration(minutes)}${breakdown ? `、${breakdown}` : ""}`);
     bar.title = `${labels[index]}曜日 ${formatStudyDuration(minutes)}`;
 
-    bar.append(value, fill, label);
+    bar.append(value, stack, label);
     weekChart.appendChild(bar);
   });
 }
