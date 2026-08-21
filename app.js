@@ -1,7 +1,8 @@
 const STORAGE_KEY = "flowl-study-pet";
 const STORAGE_VERSION = 2;
 const ANALYTICS_CONSENT_KEY = window.FLOWL_ANALYTICS_CONSENT_KEY || "flowl-analytics-consent";
-const ANALYTICS_APP_VERSION = "pwa-14";
+const ANALYTICS_APP_VERSION = "pwa-15";
+const STUDY_TANK_CAPACITY_MINUTES = 10;
 const ANALYTICS_SCREEN_NAMES = { timerScreen: "study", logScreen: "log", careScreen: "care", shopScreen: "shop" };
 const STORAGE_BACKUP_KEY = `${STORAGE_KEY}:backup`;
 const STORAGE_LAST_GOOD_KEY = `${STORAGE_KEY}:last-good`;
@@ -704,6 +705,11 @@ const motionLabel = document.getElementById("motionLabel");
 const motionButtons = document.querySelectorAll(".motion-btn");
 const streakCount = document.getElementById("streakCount");
 const todayReward = document.getElementById("todayReward");
+const studyTank = document.getElementById("studyTank");
+const studyTankVessel = document.getElementById("studyTankVessel");
+const studyTankFill = document.getElementById("studyTankFill");
+const studyTankStatus = document.getElementById("studyTankStatus");
+const studyTankMessage = document.getElementById("studyTankMessage");
 const growthStageLabel = document.getElementById("growthStageLabel");
 const growthNextLabel = document.getElementById("growthNextLabel");
 const growthProgress = document.getElementById("growthProgress");
@@ -766,6 +772,11 @@ let time = 0;
 let timer = null;
 let state = loadState();
 let analyticsSessionTracked = false;
+let studyTankAnimationFrame = null;
+let studyTankResetTimer = null;
+let studyTankPulseTimer = null;
+let studyTankAnimationToken = 0;
+let studyTankAnimating = false;
 let animationTimer = null;
 let timerBeatId = 0;
 let studyReactionTimer = null;
@@ -2258,6 +2269,7 @@ function confirmDurationPicker() {
 
 function addStudySession(minutes, subject, mode = "manual") {
   const earnedCoins = getEarnedCoins(minutes);
+  const previousTotalMinutes = state.totalMinutes;
   const normalizedSubject = subject || "集中学習";
   const createdAt = new Date().toISOString();
   const session = {
@@ -2287,8 +2299,151 @@ function addStudySession(minutes, subject, mode = "manual") {
     study_mode: session.mode,
     duration_bucket: getAnalyticsDurationBucket(minutes),
   });
+  animateStudyTank(previousTotalMinutes, minutes);
 
   return session;
+}
+
+function getStudyTankLevel(totalMinutes) {
+  const safeMinutes = Math.max(0, Math.round(Number(totalMinutes) || 0));
+  if (safeMinutes === 0) return 0;
+
+  const remainder = safeMinutes % STUDY_TANK_CAPACITY_MINUTES;
+  return remainder === 0 ? STUDY_TANK_CAPACITY_MINUTES : remainder;
+}
+
+function setStudyTankVisual(minutes) {
+  if (!studyTankFill || !studyTankStatus || !studyTankVessel) return;
+
+  const safeMinutes = Math.max(0, Math.min(STUDY_TANK_CAPACITY_MINUTES, Number(minutes) || 0));
+  const displayMinutes = safeMinutes <= 0
+    ? 0
+    : Math.min(STUDY_TANK_CAPACITY_MINUTES, Math.ceil(safeMinutes - 0.001));
+  const percentage = (safeMinutes / STUDY_TANK_CAPACITY_MINUTES) * 100;
+
+  studyTankFill.style.width = `${percentage}%`;
+  studyTankStatus.textContent = `${displayMinutes} / ${STUDY_TANK_CAPACITY_MINUTES}分`;
+  studyTankVessel.setAttribute("aria-valuenow", String(displayMinutes));
+  studyTankVessel.setAttribute("aria-valuetext", `${displayMinutes}分充填`);
+}
+
+function pulseStudyTank() {
+  if (!studyTank) return;
+
+  clearTimeout(studyTankPulseTimer);
+  studyTank.classList.remove("is-complete");
+  void studyTank.offsetWidth;
+  studyTank.classList.add("is-complete");
+  studyTankPulseTimer = window.setTimeout(() => {
+    studyTank.classList.remove("is-complete");
+  }, 520);
+}
+
+function renderStudyTank(options = {}) {
+  if (!studyTank || !studyTankMessage) return;
+  if (studyTankAnimating && !options.force) return;
+
+  const level = getStudyTankLevel(state.totalMinutes);
+  setStudyTankVisual(level);
+
+  if (!options.keepMessage) {
+    studyTankMessage.textContent = level === STUDY_TANK_CAPACITY_MINUTES
+      ? "満タン！次の記録で新しいタンクへ"
+      : "記録した時間が1分ずつたまります";
+  }
+}
+
+function finishStudyTankAnimation(token, previousTotalMinutes, addedMinutes) {
+  if (token !== studyTankAnimationToken || !studyTankMessage) return;
+
+  const startRemainder = previousTotalMinutes % STUDY_TANK_CAPACITY_MINUTES;
+  const completedTanks = Math.floor((startRemainder + addedMinutes) / STUDY_TANK_CAPACITY_MINUTES);
+  const finalLevel = getStudyTankLevel(previousTotalMinutes + addedMinutes);
+
+  studyTankAnimating = false;
+  setStudyTankVisual(finalLevel);
+  studyTank.classList.remove("is-filling");
+
+  if (completedTanks > 0 && finalLevel < STUDY_TANK_CAPACITY_MINUTES) {
+    studyTankMessage.textContent = `満タン×${completedTanks}・次のタンクに${finalLevel}分`;
+  } else if (completedTanks > 0) {
+    studyTankMessage.textContent = `満タン×${completedTanks}！`;
+    pulseStudyTank();
+  } else {
+    studyTankMessage.textContent = `+${addedMinutes}分たまりました`;
+  }
+}
+
+function animateStudyTank(previousTotalMinutes, addedMinutes) {
+  if (!studyTank || !studyTankMessage || !studyTankFill) return;
+
+  cancelAnimationFrame(studyTankAnimationFrame);
+  clearTimeout(studyTankResetTimer);
+  studyTankAnimationToken += 1;
+  const token = studyTankAnimationToken;
+  const safePreviousTotal = Math.max(0, Math.round(Number(previousTotalMinutes) || 0));
+  const safeAddedMinutes = Math.max(1, Math.round(Number(addedMinutes) || 1));
+  const startRemainder = safePreviousTotal % STUDY_TANK_CAPACITY_MINUTES;
+  const visualAddedMinutes = Math.min(safeAddedMinutes, STUDY_TANK_CAPACITY_MINUTES * 5);
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  studyTankAnimating = true;
+  studyTank.classList.add("is-filling");
+  studyTankMessage.textContent = `+${safeAddedMinutes}分をタンクへ充填中`;
+
+  if (reduceMotion) {
+    finishStudyTankAnimation(token, safePreviousTotal, safeAddedMinutes);
+    return;
+  }
+
+  const runAnimation = () => {
+    const duration = Math.min(4200, 900 + visualAddedMinutes * 65);
+    const startedAt = performance.now();
+    let previousCycle = 0;
+
+    const step = (now) => {
+      if (token !== studyTankAnimationToken) return;
+
+      const progress = Math.min(1, (now - startedAt) / duration);
+      const easedProgress = 1 - Math.pow(1 - progress, 2);
+      const visualMinutes = startRemainder + visualAddedMinutes * easedProgress;
+      const currentCycle = Math.floor(visualMinutes / STUDY_TANK_CAPACITY_MINUTES);
+
+      if (currentCycle > previousCycle && progress < 1) {
+        previousCycle = currentCycle;
+        setStudyTankVisual(STUDY_TANK_CAPACITY_MINUTES);
+        pulseStudyTank();
+        studyTankAnimationFrame = requestAnimationFrame(step);
+        return;
+      }
+
+      const currentLevel = visualMinutes % STUDY_TANK_CAPACITY_MINUTES;
+      setStudyTankVisual(currentLevel);
+
+      if (progress < 1) {
+        studyTankAnimationFrame = requestAnimationFrame(step);
+        return;
+      }
+
+      finishStudyTankAnimation(token, safePreviousTotal, safeAddedMinutes);
+    };
+
+    studyTankAnimationFrame = requestAnimationFrame(step);
+  };
+
+  if (safePreviousTotal > 0 && startRemainder === 0) {
+    setStudyTankVisual(STUDY_TANK_CAPACITY_MINUTES);
+    pulseStudyTank();
+    studyTankResetTimer = window.setTimeout(() => {
+      if (token !== studyTankAnimationToken) return;
+      setStudyTankVisual(0);
+      runAnimation();
+    }, 420);
+    return;
+  }
+
+  setStudyTankVisual(startRemainder);
+  studyTankAnimationFrame = requestAnimationFrame(runAnimation);
 }
 
 function updateDisplay() {
@@ -3990,6 +4145,7 @@ function render() {
   allTimeStudyTotal.textContent = formatStudyDuration(state.totalMinutes);
 
   renderDailySummary(todayMinutes);
+  renderStudyTank();
   renderPet();
   renderGrowth();
   renderLevelReward();

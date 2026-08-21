@@ -23,7 +23,7 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
   <title>Flowl</title>
-  <link rel="stylesheet" href="style.css?v=pwa-14">
+  <link rel="stylesheet" href="style.css?v=pwa-15">
   <script>
     (() => {
       const measurementId = "G-EE6MQ7M7Z2";
@@ -141,6 +141,18 @@
           </label>
           <button id="recordTimerBtn" type="submit">記録して終了</button>
         </form>
+        <div id="studyTank" class="study-tank" aria-label="10分タンク">
+          <div class="study-tank-head">
+            <span>10分タンク</span>
+            <strong id="studyTankStatus">0 / 10分</strong>
+          </div>
+          <div class="study-tank-body">
+            <div id="studyTankVessel" class="study-tank-vessel" role="progressbar" aria-label="学習時間タンク" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0">
+              <span id="studyTankFill" class="study-tank-fill"></span>
+            </div>
+            <small id="studyTankMessage" class="study-tank-message" aria-live="polite">記録した時間が1分ずつたまります</small>
+          </div>
+        </div>
         <div class="daily-strip" aria-label="今日の育成状況">
           <div>
             <span>今日のごほうび</span>
@@ -478,6 +490,6 @@
     </button>
   </nav>
 
-  <script src="app.js?v=pwa-14"></script>
+  <script src="app.js?v=pwa-15"></script>
 </body>
 </html>
