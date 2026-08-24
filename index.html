@@ -23,7 +23,7 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
   <title>Flowl</title>
-  <link rel="stylesheet" href="style.css?v=pwa-32">
+  <link rel="stylesheet" href="style.css?v=pwa-33">
   <script>
     (() => {
       const measurementId = "G-EE6MQ7M7Z2";
@@ -427,6 +427,11 @@
     </section>
   </main>
 
+  <section id="studyFocusOverlay" class="study-focus-overlay" role="dialog" aria-modal="true" aria-label="集中計測中" hidden>
+    <strong id="studyFocusTime" class="study-focus-time">25:00</strong>
+    <button id="studyFocusPauseBtn" class="study-focus-pause" type="button">一時停止</button>
+  </section>
+
   <div id="studyTankReward" class="tank-reward-backdrop" hidden>
     <section class="tank-reward-card" role="status" aria-live="assertive" aria-atomic="true">
       <button id="studyTankRewardClose" class="tank-reward-close" type="button" aria-label="充填演出を閉じる" title="閉じる">&times;</button>
@@ -501,6 +506,6 @@
     </button>
   </nav>
 
-  <script src="app.js?v=pwa-32"></script>
+  <script src="app.js?v=pwa-33"></script>
 </body>
 </html>

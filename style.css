@@ -10691,3 +10691,85 @@ input:focus {
 .wear-aurora-cloak {
   --item-height: 44%;
 }
+
+/* Running Study view: show only the current time and pause action. */
+body.study-focus-active {
+  overflow: hidden;
+}
+
+.study-focus-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: grid;
+  grid-template-rows: auto auto;
+  place-content: center;
+  justify-items: center;
+  gap: clamp(28px, 7svh, 54px);
+  padding: max(20px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+  overflow: hidden;
+  background: rgba(8, 16, 11, 0.94);
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.study-focus-overlay[hidden] {
+  display: none;
+}
+
+.study-focus-overlay.show {
+  opacity: 1;
+}
+
+.study-focus-time {
+  display: block;
+  max-width: 100%;
+  color: #fffdf8;
+  font-size: clamp(64px, 20vw, 132px);
+  font-variant-numeric: tabular-nums;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0;
+  text-align: center;
+  white-space: nowrap;
+  text-shadow: 0 4px 22px rgba(0, 0, 0, 0.38);
+}
+
+.study-focus-pause {
+  width: min(240px, 72vw);
+  min-height: 56px;
+  padding: 12px 18px;
+  border: 2px solid rgba(255, 253, 248, 0.72);
+  border-radius: 8px;
+  color: #fffdf8;
+  background: #3f8f5b;
+  font-size: 17px;
+  font-weight: 900;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+}
+
+.study-focus-pause:hover,
+.study-focus-pause:active {
+  color: #fffdf8;
+  background: #337a4b;
+}
+
+@media (max-width: 359px), (max-height: 620px) {
+  .study-focus-overlay {
+    gap: 24px;
+  }
+
+  .study-focus-time {
+    font-size: clamp(56px, 19vw, 72px);
+  }
+
+  .study-focus-pause {
+    min-height: 52px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .study-focus-overlay {
+    transition: none;
+  }
+}

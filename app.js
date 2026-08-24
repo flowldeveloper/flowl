@@ -1,7 +1,7 @@
 const STORAGE_KEY = "flowl-study-pet";
 const STORAGE_VERSION = 2;
 const ANALYTICS_CONSENT_KEY = window.FLOWL_ANALYTICS_CONSENT_KEY || "flowl-analytics-consent";
-const ANALYTICS_APP_VERSION = "pwa-32";
+const ANALYTICS_APP_VERSION = "pwa-33";
 const STUDY_TANK_CAPACITY_MINUTES = 10;
 const DAILY_STUDY_LIMIT_MINUTES = 24 * 60;
 const STUDY_TANK_MIN_ANIMATION_MS = 800;
@@ -680,6 +680,9 @@ const encouragementMessages = {
 const timeDisplay = document.getElementById("time");
 const startBtn = document.getElementById("startBtn");
 const resetBtn = document.getElementById("resetBtn");
+const studyFocusOverlay = document.getElementById("studyFocusOverlay");
+const studyFocusTime = document.getElementById("studyFocusTime");
+const studyFocusPauseBtn = document.getElementById("studyFocusPauseBtn");
 const timerRecordForm = document.getElementById("timerRecordForm");
 const timerSubjectInput = document.getElementById("timerSubjectInput");
 const timerStatus = document.getElementById("timerStatus");
@@ -2903,7 +2906,10 @@ function showStudyTankReward(previousTotalMinutes, session) {
 }
 
 function updateDisplay() {
-  timeDisplay.textContent = formatTime(getTimerDisplaySeconds());
+  const displayTime = formatTime(getTimerDisplaySeconds());
+
+  timeDisplay.textContent = displayTime;
+  if (studyFocusTime) studyFocusTime.textContent = displayTime;
 }
 
 function updateTimerButton(label) {
@@ -4812,6 +4818,23 @@ function setFocusMode(isRunning) {
     view.pet.classList.toggle("focusing", isRunning);
     view.pet.closest(".pet-stage").classList.toggle("focus-mode", isRunning);
   });
+
+  document.body.classList.toggle("study-focus-active", isRunning);
+  document.querySelector(".app-shell")?.toggleAttribute("inert", isRunning);
+  bottomNav?.toggleAttribute("inert", isRunning);
+
+  if (studyFocusOverlay) {
+    studyFocusOverlay.hidden = !isRunning;
+    studyFocusOverlay.classList.toggle("show", isRunning);
+    studyFocusOverlay.setAttribute(
+      "aria-label",
+      studyMode === "timer" ? "タイマー計測中" : "ストップウォッチ計測中",
+    );
+
+    if (isRunning) {
+      requestAnimationFrame(() => studyFocusPauseBtn?.focus({ preventScroll: true }));
+    }
+  }
 }
 
 function switchScreen(screenId) {
@@ -4900,7 +4923,7 @@ durationPicker?.addEventListener("click", (event) => {
   if (event.target === durationPicker) closeDurationPicker();
 });
 
-startBtn.addEventListener("click", () => {
+function toggleStudyTimer() {
   unlockFlowlSound();
   if (timer !== null) {
     clearInterval(timer);
@@ -4933,7 +4956,11 @@ startBtn.addEventListener("click", () => {
       stopTimerAtLimit();
     }
   }, 1000);
-});
+}
+
+startBtn.addEventListener("click", toggleStudyTimer);
+
+studyFocusPauseBtn?.addEventListener("click", toggleStudyTimer);
 
 resetBtn.addEventListener("click", () => {
   resetTimer();
