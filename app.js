@@ -1,8 +1,10 @@
 const STORAGE_KEY = "flowl-study-pet";
 const STORAGE_VERSION = 2;
 const ANALYTICS_CONSENT_KEY = window.FLOWL_ANALYTICS_CONSENT_KEY || "flowl-analytics-consent";
-const ANALYTICS_APP_VERSION = "pwa-22";
+const ANALYTICS_APP_VERSION = "pwa-23";
 const STUDY_TANK_CAPACITY_MINUTES = 10;
+const DAILY_STUDY_LIMIT_MINUTES = 24 * 60;
+const MAX_STORED_SESSIONS = 5000;
 const WEEKLY_SUBJECT_COLORS = [
   "#4f9d69",
   "#4f86c6",
@@ -702,6 +704,7 @@ const subjectMenu = document.getElementById("subjectMenu");
 const bottomNav = document.querySelector(".bottom-nav");
 const minutesInput = document.getElementById("minutesInput");
 const manualDurationBtn = document.getElementById("manualDurationBtn");
+const studyDateInput = document.getElementById("studyDateInput");
 const todayTotal = document.getElementById("todayTotal");
 const totalStudy = document.getElementById("totalStudy");
 const allTimeStudyTotal = document.getElementById("allTimeStudyTotal");
@@ -768,7 +771,6 @@ const shareBackground = document.getElementById("shareBackground");
 const sharePetStage = document.getElementById("sharePetStage");
 const sharePet = document.getElementById("sharePet");
 const shareToXBtn = document.getElementById("shareToXBtn");
-const saveShareImageBtn = document.getElementById("saveShareImageBtn");
 const shareStatus = document.getElementById("shareStatus");
 const analyticsConsent = document.getElementById("analyticsConsent");
 const analyticsAcceptBtn = document.getElementById("analyticsAcceptBtn");
@@ -826,9 +828,15 @@ let activeSubjectInput = null;
 let selectedShopItemId = null;
 let selectedShopCategory = shopCategoryOrder[0];
 let flowlAudioContext = null;
+let flowlAudioPrimed = false;
 let lastTankSoundAt = 0;
 
 function getFlowlAudioContext() {
+  if (flowlAudioContext?.state === "closed") {
+    flowlAudioContext = null;
+    flowlAudioPrimed = false;
+  }
+
   if (flowlAudioContext) return flowlAudioContext;
 
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -836,32 +844,66 @@ function getFlowlAudioContext() {
 
   try {
     flowlAudioContext = new AudioContextClass();
+    flowlAudioContext.onstatechange = () => {
+      if (flowlAudioContext?.state !== "running") flowlAudioPrimed = false;
+    };
   } catch {
     flowlAudioContext = null;
+    flowlAudioPrimed = false;
   }
 
   return flowlAudioContext;
+}
+
+function primeFlowlAudio(context) {
+  if (!context || context.state !== "running" || flowlAudioPrimed) return;
+
+  try {
+    const source = context.createBufferSource();
+    source.buffer = context.createBuffer(1, 1, context.sampleRate || 44100);
+    source.connect(context.destination);
+    source.start(0);
+    flowlAudioPrimed = true;
+  } catch {
+    flowlAudioPrimed = false;
+  }
 }
 
 function withFlowlAudio(callback) {
   const context = getFlowlAudioContext();
   if (!context) return;
 
-  if (context.state === "suspended") {
-    context.resume()
-      .then(() => callback(context))
+  const play = () => {
+    if (context.state !== "running") return;
+    primeFlowlAudio(context);
+    callback(context);
+  };
+
+  if (context.state !== "running") {
+    flowlAudioPrimed = false;
+    Promise.resolve(context.resume())
+      .then(play)
       .catch(() => {});
     return;
   }
 
-  callback(context);
+  play();
 }
 
 function unlockFlowlSound() {
   const context = getFlowlAudioContext();
-  if (context?.state === "suspended") {
-    context.resume().catch(() => {});
+  if (!context) return;
+
+  const prime = () => primeFlowlAudio(context);
+  if (context.state === "running") {
+    prime();
+    return;
   }
+
+  flowlAudioPrimed = false;
+  Promise.resolve(context.resume())
+    .then(prime)
+    .catch(() => {});
 }
 
 function scheduleFlowlTone(context, options) {
@@ -873,20 +915,24 @@ function scheduleFlowlTone(context, options) {
     type = "sine",
     endFrequency = frequency,
   } = options;
-  const startedAt = context.currentTime + delay;
-  const oscillator = context.createOscillator();
-  const gain = context.createGain();
+  try {
+    const startedAt = context.currentTime + delay;
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
 
-  oscillator.type = type;
-  oscillator.frequency.setValueAtTime(frequency, startedAt);
-  oscillator.frequency.exponentialRampToValueAtTime(Math.max(1, endFrequency), startedAt + duration);
-  gain.gain.setValueAtTime(0.0001, startedAt);
-  gain.gain.exponentialRampToValueAtTime(volume, startedAt + Math.min(0.018, duration / 3));
-  gain.gain.exponentialRampToValueAtTime(0.0001, startedAt + duration);
-  oscillator.connect(gain);
-  gain.connect(context.destination);
-  oscillator.start(startedAt);
-  oscillator.stop(startedAt + duration + 0.02);
+    oscillator.type = type;
+    oscillator.frequency.setValueAtTime(frequency, startedAt);
+    oscillator.frequency.exponentialRampToValueAtTime(Math.max(1, endFrequency), startedAt + duration);
+    gain.gain.setValueAtTime(0.0001, startedAt);
+    gain.gain.exponentialRampToValueAtTime(volume, startedAt + Math.min(0.018, duration / 3));
+    gain.gain.exponentialRampToValueAtTime(0.0001, startedAt + duration);
+    oscillator.connect(gain);
+    gain.connect(context.destination);
+    oscillator.start(startedAt);
+    oscillator.stop(startedAt + duration + 0.02);
+  } catch {
+    // Sound effects are optional and must never interrupt study recording.
+  }
 }
 
 function playTimerCompleteSound() {
@@ -1470,6 +1516,34 @@ function formatTime(value) {
 
 function getTodayKey() {
   return toDateKey(new Date());
+}
+
+function getValidStudyDateKey(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value || "")) return null;
+
+  const parsedDate = parseSessionDate(value);
+  if (toDateKey(parsedDate) !== value || value > getTodayKey()) return null;
+  return value;
+}
+
+function getRecordedMinutesForDate(dateKey) {
+  return state.sessions.reduce((sum, session) => {
+    return session.date === dateKey ? sum + session.minutes : sum;
+  }, 0);
+}
+
+function initializeStudyDateInput() {
+  if (!studyDateInput) return;
+
+  const today = getTodayKey();
+  studyDateInput.max = today;
+  studyDateInput.value = today;
+}
+
+function preventAppViewportZoom(event) {
+  if (event.type.startsWith("gesture") || event.touches?.length > 1) {
+    event.preventDefault();
+  }
 }
 
 function toDateKey(date) {
@@ -2427,17 +2501,41 @@ function confirmDurationPicker() {
   closeDurationPicker();
 }
 
-function addStudySession(minutes, subject, mode = "manual") {
-  const earnedCoins = getEarnedCoins(minutes);
+function addStudySession(minutes, subject, mode = "manual", requestedDate = getTodayKey()) {
+  const safeMinutes = Math.round(Number(minutes));
+
+  if (!Number.isFinite(safeMinutes) || safeMinutes <= 0) {
+    alert("1分以上の学習時間を入力してください。");
+    return null;
+  }
+
+  const sessionDate = getValidStudyDateKey(requestedDate);
+
+  if (!sessionDate) {
+    alert("今日以前の正しい日付を選んでください。");
+    return null;
+  }
+
+  const recordedMinutes = getRecordedMinutesForDate(sessionDate);
+  const remainingMinutes = Math.max(0, DAILY_STUDY_LIMIT_MINUTES - recordedMinutes);
+  if (safeMinutes > remainingMinutes) {
+    const remainingMessage = remainingMinutes > 0
+      ? `この日にはあと${formatStudyDuration(remainingMinutes)}記録できます。`
+      : "この日はすでに24時間記録されています。";
+    alert(`1日に記録できる学習時間は24時間までです。${remainingMessage}`);
+    return null;
+  }
+
+  const earnedCoins = getEarnedCoins(safeMinutes);
   const previousTotalMinutes = state.totalMinutes;
   const normalizedSubject = subject || "集中学習";
   const createdAt = new Date().toISOString();
   const session = {
     id: `session-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    date: getTodayKey(),
+    date: sessionDate,
     createdAt,
     subject: normalizedSubject,
-    minutes,
+    minutes: safeMinutes,
     mode: getSafeMode(mode),
     coinsEarned: earnedCoins,
     coins: earnedCoins,
@@ -2448,8 +2546,8 @@ function addStudySession(minutes, subject, mode = "manual") {
   }
 
   state.sessions.unshift(session);
-  state.sessions = state.sessions.slice(0, 80);
-  state.totalMinutes += minutes;
+  state.sessions = state.sessions.slice(0, MAX_STORED_SESSIONS);
+  state.totalMinutes += safeMinutes;
   state.coins += earnedCoins;
   grantLevelRewards();
 
@@ -2457,9 +2555,9 @@ function addStudySession(minutes, subject, mode = "manual") {
   render();
   trackFlowlEvent("study_complete", {
     study_mode: session.mode,
-    duration_bucket: getAnalyticsDurationBucket(minutes),
+    duration_bucket: getAnalyticsDurationBucket(safeMinutes),
   });
-  animateStudyTank(previousTotalMinutes, minutes);
+  animateStudyTank(previousTotalMinutes, safeMinutes);
   showStudyTankReward(previousTotalMinutes, session);
 
   return session;
@@ -3876,7 +3974,7 @@ function supportsShareFiles() {
 }
 
 function setShareButtonsBusy(isBusy) {
-  [shareToXBtn, saveShareImageBtn].forEach((button) => {
+  [shareToXBtn].forEach((button) => {
     if (button) button.disabled = isBusy;
   });
 }
@@ -3916,22 +4014,6 @@ async function shareProgressToX() {
       if (targetWindow && !targetWindow.closed) targetWindow.close();
       shareStatus.textContent = "共有画像を作れませんでした。もう一度お試しください。";
     }
-  } finally {
-    setShareButtonsBusy(false);
-  }
-}
-
-async function saveProgressImage() {
-  setShareButtonsBusy(true);
-  shareStatus.textContent = "共有画像を作っています…";
-
-  try {
-    const blob = await createShareImageBlob();
-    downloadShareImage(blob);
-    shareStatus.textContent = "共有画像を保存しました。";
-    trackFlowlEvent("share_image_save");
-  } catch {
-    shareStatus.textContent = "画像を保存できませんでした。もう一度お試しください。";
   } finally {
     setShareButtonsBusy(false);
   }
@@ -4851,6 +4933,7 @@ timerRecordForm.addEventListener("submit", (event) => {
   }
 
   const session = addStudySession(minutes, timerSubjectInput.value.trim() || getCurrentStudyRecordLabel(), studyMode);
+  if (!session) return;
   resetTimer();
   setFocusMode(false);
   timerSubjectInput.value = "";
@@ -4874,10 +4957,12 @@ studyForm.addEventListener("submit", (event) => {
   unlockFlowlSound();
   const minutes = Number(minutesInput.value);
   const subject = subjectInput.value.trim();
+  const selectedDate = studyDateInput?.value || getTodayKey();
 
   if (!Number.isFinite(minutes) || minutes <= 0) return;
 
-  addStudySession(Math.round(minutes), subject, "manual");
+  const session = addStudySession(Math.round(minutes), subject, "manual", selectedDate);
+  if (!session) return;
   subjectInput.value = "";
   manualStudyMinutes = 25;
   minutesInput.value = 25;
@@ -5064,7 +5149,6 @@ document.querySelectorAll(".nav-btn").forEach((button) => {
 });
 
 shareToXBtn?.addEventListener("click", shareProgressToX);
-saveShareImageBtn?.addEventListener("click", saveProgressImage);
 analyticsAcceptBtn?.addEventListener("click", () => updateAnalyticsConsent("granted"));
 analyticsDeclineBtn?.addEventListener("click", () => updateAnalyticsConsent("denied"));
 analyticsSettingsBtn?.addEventListener("click", openAnalyticsConsent);
@@ -5087,6 +5171,21 @@ motionButtons.forEach((button) => {
   });
 });
 
+document.addEventListener("pointerdown", unlockFlowlSound, { capture: true, passive: true });
+document.addEventListener("touchend", unlockFlowlSound, { capture: true, passive: true });
+document.addEventListener("touchmove", preventAppViewportZoom, { passive: false });
+document.addEventListener("gesturestart", preventAppViewportZoom, { passive: false });
+document.addEventListener("gesturechange", preventAppViewportZoom, { passive: false });
+document.addEventListener("gestureend", preventAppViewportZoom, { passive: false });
+document.addEventListener("dblclick", (event) => event.preventDefault(), { passive: false });
+
+studyDateInput?.addEventListener("change", () => {
+  if (getValidStudyDateKey(studyDateInput.value)) return;
+
+  alert("記録日は今日以前の日付を選んでください。");
+  studyDateInput.value = getTodayKey();
+});
+
 const launchReaction = buildLaunchReaction();
 initializeAnalytics();
 
@@ -5096,6 +5195,7 @@ grantLevelRewards();
 saveState();
 createDurationWheelOptions(durationHourWheel, 12);
 createDurationWheelOptions(durationMinuteWheel, 59);
+initializeStudyDateInput();
 updateDurationButtons();
 renderStudyModeControls();
 updateDisplay();

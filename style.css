@@ -19,12 +19,20 @@
 
 html {
   scroll-behavior: smooth;
+  width: 100%;
+  max-width: 100%;
+  overscroll-behavior: none;
+  touch-action: pan-x pan-y;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
   overflow-x: hidden;
+  max-width: 100%;
+  overscroll-behavior: none;
+  touch-action: pan-x pan-y;
   font-family: "Segoe UI", sans-serif;
   color: var(--ink);
   background:
@@ -941,7 +949,7 @@ meter::-moz-meter-bar {
 
 .study-form {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 96px auto;
+  grid-template-columns: minmax(0, 1fr) minmax(142px, 0.58fr) 108px auto;
   gap: 12px;
   align-items: end;
 }
@@ -9591,7 +9599,7 @@ input:focus {
 
 .share-actions {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.8fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 8px;
   margin-top: 10px;
 }
@@ -10114,19 +10122,19 @@ input:focus {
     order: 1;
   }
 
-  #logScreen.active > .share-panel {
+  #logScreen.active > .history-panel {
     order: 2;
   }
 
-  #logScreen.active > .history-panel {
+  #logScreen.active > .weekly-panel {
     order: 3;
   }
 
-  #logScreen.active > .weekly-panel {
+  #logScreen.active > .total-study-panel {
     order: 4;
   }
 
-  #logScreen.active > .total-study-panel {
+  #logScreen.active > .share-panel {
     order: 5;
   }
 
@@ -10137,7 +10145,7 @@ input:focus {
 
 @media (min-width: 390px) and (max-width: 429px) {
   .share-actions {
-    grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.8fr);
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -10198,7 +10206,7 @@ input:focus {
   }
 
   .share-actions {
-    grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.85fr);
+    grid-template-columns: minmax(0, 1fr);
     gap: 6px;
     margin-top: 6px;
   }
@@ -10296,5 +10304,48 @@ input:focus {
   .week-legend-item small {
     grid-column: 2;
     font-size: 9px;
+  }
+}
+
+/* App-like viewport lock and compact backdated Study Log input. */
+#logScreen.active > .record-panel { order: 1; }
+#logScreen.active > .history-panel { order: 2; }
+#logScreen.active > .weekly-panel { order: 3; }
+#logScreen.active > .total-study-panel { order: 4; }
+#logScreen.active > .share-panel {
+  order: 5;
+  grid-column: 1 / -1;
+}
+
+.study-date-label input {
+  min-width: 0;
+  color: var(--ink);
+  background: #fbfdfb;
+}
+
+@media (max-width: 800px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  #logScreen .study-form {
+    grid-template-columns: minmax(0, 1fr) minmax(124px, 0.68fr);
+    gap: 8px;
+  }
+
+  #logScreen .study-form .subject-label {
+    grid-column: 1 / -1;
+  }
+
+  #logScreen .study-form > button {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 359px) {
+  #logScreen .study-form {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

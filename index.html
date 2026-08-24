@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#edf7ef">
   <meta name="description" content="Flowlは、勉強時間を記録するとフクロウが育つ学習記録Webアプリです。タイマーやストップウォッチ、Study Log、着せ替えで楽しく続けられます。">
   <link rel="canonical" href="https://flowldeveloper.github.io/flowl/">
@@ -23,7 +23,7 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
   <title>Flowl</title>
-  <link rel="stylesheet" href="style.css?v=pwa-22">
+  <link rel="stylesheet" href="style.css?v=pwa-23">
   <script>
     (() => {
       const measurementId = "G-EE6MQ7M7Z2";
@@ -234,6 +234,10 @@
               <span id="subjectMenu" class="subject-menu" hidden></span>
             </span>
           </label>
+          <label class="study-date-label">
+            <span>日付</span>
+            <input id="studyDateInput" type="date" aria-label="学習を記録する日付">
+          </label>
           <label>
             分
             <button id="manualDurationBtn" class="duration-input-btn" type="button">0時間25分</button>
@@ -317,7 +321,6 @@
             <span aria-hidden="true">X</span>
             Xで共有
           </button>
-          <button id="saveShareImageBtn" class="share-save-button" type="button">画像を保存</button>
         </div>
         <p id="shareStatus" class="share-status" role="status" aria-live="polite">科目名や詳しいログは共有画像に含まれません。</p>
       </article>
@@ -514,6 +517,6 @@
     </button>
   </nav>
 
-  <script src="app.js?v=pwa-22"></script>
+  <script src="app.js?v=pwa-23"></script>
 </body>
 </html>
