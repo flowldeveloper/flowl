@@ -10777,3 +10777,45 @@ body.study-focus-active {
     transition: none;
   }
 }
+
+/* Mobile app shell: keep status and navigation fixed while each tab scrolls. */
+@media (max-width: 800px) {
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .app-shell,
+  body:has(#timerScreen.active) .app-shell {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .top-status {
+    position: relative;
+    z-index: 30;
+    flex: 0 0 auto;
+  }
+
+  .screen.active,
+  #timerScreen.active,
+  #logScreen.active,
+  #careScreen.active,
+  #shopScreen.active,
+  body:has(#timerScreen.active) #timerScreen.active {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding-bottom: max(8px, var(--phone-gap));
+    scroll-padding-bottom: 12px;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+}
