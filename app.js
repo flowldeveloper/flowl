@@ -43,6 +43,8 @@ const TIMER_NOTIFICATION_ID = 1042;
 const COINS_PER_MINUTE = 1;
 const HUNGER_DECAY_MS = 7 * 24 * 60 * 60 * 1000;
 const PLAY_DECAY_MS = 3 * 24 * 60 * 60 * 1000;
+const STUDY_SLEEP_AFTER_MS = 3 * 24 * 60 * 60 * 1000;
+const CARE_EMOTION_THRESHOLD = 20;
 const DAILY_LOGIN_BONUS = 15;
 const CARE_RECOVERY_AMOUNT = 10;
 const LEVEL_REWARD_INTERVAL = 100;
@@ -2216,6 +2218,30 @@ function getSessionTime(session) {
   return parseSessionDate(session.date).getTime();
 }
 
+function getLatestStudyTime() {
+  return state.sessions.reduce((latest, session) => Math.max(latest, getSessionTime(session)), 0);
+}
+
+function getAmbientMascotMotion(fullness = state.pet.hunger, affection = state.pet.happy) {
+  const latestStudyTime = getLatestStudyTime();
+  const hasCurrentStudyProgress = Number.isFinite(time) && time > 0;
+  const hasBeenAwayFromStudy = latestStudyTime > 0
+    && !hasCurrentStudyProgress
+    && Date.now() - latestStudyTime >= STUDY_SLEEP_AFTER_MS;
+
+  if (hasBeenAwayFromStudy) return "sleep";
+
+  const safeFullness = clamp(Number(fullness) || 0);
+  const safeAffection = clamp(Number(affection) || 0);
+  const fullnessIsCritical = safeFullness <= CARE_EMOTION_THRESHOLD;
+  const affectionIsCritical = safeAffection <= CARE_EMOTION_THRESHOLD;
+
+  // If both gauges are equally low, keep the gentler low-energy motion.
+  if (fullnessIsCritical && safeFullness < safeAffection) return "angry";
+  if (affectionIsCritical && safeAffection < safeFullness) return "sad";
+  return "idle";
+}
+
 function grantLoginBonus() {
   const today = getTodayKey();
 
@@ -4364,6 +4390,11 @@ function renderPet() {
     const stageElement = view.pet.closest(".pet-stage");
     applyStageCustomization(stageElement);
   });
+
+  const ambientMotions = ["idle", "headTilt", "angry", "sad", "sleep"];
+  if (!isStudyTimerRunning() && ambientMotions.includes(activeMascotMotion)) {
+    applyMascotMotion(getAmbientMascotMotion());
+  }
 }
 
 function renderGrowth() {
@@ -5074,7 +5105,7 @@ function triggerPetAnimation(action, iconClass) {
     petViews.forEach((view) => {
       view.prop.className = "pet-action-prop";
     });
-    applyMascotMotion("idle");
+    applyMascotMotion(getAmbientMascotMotion());
   }, 1300);
 }
 
@@ -5086,6 +5117,7 @@ function setFocusMode(isRunning) {
     petViews.forEach((view) => {
       view.pet.classList.remove("timer-beat");
     });
+    applyMascotMotion(getAmbientMascotMotion());
   }
 
   petViews.forEach((view) => {
