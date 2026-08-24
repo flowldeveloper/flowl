@@ -1,7 +1,7 @@
 const STORAGE_KEY = "flowl-study-pet";
 const STORAGE_VERSION = 2;
 const ANALYTICS_CONSENT_KEY = window.FLOWL_ANALYTICS_CONSENT_KEY || "flowl-analytics-consent";
-const ANALYTICS_APP_VERSION = "pwa-33";
+const ANALYTICS_APP_VERSION = "pwa-34";
 const STUDY_TANK_CAPACITY_MINUTES = 10;
 const DAILY_STUDY_LIMIT_MINUTES = 24 * 60;
 const STUDY_TANK_MIN_ANIMATION_MS = 800;
@@ -822,6 +822,8 @@ let selectedShopItemId = null;
 let selectedShopCategory = shopCategoryOrder[0];
 let flowlAudioContext = null;
 let flowlAudioPrimed = false;
+let flowlServiceWorkerRegistration = null;
+let appUpdateReloading = false;
 let lastTankSoundAt = 0;
 let lastTankFullSoundAt = 0;
 let lastTankRewardPulseAt = 0;
@@ -5200,14 +5202,28 @@ analyticsDeclineBtn?.addEventListener("click", () => updateAnalyticsConsent("den
 analyticsSettingsBtn?.addEventListener("click", openAnalyticsConsent);
 
 if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (appUpdateReloading || timer !== null || time > 0) return;
+
+    appUpdateReloading = true;
+    window.location.reload();
+  });
+
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js")
-      .then(() => {
-        // Service Worker updates stay silent because the data management UI was removed.
+    navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" })
+      .then((registration) => {
+        flowlServiceWorkerRegistration = registration;
+        return registration.update();
       })
       .catch(() => {
         // PWA registration can fail on non-HTTPS local network URLs.
       });
+  });
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      flowlServiceWorkerRegistration?.update().catch(() => {});
+    }
   });
 }
 
