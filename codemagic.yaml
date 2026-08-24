@@ -29,6 +29,8 @@ workflows:
         script: |
           npx cap add ios
           npx cap sync ios
+          cp "$CM_BUILD_DIR/app-icon.png" \
+            "$CM_BUILD_DIR/ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png"
 
       - name: Install CocoaPods dependencies
         script: |
