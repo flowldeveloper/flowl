@@ -23,7 +23,7 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
   <title>Flowl</title>
-  <link rel="stylesheet" href="style.css?v=pwa-38">
+  <link rel="stylesheet" href="style.css?v=pwa-39">
   <script>
     (() => {
       const measurementId = "G-EE6MQ7M7Z2";
@@ -272,6 +272,15 @@
         <p id="weekCompare" class="week-compare">前週との差 0分</p>
       </article>
 
+      <article class="panel subject-study-panel" aria-labelledby="subjectStudyTitle">
+        <div class="section-title">
+          <p id="subjectStudyTitle">科目別の学習時間</p>
+          <span id="subjectStudyTotal">週合計 0分</span>
+        </div>
+        <p id="subjectStudyWeek" class="subject-study-week">今週</p>
+        <div id="subjectStudyList" class="subject-study-list" role="list" aria-live="polite"></div>
+      </article>
+
       <article class="panel share-panel" aria-labelledby="sharePanelTitle">
         <div class="section-title">
           <p id="sharePanelTitle">Share progress</p>
@@ -511,6 +520,6 @@
     </button>
   </nav>
 
-  <script src="app.js?v=pwa-38"></script>
+  <script src="app.js?v=pwa-39"></script>
 </body>
 </html>

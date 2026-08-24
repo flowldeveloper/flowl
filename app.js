@@ -711,6 +711,9 @@ const weekLabel = document.getElementById("weekLabel");
 const weekChart = document.getElementById("weekChart");
 const weekLegend = document.getElementById("weekLegend");
 const weekCompare = document.getElementById("weekCompare");
+const subjectStudyTotal = document.getElementById("subjectStudyTotal");
+const subjectStudyWeek = document.getElementById("subjectStudyWeek");
+const subjectStudyList = document.getElementById("subjectStudyList");
 const prevWeekBtn = document.getElementById("prevWeekBtn");
 const nextWeekBtn = document.getElementById("nextWeekBtn");
 const shopList = document.getElementById("shopList");
@@ -3279,6 +3282,55 @@ function renderWeeklyLegend(subjectNames, subjectTotals, subjectVisuals) {
   });
 }
 
+function renderWeeklySubjectSummary(subjectTotals, subjectVisuals, weeklyTotal, days) {
+  if (!subjectStudyList || !subjectStudyTotal || !subjectStudyWeek) return;
+
+  const entries = [...subjectTotals.entries()]
+    .filter(([, minutes]) => minutes > 0)
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "ja"));
+  const maxMinutes = Math.max(1, ...entries.map(([, minutes]) => minutes));
+
+  subjectStudyTotal.textContent = `週合計 ${formatStudyDuration(weeklyTotal)}`;
+  subjectStudyWeek.textContent = `${formatDateLabel(days[0])} - ${formatDateLabel(days[6])}`;
+  subjectStudyList.innerHTML = "";
+
+  if (entries.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "subject-study-empty";
+    empty.textContent = "この週の学習記録はまだありません";
+    subjectStudyList.appendChild(empty);
+    return;
+  }
+
+  entries.forEach(([subject, minutes]) => {
+    const visual = subjectVisuals.get(subject);
+    const row = document.createElement("div");
+    const heading = document.createElement("div");
+    const name = document.createElement("strong");
+    const duration = document.createElement("span");
+    const track = document.createElement("div");
+    const fill = document.createElement("span");
+    const progress = Math.max(4, (minutes / maxMinutes) * 100);
+
+    row.className = "subject-study-row";
+    row.setAttribute("role", "listitem");
+    row.setAttribute("aria-label", `${subject} ${formatStudyDuration(minutes)}`);
+    heading.className = "subject-study-heading";
+    name.textContent = subject;
+    duration.textContent = formatStudyDuration(minutes);
+    track.className = "subject-study-track";
+    track.setAttribute("aria-hidden", "true");
+    fill.className = `subject-study-fill week-pattern-${visual?.pattern || 0}`;
+    fill.style.setProperty("--subject-color", visual?.color || WEEKLY_SUBJECT_COLORS[0]);
+    fill.style.setProperty("--subject-progress", `${progress}%`);
+
+    heading.append(name, duration);
+    track.appendChild(fill);
+    row.append(heading, track);
+    subjectStudyList.appendChild(row);
+  });
+}
+
 function renderWeeklyChart() {
   const days = getWeekDays(weekOffset);
   const previousDays = getWeekDays(weekOffset - 1);
@@ -3313,6 +3365,7 @@ function renderWeeklyChart() {
 
   weekChart.innerHTML = "";
   renderWeeklyLegend(subjectNames, weeklySubjectTotals, subjectVisuals);
+  renderWeeklySubjectSummary(weeklySubjectTotals, subjectVisuals, weeklyTotal, days);
   weekTotal.textContent = `週合計 ${formatStudyDuration(weeklyTotal)}`;
   weekLabel.textContent = `${formatDateLabel(days[0])} - ${formatDateLabel(days[6])}`;
   weekCompare.textContent = `前週との差 ${weekDifference >= 0 ? "+" : "-"}${formatStudyDuration(Math.abs(weekDifference))}`;
