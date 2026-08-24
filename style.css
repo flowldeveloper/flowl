@@ -10648,3 +10648,46 @@ input:focus {
     appearance: none;
   }
 }
+
+/* Align the 10-minute tank end cap inside the top status card. */
+.top-status .status-study-tank .study-tank-body {
+  padding-right: 8px;
+}
+
+.top-status .status-study-tank .study-tank-vessel::after {
+  box-sizing: border-box;
+  top: 50%;
+  height: 8px;
+  transform: translateY(-50%);
+}
+
+/* Body clothing starts below the face and follows the owl's round torso. */
+.wear-study-vest::before,
+.wear-scholar-robe::before,
+.wear-star-mantle::before,
+.wear-sage-robe::before,
+.wear-page-poncho::before,
+.wear-aurora-cloak::before {
+  clip-path: polygon(
+    16% 8%,
+    36% 1%,
+    42% 13%,
+    50% 20%,
+    58% 13%,
+    64% 1%,
+    84% 8%,
+    98% 92%,
+    82% 100%,
+    18% 100%,
+    2% 92%
+  );
+}
+
+.wear-study-vest,
+.wear-scholar-robe,
+.wear-star-mantle,
+.wear-sage-robe,
+.wear-page-poncho,
+.wear-aurora-cloak {
+  --item-height: 44%;
+}

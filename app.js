@@ -1,7 +1,7 @@
 const STORAGE_KEY = "flowl-study-pet";
 const STORAGE_VERSION = 2;
 const ANALYTICS_CONSENT_KEY = window.FLOWL_ANALYTICS_CONSENT_KEY || "flowl-analytics-consent";
-const ANALYTICS_APP_VERSION = "pwa-31";
+const ANALYTICS_APP_VERSION = "pwa-32";
 const STUDY_TANK_CAPACITY_MINUTES = 10;
 const DAILY_STUDY_LIMIT_MINUTES = 24 * 60;
 const STUDY_TANK_MIN_ANIMATION_MS = 800;
@@ -83,7 +83,7 @@ const shopItems = {
     layer: "clothing",
     anchor: "body",
     offsetX: 0,
-    offsetY: 5,
+    offsetY: 12,
     scale: 1.05,
     rotation: 0,
   },
@@ -98,7 +98,7 @@ const shopItems = {
     layer: "clothing",
     anchor: "body",
     offsetX: 0,
-    offsetY: 7,
+    offsetY: 13,
     scale: 1.06,
     rotation: 0,
   },
@@ -113,7 +113,7 @@ const shopItems = {
     layer: "clothing",
     anchor: "body",
     offsetX: 0,
-    offsetY: 7,
+    offsetY: 13,
     scale: 1.08,
     rotation: 0,
   },
@@ -128,7 +128,7 @@ const shopItems = {
     layer: "clothing",
     anchor: "body",
     offsetX: 0,
-    offsetY: 7,
+    offsetY: 13,
     scale: 1.08,
     rotation: 0,
   },
@@ -143,7 +143,7 @@ const shopItems = {
     layer: "clothing",
     anchor: "body",
     offsetX: 0,
-    offsetY: 5,
+    offsetY: 12,
     scale: 1.06,
     rotation: 0,
   },
@@ -158,7 +158,7 @@ const shopItems = {
     layer: "clothing",
     anchor: "body",
     offsetX: 0,
-    offsetY: 7,
+    offsetY: 13,
     scale: 1.08,
     rotation: 0,
   },
