@@ -10461,3 +10461,54 @@ input:focus {
     font-size: 10px;
   }
 }
+
+/* Make purchased stock quieter than items that can still be bought. */
+.shop-item.owned,
+.shop-item.owned.rarity-common,
+.shop-item.owned.rarity-uncommon,
+.shop-item.owned.rarity-rare,
+.shop-item.owned.rarity-epic,
+.shop-item.owned.rarity-legendary {
+  border-color: #c2c9c4;
+  background: linear-gradient(180deg, #f2f4f2 0%, #e4e8e5 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.72);
+}
+
+.shop-item.owned.equipped {
+  border-color: rgba(63, 143, 91, 0.58);
+  box-shadow:
+    0 0 0 2px rgba(63, 143, 91, 0.2),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.72);
+}
+
+.shop-item.owned::before {
+  opacity: 0.18;
+  filter: grayscale(0.85);
+}
+
+.shop-item.owned::after {
+  opacity: 0;
+}
+
+.shop-item.owned .preview-item-btn {
+  color: #5d665f;
+  background: #d8ddda;
+  border-color: #b9c1bc;
+  box-shadow: none;
+}
+
+/* Closet: unequipped actions are white; the active remove action is orange. */
+.inventory .item-list .inventory-equip-btn {
+  color: #5c4a2d;
+  background: #fffdf8;
+  border-color: #d8c9ae;
+  box-shadow: none;
+}
+
+.inventory-card.equipped .inventory-equip-btn,
+.inventory .item-list .inventory-card.equipped .inventory-equip-btn {
+  color: #5a3f12;
+  background: #ffe2a3;
+  border-color: #e2b759;
+  box-shadow: 0 6px 12px rgba(196, 133, 31, 0.16);
+}
