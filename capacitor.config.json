@@ -4,7 +4,10 @@
   "webDir": "www",
   "bundledWebRuntime": false,
   "ios": {
-    "contentInset": "automatic"
+    "backgroundColor": "#edf7ef",
+    "contentInset": "never",
+    "scrollEnabled": true,
+    "zoomEnabled": false
   },
   "server": {
     "androidScheme": "https"
