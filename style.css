@@ -1150,13 +1150,6 @@ input:focus {
   grid-column: 1 / -1;
 }
 
-.subject-study-week {
-  margin: -2px 0 12px;
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 800;
-}
-
 .subject-study-list {
   display: grid;
   gap: 13px;

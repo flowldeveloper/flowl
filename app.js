@@ -711,8 +711,6 @@ const weekLabel = document.getElementById("weekLabel");
 const weekChart = document.getElementById("weekChart");
 const weekLegend = document.getElementById("weekLegend");
 const weekCompare = document.getElementById("weekCompare");
-const subjectStudyTotal = document.getElementById("subjectStudyTotal");
-const subjectStudyWeek = document.getElementById("subjectStudyWeek");
 const subjectStudyList = document.getElementById("subjectStudyList");
 const prevWeekBtn = document.getElementById("prevWeekBtn");
 const nextWeekBtn = document.getElementById("nextWeekBtn");
@@ -3282,16 +3280,14 @@ function renderWeeklyLegend(subjectNames, subjectTotals, subjectVisuals) {
   });
 }
 
-function renderWeeklySubjectSummary(subjectTotals, subjectVisuals, weeklyTotal, days) {
-  if (!subjectStudyList || !subjectStudyTotal || !subjectStudyWeek) return;
+function renderWeeklySubjectSummary(subjectTotals, subjectVisuals) {
+  if (!subjectStudyList) return;
 
   const entries = [...subjectTotals.entries()]
     .filter(([, minutes]) => minutes > 0)
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "ja"));
   const maxMinutes = Math.max(1, ...entries.map(([, minutes]) => minutes));
 
-  subjectStudyTotal.textContent = `週合計 ${formatStudyDuration(weeklyTotal)}`;
-  subjectStudyWeek.textContent = `${formatDateLabel(days[0])} - ${formatDateLabel(days[6])}`;
   subjectStudyList.innerHTML = "";
 
   if (entries.length === 0) {
@@ -3365,7 +3361,7 @@ function renderWeeklyChart() {
 
   weekChart.innerHTML = "";
   renderWeeklyLegend(subjectNames, weeklySubjectTotals, subjectVisuals);
-  renderWeeklySubjectSummary(weeklySubjectTotals, subjectVisuals, weeklyTotal, days);
+  renderWeeklySubjectSummary(weeklySubjectTotals, subjectVisuals);
   weekTotal.textContent = `週合計 ${formatStudyDuration(weeklyTotal)}`;
   weekLabel.textContent = `${formatDateLabel(days[0])} - ${formatDateLabel(days[6])}`;
   weekCompare.textContent = `前週との差 ${weekDifference >= 0 ? "+" : "-"}${formatStudyDuration(Math.abs(weekDifference))}`;
