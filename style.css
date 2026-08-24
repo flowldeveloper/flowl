@@ -10610,3 +10610,41 @@ input:focus {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* iOS date controls have a wide intrinsic size; keep them inside their grid cell. */
+#logScreen .study-date-label,
+#logScreen .study-duration-label {
+  overflow: hidden;
+  contain: inline-size;
+}
+
+#studyDateInput {
+  display: block;
+  inline-size: 100%;
+  min-inline-size: 0 !important;
+  max-inline-size: 100%;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfdfb;
+  text-align: left;
+}
+
+#studyDateInput::-webkit-date-and-time-value {
+  min-width: 0;
+  padding: 0;
+  text-align: left;
+}
+
+#studyDateInput::-webkit-calendar-picker-indicator {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 2px 0 2px 6px;
+}
+
+@supports (-webkit-touch-callout: none) {
+  #studyDateInput {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+}
