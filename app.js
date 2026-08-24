@@ -1,7 +1,7 @@
 const STORAGE_KEY = "flowl-study-pet";
 const STORAGE_VERSION = 2;
 const ANALYTICS_CONSENT_KEY = window.FLOWL_ANALYTICS_CONSENT_KEY || "flowl-analytics-consent";
-const ANALYTICS_APP_VERSION = "pwa-24";
+const ANALYTICS_APP_VERSION = "pwa-25";
 const STUDY_TANK_CAPACITY_MINUTES = 10;
 const DAILY_STUDY_LIMIT_MINUTES = 24 * 60;
 const STUDY_TANK_MIN_ANIMATION_MS = 800;
@@ -2743,14 +2743,27 @@ function setStudyTankRewardVisual(minutes) {
   studyTankRewardVessel.setAttribute("aria-valuetext", `${displayMinutes}分充填`);
 }
 
+function renderStudyTankRewardCount(completedTanks) {
+  const safeCompletedTanks = Math.max(1, Math.floor(Number(completedTanks) || 1));
+  const label = document.createElement("span");
+  const multiplier = document.createElement("strong");
+
+  label.className = "tank-reward-combo-label";
+  label.textContent = "TANK";
+  multiplier.className = "tank-reward-combo-count";
+  multiplier.textContent = `×${safeCompletedTanks}`;
+
+  studyTankRewardCombo.replaceChildren(label, multiplier);
+  studyTankRewardCombo.dataset.digits = String(Math.min(3, String(safeCompletedTanks).length));
+  studyTankRewardCombo.setAttribute("aria-label", `${safeCompletedTanks}タンク`);
+  return safeCompletedTanks;
+}
+
 function pulseStudyTankReward(completedTanks, options = {}) {
   const card = studyTankReward?.querySelector(".tank-reward-card");
   if (!card || !studyTankRewardCombo) return;
 
-  const safeCompletedTanks = Math.max(1, Math.floor(Number(completedTanks) || 1));
-  studyTankRewardCombo.textContent = safeCompletedTanks > 1
-    ? `${safeCompletedTanks} TANK COMBO!`
-    : "TANK FULL!";
+  renderStudyTankRewardCount(completedTanks);
   studyTankRewardCombo.classList.add("has-value");
 
   const force = Boolean(options.force);
@@ -2794,7 +2807,9 @@ function finishStudyTankReward(token, previousTotalMinutes, addedMinutes, earned
   studyTankRewardCoins.textContent = `+${earnedCoins} coin`;
 
   if (completedTanks > 0) {
-    studyTankRewardTitle.textContent = completedTanks > 1 ? `${completedTanks}タンク達成！` : "タンク満タン！";
+    studyTankRewardTitle.textContent = completedTanks > 1
+      ? `タンク ×${completedTanks} 達成！`
+      : "タンク ×1 満タン！";
     studyTankRewardMessage.textContent = finalLevel < STUDY_TANK_CAPACITY_MINUTES
       ? `次のタンクに${finalLevel}分チャージ済み`
       : "10分の学習エネルギーが満タンです";
@@ -2834,6 +2849,7 @@ function showStudyTankReward(previousTotalMinutes, session) {
   studyTankRewardCoins.textContent = `+${earnedCoins} coin`;
   studyTankRewardCombo.textContent = "";
   studyTankRewardCombo.classList.remove("show", "has-value");
+  delete studyTankRewardCombo.dataset.digits;
 
   requestAnimationFrame(() => studyTankReward.classList.add("show"));
   playTankChargeStartSound();

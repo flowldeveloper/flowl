@@ -9960,18 +9960,47 @@ input:focus {
   left: 50%;
   z-index: 7;
   width: max-content;
+  display: inline-grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  gap: 5px;
   max-width: calc(100% - 30px);
-  padding: 6px 13px;
+  padding: 5px 13px 6px;
   border: 2px solid #fff7c9;
   border-radius: 6px;
   background: #e4a93a;
   box-shadow: 0 5px 0 #a86f24, 0 8px 18px rgba(96, 69, 22, 0.22);
   color: #fffdf2;
-  font-size: 14px;
   font-weight: 900;
   opacity: 0;
   transform: translate(-50%, 8px) scale(0.72);
   pointer-events: none;
+}
+
+.tank-reward-combo-label {
+  align-self: end;
+  padding-bottom: 2px;
+  font-size: 10px;
+  line-height: 1;
+}
+
+.tank-reward-combo-count {
+  font-size: 30px;
+  font-variant-numeric: tabular-nums;
+  line-height: 0.9;
+  white-space: nowrap;
+}
+
+.tank-reward-combo[data-digits="2"] .tank-reward-combo-count {
+  font-size: 28px;
+}
+
+.tank-reward-combo[data-digits="3"] .tank-reward-combo-count {
+  font-size: 25px;
+}
+
+.tank-reward-combo-count::first-letter {
+  font-size: 1em;
 }
 
 .tank-reward-combo.show {
