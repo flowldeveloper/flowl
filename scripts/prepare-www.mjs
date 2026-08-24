@@ -6,6 +6,7 @@ const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const outDir = join(root, "www");
 const files = [
   "index.html",
+  "privacy.html",
   "style.css",
   "app.js",
   "manifest.webmanifest",

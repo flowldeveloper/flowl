@@ -1189,6 +1189,35 @@ input:focus {
   color: var(--leaf);
 }
 
+.app-info-footer {
+  order: 6;
+  display: flex;
+  justify-content: center;
+  padding: 4px 8px max(8px, env(safe-area-inset-bottom));
+}
+
+.app-info-footer a,
+.analytics-privacy-link {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-underline-offset: 3px;
+}
+
+.app-info-footer a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px 12px;
+}
+
+.app-info-footer a:hover,
+.app-info-footer a:focus-visible,
+.analytics-privacy-link:hover,
+.analytics-privacy-link:focus-visible {
+  color: var(--leaf);
+}
+
 .analytics-consent {
   position: fixed;
   right: max(12px, env(safe-area-inset-right));
@@ -1228,6 +1257,12 @@ input:focus {
   color: var(--muted);
   font-size: 12px;
   line-height: 1.55;
+}
+
+.analytics-privacy-link {
+  display: inline-block;
+  margin-top: 5px;
+  font-size: 11px;
 }
 
 .analytics-consent-actions {

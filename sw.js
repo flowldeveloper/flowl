@@ -1,10 +1,11 @@
-const FLOWL_CACHE = "flowl-pwa-v37";
+const FLOWL_CACHE = "flowl-pwa-v38";
 const FLOWL_ASSETS = [
   "./",
   "./?source=pwa",
   "./index.html",
-  "./style.css?v=pwa-37",
-  "./app.js?v=pwa-37",
+  "./privacy.html",
+  "./style.css?v=pwa-38",
+  "./app.js?v=pwa-38",
   "./manifest.webmanifest",
   "./icon.svg"
 ];
@@ -33,14 +34,19 @@ self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
 
   if (event.request.mode === "navigate") {
+    const requestUrl = new URL(event.request.url);
+    const navigationCacheKey = requestUrl.pathname.endsWith("/privacy.html")
+      ? "./privacy.html"
+      : "./index.html";
+
     event.respondWith(
       fetch(event.request)
         .then((response) => {
           const copy = response.clone();
-          caches.open(FLOWL_CACHE).then((cache) => cache.put("./index.html", copy));
+          caches.open(FLOWL_CACHE).then((cache) => cache.put(navigationCacheKey, copy));
           return response;
         })
-        .catch(() => caches.match("./index.html").then((cached) => cached || caches.match("./")))
+        .catch(() => caches.match(navigationCacheKey).then((cached) => cached || caches.match("./")))
     );
     return;
   }
