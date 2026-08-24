@@ -10512,3 +10512,60 @@ input:focus {
   border-color: #e2b759;
   box-shadow: 0 6px 12px rgba(196, 133, 31, 0.16);
 }
+
+/* Keep the 10-minute tank with the always-visible Lv/coin status area. */
+.top-status .status-study-tank {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: auto minmax(180px, 1fr);
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 6px 10px;
+}
+
+.top-status .status-study-tank .study-tank-head {
+  gap: 8px;
+}
+
+.top-status .status-study-tank .study-tank-body {
+  min-width: 0;
+}
+
+.top-status .status-study-tank .study-tank-vessel {
+  min-width: 96px;
+  height: 16px;
+}
+
+@media (max-width: 800px) {
+  .top-status .status-study-tank {
+    grid-template-columns: auto minmax(80px, 1fr);
+    gap: 7px;
+    padding: 5px 8px;
+  }
+
+  .top-status .status-study-tank .study-tank-head {
+    gap: 5px;
+  }
+
+  .top-status .status-study-tank .study-tank-head span,
+  .top-status .status-study-tank .study-tank-head strong {
+    font-size: 9px;
+  }
+
+  .top-status .status-study-tank .study-tank-vessel {
+    height: 14px;
+  }
+
+  .top-status .status-study-tank .study-tank-message {
+    display: none;
+  }
+}
+
+@media (max-width: 359px) {
+  .top-status .status-study-tank {
+    grid-template-columns: minmax(84px, auto) minmax(64px, 1fr);
+    gap: 5px;
+    padding-inline: 6px;
+  }
+}
