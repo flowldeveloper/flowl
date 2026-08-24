@@ -1,7 +1,7 @@
 const STORAGE_KEY = "flowl-study-pet";
 const STORAGE_VERSION = 2;
 const ANALYTICS_CONSENT_KEY = window.FLOWL_ANALYTICS_CONSENT_KEY || "flowl-analytics-consent";
-const ANALYTICS_APP_VERSION = "pwa-36";
+const ANALYTICS_APP_VERSION = "pwa-37";
 const STUDY_TANK_CAPACITY_MINUTES = 10;
 const DAILY_STUDY_LIMIT_MINUTES = 24 * 60;
 const STUDY_TANK_MIN_ANIMATION_MS = 800;
@@ -35,9 +35,11 @@ const STORAGE_TEMP_KEY = `${STORAGE_KEY}:temp`;
 const STORAGE_META_KEY = `${STORAGE_KEY}:meta`;
 const STORAGE_CORRUPT_PREFIX = `${STORAGE_KEY}:corrupt`;
 const STORAGE_TEST_KEY = `${STORAGE_KEY}:storage-test`;
+const ACTIVE_STUDY_KEY = `${STORAGE_KEY}:active-study`;
 const APP_NAME = "Flowl";
 const FLOWL_PUBLIC_URL = "https://flowldeveloper.github.io/flowl/";
 const TIMER_MAX_SECONDS = 12 * 60 * 60;
+const TIMER_NOTIFICATION_ID = 1042;
 const COINS_PER_MINUTE = 1;
 const HUNGER_DECAY_MS = 7 * 24 * 60 * 60 * 1000;
 const PLAY_DECAY_MS = 3 * 24 * 60 * 60 * 1000;
@@ -796,6 +798,8 @@ const subjectFields = [
 const storageStatus = getLocalStorageStatus();
 let time = 0;
 let timer = null;
+let timerStartedAt = null;
+let timerStartedFromSeconds = 0;
 let state = loadState();
 let analyticsSessionTracked = false;
 let studyTankAnimationFrame = null;
@@ -1626,6 +1630,216 @@ function getCurrentStudyLimitSeconds() {
   return studyMode === "timer" ? timerTargetSeconds : TIMER_MAX_SECONDS;
 }
 
+function isStudyTimerRunning() {
+  return timer !== null && Number.isFinite(timerStartedAt);
+}
+
+function getWallClockElapsedSeconds() {
+  const limit = getCurrentStudyLimitSeconds();
+
+  if (!Number.isFinite(timerStartedAt)) {
+    return Math.min(limit, Math.max(0, Math.floor(time)));
+  }
+
+  const elapsedSinceStart = Math.max(0, Math.floor((Date.now() - timerStartedAt) / 1000));
+  return Math.min(limit, timerStartedFromSeconds + elapsedSinceStart);
+}
+
+function persistActiveStudySession({ running = isStudyTimerRunning() } = {}) {
+  const elapsedSeconds = running ? getWallClockElapsedSeconds() : time;
+  const snapshot = {
+    version: 1,
+    mode: studyMode,
+    elapsedSeconds: Math.max(0, Math.floor(elapsedSeconds)),
+    startedAt: running ? Date.now() : null,
+    targetSeconds: timerTargetSeconds,
+    subject: timerSubjectInput?.value.trim() || "",
+    running,
+  };
+
+  safeSetStorageItem(ACTIVE_STUDY_KEY, JSON.stringify(snapshot));
+}
+
+function clearActiveStudySession() {
+  safeRemoveStorageItem(ACTIVE_STUDY_KEY);
+}
+
+function getCapacitorPlugin(name) {
+  return window.Capacitor?.Plugins?.[name] || null;
+}
+
+async function cancelTimerCompletionNotification() {
+  const notifications = getCapacitorPlugin("LocalNotifications");
+  if (!notifications?.cancel) return;
+
+  try {
+    await notifications.cancel({ notifications: [{ id: TIMER_NOTIFICATION_ID }] });
+  } catch {
+    // The web app and older native builds can run without this optional plugin.
+  }
+}
+
+async function ensureTimerNotificationPermission({ request = false } = {}) {
+  const notifications = getCapacitorPlugin("LocalNotifications");
+  if (!notifications?.checkPermissions) return false;
+
+  try {
+    let permission = await notifications.checkPermissions();
+    const canRequest = permission.display === "prompt" || permission.display === "prompt-with-rationale";
+
+    if (request && canRequest && notifications.requestPermissions) {
+      permission = await notifications.requestPermissions();
+    }
+
+    return permission.display === "granted";
+  } catch {
+    return false;
+  }
+}
+
+async function scheduleTimerCompletionNotification() {
+  if (studyMode !== "timer" || !isStudyTimerRunning()) return;
+
+  const notifications = getCapacitorPlugin("LocalNotifications");
+  if (!notifications?.schedule || !(await ensureTimerNotificationPermission())) return;
+
+  const remainingSeconds = getCurrentStudyLimitSeconds() - getWallClockElapsedSeconds();
+  if (remainingSeconds <= 0) return;
+
+  try {
+    await cancelTimerCompletionNotification();
+    await notifications.schedule({
+      notifications: [{
+        id: TIMER_NOTIFICATION_ID,
+        title: "Flowl",
+        body: "勉強時間になりました。おつかれさま！",
+        schedule: { at: new Date(Date.now() + remainingSeconds * 1000) },
+        sound: "default",
+        extra: { type: "study-timer-complete" },
+      }],
+    });
+  } catch {
+    // A denied permission or unavailable native bridge must not stop the timer.
+  }
+}
+
+function syncStudyTimerFromClock({
+  playBeat = false,
+  playCompletionSound = true,
+  cancelCompletionNotification = document.visibilityState === "visible",
+} = {}) {
+  if (!isStudyTimerRunning()) return false;
+
+  const previousTime = time;
+  time = getWallClockElapsedSeconds();
+  updateDisplay();
+
+  if (time >= getCurrentStudyLimitSeconds()) {
+    stopTimerAtLimit({
+      playSound: playCompletionSound,
+      cancelNotification: cancelCompletionNotification,
+    });
+    return false;
+  }
+
+  if (playBeat && time > previousTime) {
+    playTimerBeat();
+  }
+
+  return true;
+}
+
+function startStudyTimerInterval() {
+  clearInterval(timer);
+  timer = setInterval(() => {
+    syncStudyTimerFromClock({
+      playBeat: document.visibilityState === "visible",
+      playCompletionSound: document.visibilityState === "visible",
+    });
+  }, 1000);
+}
+
+function restoreActiveStudySession() {
+  const rawSnapshot = safeGetStorageItem(ACTIVE_STUDY_KEY);
+  if (!rawSnapshot) return "empty";
+
+  try {
+    const snapshot = JSON.parse(rawSnapshot);
+    const restoredMode = ["timer", "stopwatch"].includes(snapshot.mode) ? snapshot.mode : "timer";
+    const restoredTarget = Math.min(
+      TIMER_MAX_SECONDS,
+      Math.max(60, Math.floor(Number(snapshot.targetSeconds) || 25 * 60)),
+    );
+    const restoredElapsed = Math.max(0, Math.floor(Number(snapshot.elapsedSeconds) || 0));
+    const restoredStartedAt = Number(snapshot.startedAt);
+
+    studyMode = restoredMode;
+    timerTargetSeconds = restoredTarget;
+    timerSubjectInput.value = typeof snapshot.subject === "string" ? snapshot.subject : "";
+
+    const limit = getCurrentStudyLimitSeconds();
+    if (snapshot.running && Number.isFinite(restoredStartedAt) && restoredStartedAt > 0) {
+      timerStartedFromSeconds = Math.min(limit, restoredElapsed);
+      timerStartedAt = Math.min(Date.now(), restoredStartedAt);
+      time = getWallClockElapsedSeconds();
+
+      if (time >= limit) {
+        timerStartedAt = null;
+        timerStartedFromSeconds = time;
+        persistActiveStudySession({ running: false });
+        return "complete";
+      }
+
+      return "running";
+    }
+
+    time = Math.min(limit, restoredElapsed);
+    timerStartedFromSeconds = time;
+    timerStartedAt = null;
+    return time > 0 ? (time >= limit ? "complete" : "paused") : "empty";
+  } catch {
+    clearActiveStudySession();
+    return "empty";
+  }
+}
+
+function handleStudyTimerAppState(isActive) {
+  if (isActive) {
+    cancelTimerCompletionNotification();
+
+    if (isStudyTimerRunning()) {
+      syncStudyTimerFromClock({ playCompletionSound: false });
+      persistActiveStudySession();
+    }
+    return;
+  }
+
+  if (!isStudyTimerRunning()) return;
+
+  if (syncStudyTimerFromClock({ playCompletionSound: false })) {
+    persistActiveStudySession();
+    scheduleTimerCompletionNotification();
+  }
+}
+
+function initializeStudyTimerLifecycle() {
+  const appPlugin = getCapacitorPlugin("App");
+
+  if (appPlugin?.addListener) {
+    appPlugin.addListener("appStateChange", ({ isActive }) => {
+      handleStudyTimerAppState(isActive);
+    }).catch(() => {});
+  } else {
+    document.addEventListener("visibilitychange", () => {
+      handleStudyTimerAppState(document.visibilityState === "visible");
+    });
+  }
+
+  window.addEventListener("pagehide", () => {
+    if (isStudyTimerRunning()) persistActiveStudySession();
+  });
+}
+
 function getCurrentStudyRecordLabel() {
   return studyMode === "timer" ? "タイマー学習" : "ストップウォッチ学習";
 }
@@ -2334,13 +2548,22 @@ function showStudyReaction(reaction) {
 }
 
 function getElapsedTimerMinutes() {
+  if (isStudyTimerRunning()) {
+    time = getWallClockElapsedSeconds();
+    updateDisplay();
+  }
+
   return Math.floor(Math.min(time, getCurrentStudyLimitSeconds()) / 60);
 }
 
 function resetTimer() {
   clearInterval(timer);
   timer = null;
+  timerStartedAt = null;
+  timerStartedFromSeconds = 0;
   time = 0;
+  clearActiveStudySession();
+  cancelTimerCompletionNotification();
   updateDisplay();
   updateTimerButton("スタート");
 }
@@ -4850,14 +5073,18 @@ function switchScreen(screenId) {
   trackAnalyticsScreen(screenId);
 }
 
-function stopTimerAtLimit() {
+function stopTimerAtLimit({ playSound = true, cancelNotification = true } = {}) {
   clearInterval(timer);
   timer = null;
   time = getCurrentStudyLimitSeconds();
+  timerStartedAt = null;
+  timerStartedFromSeconds = time;
+  persistActiveStudySession({ running: false });
+  if (cancelNotification) cancelTimerCompletionNotification();
   updateDisplay();
   updateTimerButton("記録待ち");
   setFocusMode(false);
-  if (studyMode === "timer") {
+  if (studyMode === "timer" && playSound) {
     playTimerCompleteSound();
   }
   timerStatus.textContent = studyMode === "timer"
@@ -4927,9 +5154,15 @@ durationPicker?.addEventListener("click", (event) => {
 
 function toggleStudyTimer() {
   unlockFlowlSound();
-  if (timer !== null) {
+  if (isStudyTimerRunning()) {
+    if (!syncStudyTimerFromClock({ playCompletionSound: false })) return;
+
     clearInterval(timer);
     timer = null;
+    timerStartedAt = null;
+    timerStartedFromSeconds = time;
+    persistActiveStudySession({ running: false });
+    cancelTimerCompletionNotification();
     timerStatus.textContent = "";
     updateTimerButton("再開");
     setFocusMode(false);
@@ -4949,15 +5182,14 @@ function toggleStudyTimer() {
   trackFlowlEvent(timerEventName, { study_mode: studyMode });
   updateTimerButton("一時停止");
   setFocusMode(true);
-  timer = setInterval(() => {
-    time++;
-    updateDisplay();
-    playTimerBeat();
+  timerStartedFromSeconds = time;
+  timerStartedAt = Date.now();
+  startStudyTimerInterval();
+  persistActiveStudySession();
 
-    if (time >= getCurrentStudyLimitSeconds()) {
-      stopTimerAtLimit();
-    }
-  }, 1000);
+  if (studyMode === "timer") {
+    ensureTimerNotificationPermission({ request: true });
+  }
 }
 
 startBtn.addEventListener("click", toggleStudyTimer);
@@ -5242,6 +5474,7 @@ studyDateInput?.addEventListener("change", () => {
   studyDateInput.value = getTodayKey();
 });
 
+const restoredStudyStatus = restoreActiveStudySession();
 const launchReaction = buildLaunchReaction();
 initializeAnalytics();
 
@@ -5257,8 +5490,23 @@ renderStudyModeControls();
 updateDisplay();
 render();
 applyMascotMotion(activeMascotMotion);
+initializeStudyTimerLifecycle();
 
-if (launchReaction) {
+if (restoredStudyStatus === "running") {
+  startStudyTimerInterval();
+  updateTimerButton("一時停止");
+  setFocusMode(true);
+  cancelTimerCompletionNotification();
+} else if (restoredStudyStatus === "complete") {
+  updateTimerButton("記録待ち");
+  timerStatus.textContent = studyMode === "timer"
+    ? "タイマー終了。記録できます。"
+    : "12時間に到達しました";
+} else if (restoredStudyStatus === "paused") {
+  updateTimerButton("再開");
+}
+
+if (launchReaction && restoredStudyStatus !== "running") {
   window.setTimeout(() => {
     showStudyReaction(launchReaction);
   }, 520);
