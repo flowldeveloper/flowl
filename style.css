@@ -9764,7 +9764,7 @@ input:focus {
   }
 }
 
-/* Manual Study Log reward: a centered, game-like 10-minute charge result. */
+/* Every study record gets a centered, game-like 10-minute charge result. */
 .tank-reward-backdrop {
   position: fixed;
   inset: 0;
@@ -9870,6 +9870,7 @@ input:focus {
 }
 
 .tank-reward-vessel {
+  --tank-vessel-scale: 0.98;
   position: relative;
   height: 48px;
   padding: 4px;
@@ -9878,6 +9879,10 @@ input:focus {
   border-radius: 8px 5px 5px 8px;
   background: rgba(255, 255, 255, 0.92);
   box-shadow: inset 0 4px 9px rgba(41, 88, 60, 0.16), 0 4px 0 rgba(73, 103, 85, 0.12);
+  transform: scale(var(--tank-vessel-scale));
+  transform-origin: center;
+  transition: transform 70ms linear;
+  will-change: transform;
 }
 
 .tank-reward-vessel::before {
@@ -9971,6 +9976,11 @@ input:focus {
 
 .tank-reward-combo.show {
   animation: tank-reward-combo-pop 720ms ease-out both;
+}
+
+.tank-reward-backdrop.is-charging .tank-reward-combo.has-value {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
 }
 
 .tank-reward-result {
@@ -10102,6 +10112,7 @@ input:focus {
 @media (prefers-reduced-motion: reduce) {
   .tank-reward-backdrop,
   .tank-reward-card,
+  .tank-reward-vessel,
   .tank-reward-fill,
   .tank-reward-coins {
     transition: none;

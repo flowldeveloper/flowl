@@ -1,9 +1,12 @@
 const STORAGE_KEY = "flowl-study-pet";
 const STORAGE_VERSION = 2;
 const ANALYTICS_CONSENT_KEY = window.FLOWL_ANALYTICS_CONSENT_KEY || "flowl-analytics-consent";
-const ANALYTICS_APP_VERSION = "pwa-23";
+const ANALYTICS_APP_VERSION = "pwa-24";
 const STUDY_TANK_CAPACITY_MINUTES = 10;
 const DAILY_STUDY_LIMIT_MINUTES = 24 * 60;
+const STUDY_TANK_MIN_ANIMATION_MS = 800;
+const STUDY_TANK_MAX_ANIMATION_MS = 10000;
+const STUDY_TANK_MIN_ANIMATION_MINUTES = 10;
 const MAX_STORED_SESSIONS = 5000;
 const WEEKLY_SUBJECT_COLORS = [
   "#4f9d69",
@@ -830,6 +833,8 @@ let selectedShopCategory = shopCategoryOrder[0];
 let flowlAudioContext = null;
 let flowlAudioPrimed = false;
 let lastTankSoundAt = 0;
+let lastTankFullSoundAt = 0;
+let lastTankRewardPulseAt = 0;
 
 function getFlowlAudioContext() {
   if (flowlAudioContext?.state === "closed") {
@@ -983,11 +988,16 @@ function playTankChargeTickSound(level) {
   });
 }
 
-function playTankFullSound() {
+function playTankFullSound(options = {}) {
+  const now = performance.now();
+  if (!options.force && now - lastTankFullSoundAt < 220) return false;
+  lastTankFullSoundAt = now;
+
   withFlowlAudio((context) => {
     scheduleFlowlTone(context, { frequency: 659.25, duration: 0.2, volume: 0.035, type: "triangle" });
     scheduleFlowlTone(context, { frequency: 987.77, delay: 0.08, duration: 0.28, volume: 0.04, type: "sine" });
   });
+  return true;
 }
 
 function playTankRewardCompleteSound() {
@@ -2571,6 +2581,18 @@ function getStudyTankLevel(totalMinutes) {
   return remainder === 0 ? STUDY_TANK_CAPACITY_MINUTES : remainder;
 }
 
+function getStudyTankAnimationDuration(addedMinutes) {
+  const safeMinutes = Math.max(STUDY_TANK_MIN_ANIMATION_MINUTES, Math.min(
+    DAILY_STUDY_LIMIT_MINUTES,
+    Math.round(Number(addedMinutes) || STUDY_TANK_MIN_ANIMATION_MINUTES)
+  ));
+  const range = DAILY_STUDY_LIMIT_MINUTES - STUDY_TANK_MIN_ANIMATION_MINUTES;
+  const progress = range > 0 ? (safeMinutes - STUDY_TANK_MIN_ANIMATION_MINUTES) / range : 1;
+  const visibleProgress = Math.sqrt(progress);
+  return Math.round(STUDY_TANK_MIN_ANIMATION_MS
+    + (STUDY_TANK_MAX_ANIMATION_MS - STUDY_TANK_MIN_ANIMATION_MS) * visibleProgress);
+}
+
 function setStudyTankVisual(minutes) {
   if (!studyTankFill || !studyTankStatus || !studyTankVessel) return;
 
@@ -2643,7 +2665,7 @@ function animateStudyTank(previousTotalMinutes, addedMinutes) {
   const safePreviousTotal = Math.max(0, Math.round(Number(previousTotalMinutes) || 0));
   const safeAddedMinutes = Math.max(1, Math.round(Number(addedMinutes) || 1));
   const startRemainder = safePreviousTotal % STUDY_TANK_CAPACITY_MINUTES;
-  const visualAddedMinutes = Math.min(safeAddedMinutes, STUDY_TANK_CAPACITY_MINUTES * 5);
+  const visualAddedMinutes = Math.min(safeAddedMinutes, DAILY_STUDY_LIMIT_MINUTES);
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   studyTankAnimating = true;
@@ -2656,7 +2678,7 @@ function animateStudyTank(previousTotalMinutes, addedMinutes) {
   }
 
   const runAnimation = () => {
-    const duration = Math.min(4200, 900 + visualAddedMinutes * 65);
+    const duration = getStudyTankAnimationDuration(visualAddedMinutes);
     const startedAt = performance.now();
     let previousCycle = 0;
 
@@ -2664,8 +2686,7 @@ function animateStudyTank(previousTotalMinutes, addedMinutes) {
       if (token !== studyTankAnimationToken) return;
 
       const progress = Math.min(1, (now - startedAt) / duration);
-      const easedProgress = 1 - Math.pow(1 - progress, 2);
-      const visualMinutes = startRemainder + visualAddedMinutes * easedProgress;
+      const visualMinutes = startRemainder + visualAddedMinutes * progress;
       const currentCycle = Math.floor(visualMinutes / STUDY_TANK_CAPACITY_MINUTES);
 
       if (currentCycle > previousCycle && progress < 1) {
@@ -2714,20 +2735,34 @@ function setStudyTankRewardVisual(minutes) {
     : Math.min(STUDY_TANK_CAPACITY_MINUTES, Math.ceil(safeMinutes - 0.001));
   const percentage = (safeMinutes / STUDY_TANK_CAPACITY_MINUTES) * 100;
 
+  const vesselScale = 0.98 + (safeMinutes / STUDY_TANK_CAPACITY_MINUTES) * 0.06;
   studyTankRewardFill.style.width = `${percentage}%`;
+  studyTankRewardVessel.style.setProperty("--tank-vessel-scale", vesselScale.toFixed(4));
   studyTankRewardLevel.textContent = `${displayMinutes} / ${STUDY_TANK_CAPACITY_MINUTES}分`;
   studyTankRewardVessel.setAttribute("aria-valuenow", String(displayMinutes));
   studyTankRewardVessel.setAttribute("aria-valuetext", `${displayMinutes}分充填`);
 }
 
-function pulseStudyTankReward(completedTanks) {
+function pulseStudyTankReward(completedTanks, options = {}) {
   const card = studyTankReward?.querySelector(".tank-reward-card");
   if (!card || !studyTankRewardCombo) return;
+
+  const safeCompletedTanks = Math.max(1, Math.floor(Number(completedTanks) || 1));
+  studyTankRewardCombo.textContent = safeCompletedTanks > 1
+    ? `${safeCompletedTanks} TANK COMBO!`
+    : "TANK FULL!";
+  studyTankRewardCombo.classList.add("has-value");
+
+  const force = Boolean(options.force);
+  const now = performance.now();
+  if (!force && now - lastTankRewardPulseAt < 120) return;
+  lastTankRewardPulseAt = now;
 
   card.classList.remove("tank-pulse");
   void card.offsetWidth;
   card.classList.add("tank-pulse");
-  studyTankRewardCombo.textContent = completedTanks > 1 ? `${completedTanks} TANK COMBO!` : "TANK FULL!";
+
+  if (!force && studyTankReward.classList.contains("is-charging")) return;
   studyTankRewardCombo.classList.remove("show");
   void studyTankRewardCombo.offsetWidth;
   studyTankRewardCombo.classList.add("show");
@@ -2746,7 +2781,7 @@ function closeStudyTankReward() {
   }, 180);
 }
 
-function finishStudyTankReward(token, previousTotalMinutes, addedMinutes, earnedCoins, playedFullSound = false) {
+function finishStudyTankReward(token, previousTotalMinutes, addedMinutes, earnedCoins) {
   if (token !== studyTankRewardToken || !studyTankReward) return;
 
   const startRemainder = previousTotalMinutes % STUDY_TANK_CAPACITY_MINUTES;
@@ -2763,8 +2798,8 @@ function finishStudyTankReward(token, previousTotalMinutes, addedMinutes, earned
     studyTankRewardMessage.textContent = finalLevel < STUDY_TANK_CAPACITY_MINUTES
       ? `次のタンクに${finalLevel}分チャージ済み`
       : "10分の学習エネルギーが満タンです";
-    pulseStudyTankReward(completedTanks);
-    if (!playedFullSound) playTankFullSound();
+    pulseStudyTankReward(completedTanks, { force: true });
+    playTankFullSound();
   } else {
     studyTankRewardTitle.textContent = "学習エネルギー獲得！";
     studyTankRewardMessage.textContent = `${finalLevel} / ${STUDY_TANK_CAPACITY_MINUTES}分までチャージしました`;
@@ -2786,7 +2821,7 @@ function showStudyTankReward(previousTotalMinutes, session) {
   const safePreviousTotal = Math.max(0, Math.round(Number(previousTotalMinutes) || 0));
   const safeAddedMinutes = Math.max(1, Math.round(Number(session.minutes) || 1));
   const startRemainder = safePreviousTotal % STUDY_TANK_CAPACITY_MINUTES;
-  const visualAddedMinutes = Math.min(safeAddedMinutes, STUDY_TANK_CAPACITY_MINUTES * 3);
+  const visualAddedMinutes = Math.min(safeAddedMinutes, DAILY_STUDY_LIMIT_MINUTES);
   const earnedCoins = Math.max(0, Math.round(Number(session.coinsEarned) || 0));
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -2798,7 +2833,7 @@ function showStudyTankReward(previousTotalMinutes, session) {
   studyTankRewardMessage.textContent = "記録した時間が1分ずつたまります";
   studyTankRewardCoins.textContent = `+${earnedCoins} coin`;
   studyTankRewardCombo.textContent = "";
-  studyTankRewardCombo.classList.remove("show");
+  studyTankRewardCombo.classList.remove("show", "has-value");
 
   requestAnimationFrame(() => studyTankReward.classList.add("show"));
   playTankChargeStartSound();
@@ -2809,18 +2844,16 @@ function showStudyTankReward(previousTotalMinutes, session) {
   }
 
   const runAnimation = () => {
-    const duration = Math.min(2550, 720 + visualAddedMinutes * 58);
+    const duration = getStudyTankAnimationDuration(visualAddedMinutes);
     const startedAt = performance.now();
     let previousCycle = 0;
     let previousSoundMinute = Math.floor(startRemainder);
-    let playedFullSound = false;
 
     const step = (now) => {
       if (token !== studyTankRewardToken) return;
 
       const progress = Math.min(1, (now - startedAt) / duration);
-      const easedProgress = 1 - Math.pow(1 - progress, 3);
-      const visualMinutes = startRemainder + visualAddedMinutes * easedProgress;
+      const visualMinutes = startRemainder + visualAddedMinutes * progress;
       const currentCycle = Math.floor(visualMinutes / STUDY_TANK_CAPACITY_MINUTES);
 
       if (currentCycle > previousCycle && progress < 1) {
@@ -2828,7 +2861,6 @@ function showStudyTankReward(previousTotalMinutes, session) {
         setStudyTankRewardVisual(STUDY_TANK_CAPACITY_MINUTES);
         pulseStudyTankReward(currentCycle);
         playTankFullSound();
-        playedFullSound = true;
         previousSoundMinute = Math.max(previousSoundMinute, currentCycle * STUDY_TANK_CAPACITY_MINUTES);
         studyTankRewardAnimationFrame = requestAnimationFrame(step);
         return;
@@ -2846,7 +2878,7 @@ function showStudyTankReward(previousTotalMinutes, session) {
         return;
       }
 
-      finishStudyTankReward(token, safePreviousTotal, safeAddedMinutes, earnedCoins, playedFullSound);
+      finishStudyTankReward(token, safePreviousTotal, safeAddedMinutes, earnedCoins);
     };
 
     studyTankRewardAnimationFrame = requestAnimationFrame(step);
