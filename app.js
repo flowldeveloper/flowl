@@ -1,7 +1,7 @@
 const STORAGE_KEY = "flowl-study-pet";
 const STORAGE_VERSION = 2;
 const ANALYTICS_CONSENT_KEY = window.FLOWL_ANALYTICS_CONSENT_KEY || "flowl-analytics-consent";
-const ANALYTICS_APP_VERSION = "pwa-25";
+const ANALYTICS_APP_VERSION = "pwa-26";
 const STUDY_TANK_CAPACITY_MINUTES = 10;
 const DAILY_STUDY_LIMIT_MINUTES = 24 * 60;
 const STUDY_TANK_MIN_ANIMATION_MS = 800;
@@ -569,17 +569,6 @@ const equipmentAnchors = {
 };
 
 const mascotMotions = ["idle", "headTilt", "eat", "happy", "angry", "sad", "fun", "sleep"];
-const mascotMotionLabels = {
-  idle: "待機",
-  headTilt: "首かしげ",
-  eat: "食事",
-  happy: "喜び",
-  angry: "怒り",
-  sad: "悲しみ",
-  fun: "楽しい",
-  sleep: "睡眠",
-};
-
 const owlMotionStateIds = ["veryHappy", "energetic", "normal", "hungry", "bored", "lowEnergy"];
 const owlMotionStateClasses = owlMotionStateIds.map((id) => `owl-motion-${id}`);
 const owlExpressionStateIds = ["sparkly", "happy", "content", "hungryLoved", "lonely", "low", "normal"];
@@ -728,8 +717,6 @@ const shopPreviewMeta = document.getElementById("shopPreviewMeta");
 const shopPreviewAction = document.getElementById("shopPreviewAction");
 const petLevel = document.getElementById("petLevel");
 const petCareLevel = document.getElementById("petCareLevel");
-const motionLabel = document.getElementById("motionLabel");
-const motionButtons = document.querySelectorAll(".motion-btn");
 const streakCount = document.getElementById("streakCount");
 const todayReward = document.getElementById("todayReward");
 const studyTank = document.getElementById("studyTank");
@@ -4767,14 +4754,6 @@ function applyMascotMotion(motion) {
     view.pet.classList.remove(...mascotMotions, "eating", "playing", "resting");
     view.pet.classList.add(nextMotion);
   });
-
-  motionButtons.forEach((button) => {
-    button.classList.toggle("active", button.dataset.motion === nextMotion);
-  });
-
-  if (motionLabel) {
-    motionLabel.textContent = mascotMotionLabels[nextMotion];
-  }
 }
 
 function playTimerBeat() {
@@ -4791,14 +4770,6 @@ function playTimerBeat() {
       view.pet.classList.remove("timer-beat");
     }, 860);
   });
-}
-
-function setMascotMotion(motion) {
-  clearTimeout(animationTimer);
-  petViews.forEach((view) => {
-    view.prop.className = "pet-action-prop";
-  });
-  applyMascotMotion(motion);
 }
 
 function triggerPetAnimation(action, iconClass) {
@@ -5212,12 +5183,6 @@ if ("serviceWorker" in navigator) {
       });
   });
 }
-
-motionButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    setMascotMotion(button.dataset.motion);
-  });
-});
 
 document.addEventListener("pointerdown", unlockFlowlSound, { capture: true, passive: true });
 document.addEventListener("touchend", unlockFlowlSound, { capture: true, passive: true });

@@ -2620,35 +2620,7 @@ input:focus {
   transition: opacity 160ms ease, transform 160ms ease;
 }
 
-.motion-lab {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--line);
-}
-
-.motion-controls {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.motion-btn {
-  min-height: 42px;
-  padding: 9px 7px;
-  border: 1px solid var(--line);
-  background: #fbfdfb;
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.motion-btn.active {
-  border-color: rgba(243, 182, 63, 0.72);
-  background: #ffe2a3;
-  color: #553f18;
-}
-
-/* mood-* は育成ステータス用、happy/sadなどはボタンやJSのモーション用です。 */
+/* mood-* は育成ステータス用、happy/sadなどはJSの自動モーション用です。 */
 .pet[data-asset="flowl-owl"].mood-happy:not(.happy):not(.angry):not(.sad):not(.sleep) .eye,
 .pet[data-asset="flowl-owl"].happy .eye {
   transform: translateY(2px) scaleY(0.24);
@@ -2937,21 +2909,6 @@ input:focus {
   .pet[data-asset="flowl-owl"] {
     width: 148px;
     height: 158px;
-  }
-
-  .motion-controls {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 430px) {
-  .motion-controls {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .motion-btn {
-    min-height: 44px;
-    font-size: 13px;
   }
 }
 
@@ -7269,20 +7226,9 @@ input:focus {
     gap: 7px;
   }
 
-  .motion-lab,
   .inventory {
     margin-top: 12px;
     padding-top: 12px;
-  }
-
-  .motion-controls {
-    gap: 7px;
-  }
-
-  .motion-btn {
-    min-height: 34px;
-    padding: 7px 8px;
-    font-size: 12px;
   }
 
   .history-list {
