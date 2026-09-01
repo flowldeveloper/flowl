@@ -31,7 +31,9 @@ workflows:
           npx cap sync ios
           cp "$CM_BUILD_DIR/app-icon.png" \
             "$CM_BUILD_DIR/ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png"
-          sed -i '' 's/TARGETED_DEVICE_FAMILY = "1,2";/TARGETED_DEVICE_FAMILY = 1;/g' \
+          # Keep iPhone and iPad enabled. The responsive web UI supplies a dedicated
+          # two-pane layout on tablet-sized screens.
+          sed -i '' 's/TARGETED_DEVICE_FAMILY = 1;/TARGETED_DEVICE_FAMILY = "1,2";/g' \
             "$CM_BUILD_DIR/ios/App/App.xcodeproj/project.pbxproj"
 
       - name: Install CocoaPods dependencies

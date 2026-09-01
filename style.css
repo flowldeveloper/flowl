@@ -10669,6 +10669,461 @@ input:focus {
   }
 }
 
+/* iPad layout: use the wider canvas as a two-pane workspace instead of a stretched phone. */
+@media (min-width: 700px) and (min-height: 700px) and (max-width: 1366px) {
+  :root {
+    --tablet-nav-width: 92px;
+    --tablet-gap: clamp(12px, 1.6vw, 20px);
+    --tablet-card-pad: clamp(14px, 1.8vw, 20px);
+  }
+
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    background-image:
+      radial-gradient(circle at 18% 14%, rgba(255, 255, 255, 0.92), transparent 24%),
+      linear-gradient(135deg, #f7fbed 0%, #edf7ef 48%, #e8f4fa 100%);
+  }
+
+  .app-shell,
+  body:has(#timerScreen.active) .app-shell {
+    display: flex;
+    flex-direction: column;
+    width: auto;
+    max-width: 1240px;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    margin: 0 auto;
+    padding:
+      max(14px, env(safe-area-inset-top))
+      max(18px, env(safe-area-inset-right))
+      max(14px, env(safe-area-inset-bottom))
+      calc(var(--tablet-nav-width) + max(22px, env(safe-area-inset-left)));
+    overflow: hidden;
+  }
+
+  .app-header,
+  body:has(#timerScreen.active) .app-header {
+    display: none;
+  }
+
+  .top-status {
+    position: relative;
+    z-index: 30;
+    flex: 0 0 auto;
+    grid-template-columns: 0.6fr 0.8fr 0.68fr minmax(220px, 1.55fr);
+    gap: 8px;
+    margin-bottom: var(--tablet-gap);
+    padding: 9px;
+    border-radius: 12px;
+  }
+
+  .status-chip,
+  .status-meters,
+  .top-status .coin-pill {
+    min-height: 50px;
+    padding: 7px 10px;
+  }
+
+  .status-chip span,
+  .status-meter span,
+  .top-status .coin-pill span {
+    font-size: 10px;
+  }
+
+  .status-chip strong,
+  .top-status .coin-pill strong {
+    font-size: 18px;
+  }
+
+  .status-meter {
+    grid-template-columns: 52px minmax(80px, 1fr);
+    gap: 7px;
+  }
+
+  .status-meter meter {
+    height: 8px;
+  }
+
+  .top-status .status-study-tank {
+    grid-column: 1 / -1;
+    grid-template-columns: minmax(150px, auto) minmax(260px, 1fr);
+    min-height: 50px;
+    padding: 6px 12px;
+  }
+
+  .top-status .status-study-tank .study-tank-message {
+    display: block;
+  }
+
+  .screen.active,
+  #timerScreen.active,
+  #logScreen.active,
+  #careScreen.active,
+  #shopScreen.active,
+  body:has(#timerScreen.active) #timerScreen.active {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 0 2px 18px;
+    scroll-padding-bottom: 24px;
+    overscroll-behavior-y: contain;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(63, 143, 91, 0.28) transparent;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .screen.active::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .screen.active::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(63, 143, 91, 0.25);
+  }
+
+  .panel {
+    border-radius: 12px;
+  }
+
+  .timer,
+  .pet-panel,
+  .record-panel,
+  .history-panel,
+  .weekly-panel,
+  .subject-study-panel,
+  .share-panel,
+  .total-study-panel,
+  .shop-panel {
+    padding: var(--tablet-card-pad);
+  }
+
+  /* Persistent left rail is easier to reach in both iPad orientations. */
+  .bottom-nav {
+    top: max(14px, env(safe-area-inset-top));
+    right: auto;
+    bottom: max(14px, env(safe-area-inset-bottom));
+    left: max(12px, env(safe-area-inset-left));
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(4, minmax(68px, 1fr));
+    align-content: center;
+    gap: 10px;
+    width: var(--tablet-nav-width);
+    padding: 10px;
+    border-radius: 18px;
+    transform: none;
+  }
+
+  .nav-btn {
+    align-content: center;
+    min-height: 68px;
+    padding: 9px 5px;
+    border-radius: 12px;
+    font-size: 13px;
+  }
+
+  .nav-btn span {
+    font-size: 10px;
+  }
+
+  /* Study: owl and timer controls stay visible side by side. */
+  #timerScreen.active,
+  body:has(#timerScreen.active) #timerScreen.active {
+    display: grid;
+    grid-template-columns: minmax(0, 0.94fr) minmax(330px, 1.06fr);
+    grid-template-rows: minmax(0, auto);
+    align-items: start;
+    gap: var(--tablet-gap);
+  }
+
+  #timerScreen .timer-pet-panel {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  #timerScreen .timer {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  #timerScreen .timer-study-log {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  #timerScreen .timer-pet-panel {
+    display: grid;
+    gap: 12px;
+    padding: 0;
+  }
+
+  #timerScreen .timer-pet-title,
+  #timerScreen .growth-card,
+  #timerScreen .level-reward-card,
+  #timerScreen .pet-message,
+  #timerScreen .daily-strip {
+    display: none;
+  }
+
+  #timerScreen .pet-stage {
+    height: clamp(300px, 43vh, 470px);
+    min-height: 300px;
+    max-height: 470px;
+    border-radius: 14px;
+  }
+
+  #timerScreen .pet[data-asset="flowl-owl"] {
+    width: clamp(168px, 23vw, 224px);
+    height: clamp(180px, 25vw, 240px);
+  }
+
+  #timerScreen .pet-shadow {
+    bottom: 24px;
+    width: 156px;
+    height: 18px;
+  }
+
+  #timerScreen .timer-pet-panel #time {
+    position: static;
+    width: 100%;
+    margin: 0;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.82);
+    box-shadow: 0 10px 28px rgba(40, 74, 52, 0.1);
+    font-size: clamp(68px, 9vw, 104px);
+    line-height: 1;
+  }
+
+  #timerScreen .timer {
+    display: grid;
+    gap: 14px;
+  }
+
+  #timerScreen .timer-controls {
+    gap: 10px;
+  }
+
+  #timerScreen .timer-controls button:first-child {
+    min-height: 68px;
+    font-size: 19px;
+  }
+
+  #timerScreen .timer-controls button:not(:first-child),
+  #timerScreen .timer-record button,
+  #timerScreen .timer-record input {
+    min-height: 48px;
+  }
+
+  #timerScreen .timer-record {
+    grid-template-columns: minmax(0, 1fr) minmax(136px, auto);
+    gap: 10px;
+  }
+
+  /* Log: overview cards use two columns while charts retain full width. */
+  #logScreen.active {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: var(--tablet-gap);
+    align-items: start;
+  }
+
+  #logScreen.active > .record-panel { grid-column: 1; grid-row: 1; }
+  #logScreen.active > .history-panel { grid-column: 2; grid-row: 1 / span 2; }
+  #logScreen.active > .weekly-panel { grid-column: 1 / -1; grid-row: 3; }
+  #logScreen.active > .subject-study-panel { grid-column: 1 / -1; grid-row: 4; }
+  #logScreen.active > .total-study-panel { grid-column: 1; grid-row: 2; }
+  #logScreen.active > .share-panel { grid-column: 1 / -1; grid-row: 5; }
+  #logScreen.active > .app-info-footer { grid-column: 1 / -1; grid-row: 6; }
+
+  #logScreen .study-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  #logScreen .study-form .subject-label,
+  #logScreen .study-form > button {
+    grid-column: 1 / -1;
+  }
+
+  .week-chart {
+    min-height: 220px;
+  }
+
+  .week-bar {
+    height: 190px;
+  }
+
+  .week-legend {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .subject-study-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .study-share-card {
+    grid-template-columns: minmax(0, 1.25fr) minmax(210px, 0.75fr);
+    min-height: 320px;
+  }
+
+  .share-pet-stage {
+    min-height: 270px;
+  }
+
+  /* Care: pet on the left, daily care controls on the right, closet below. */
+  #careScreen.active {
+    display: block;
+  }
+
+  #careScreen > .pet-panel {
+    display: grid;
+    grid-template-columns: minmax(300px, 0.92fr) minmax(280px, 1.08fr);
+    grid-template-areas:
+      "title title"
+      "stage side"
+      "inventory inventory";
+    align-items: start;
+    gap: var(--tablet-gap);
+  }
+
+  #careScreen .pet-panel > .section-title { grid-area: title; }
+  #careScreen .pet-panel > .pet-stage { grid-area: stage; }
+  #careScreen .pet-panel > .stats { grid-area: side; margin: 0; align-self: start; }
+  #careScreen .pet-panel > .care-actions { grid-area: side; align-self: start; margin-top: 96px; }
+  #careScreen .pet-panel > .inventory { grid-area: inventory; }
+
+  #careScreen .pet-stage {
+    height: clamp(330px, 46vh, 520px);
+    min-height: 330px;
+    max-height: 520px;
+    border-radius: 14px;
+  }
+
+  #careScreen .pet[data-asset="flowl-owl"] {
+    width: clamp(180px, 24vw, 236px);
+    height: clamp(194px, 26vw, 254px);
+  }
+
+  #careScreen .stats {
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #fbfdfb;
+  }
+
+  #careScreen .stats label {
+    grid-template-columns: 74px minmax(120px, 1fr);
+  }
+
+  #careScreen .care-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .inventory-section-list,
+  .inventory .item-list {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  /* Shop: preview remains visible while the denser catalogue scrolls beside it. */
+  #shopScreen.active {
+    display: block;
+  }
+
+  #shopScreen .shop-panel {
+    display: grid;
+    grid-template-columns: minmax(240px, 0.72fr) minmax(0, 1.28fr);
+    align-items: start;
+    gap: var(--tablet-gap);
+  }
+
+  #shopScreen .shop-panel > .section-title {
+    grid-column: 1 / -1;
+  }
+
+  #shopScreen .customize-preview {
+    position: sticky;
+    top: 0;
+    grid-column: 1;
+    margin: 0;
+  }
+
+  #shopScreen .shop-list {
+    grid-column: 2;
+  }
+
+  #shopScreen .shop-preview-stage {
+    height: clamp(260px, 37vh, 390px);
+    min-height: 260px;
+    max-height: 390px;
+  }
+
+  #shopScreen .shop-preview-stage .pet[data-asset="flowl-owl"] {
+    width: clamp(154px, 19vw, 200px);
+    height: clamp(166px, 21vw, 216px);
+  }
+
+  .shop-category-tabs {
+    top: 0;
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+
+  .shop-category-tab {
+    flex: 1 1 112px;
+  }
+
+  .shop-category-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .shop-item {
+    min-height: 188px;
+    padding: 9px;
+  }
+
+  .duration-picker-sheet {
+    width: min(560px, calc(100% - 64px));
+    margin: auto;
+    border-radius: 18px;
+  }
+
+  .tank-reward-card {
+    width: min(520px, calc(100% - 64px));
+  }
+
+  .study-focus-time {
+    font-size: clamp(104px, 16vw, 190px);
+  }
+}
+
+@media (min-width: 1000px) and (min-height: 700px) and (max-width: 1366px) {
+  .shop-category-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .inventory-section-list,
+  .inventory .item-list {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) and (min-height: 700px) and (max-width: 1366px) {
+  .shop-category-list {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 359px) {
   .top-status .status-study-tank {
     grid-template-columns: minmax(84px, auto) minmax(64px, 1fr);
@@ -10920,5 +11375,66 @@ body.study-focus-active {
     scroll-padding-bottom: 12px;
     overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Keep the tablet shell authoritative after the final phone-only viewport rules. */
+@media (min-width: 700px) and (min-height: 700px) and (max-width: 800px) {
+  .app-shell,
+  body:has(#timerScreen.active) .app-shell {
+    width: auto;
+    max-width: 1240px;
+    height: 100vh;
+    height: 100dvh;
+    margin: 0 auto;
+    padding:
+      max(14px, env(safe-area-inset-top))
+      max(18px, env(safe-area-inset-right))
+      max(14px, env(safe-area-inset-bottom))
+      calc(var(--tablet-nav-width) + max(22px, env(safe-area-inset-left)));
+  }
+
+  .screen.active,
+  #timerScreen.active,
+  #logScreen.active,
+  #careScreen.active,
+  #shopScreen.active,
+  body:has(#timerScreen.active) #timerScreen.active {
+    padding: 0 2px 18px;
+    scroll-padding-bottom: 24px;
+  }
+
+  body .bottom-nav,
+  body:has(#timerScreen.active) .bottom-nav {
+    top: max(14px, env(safe-area-inset-top));
+    right: auto;
+    bottom: max(14px, env(safe-area-inset-bottom));
+    left: max(12px, env(safe-area-inset-left));
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(4, minmax(68px, 1fr));
+    align-content: center;
+    gap: 10px;
+    width: var(--tablet-nav-width);
+    padding: 10px;
+    border-radius: 18px;
+    transform: none;
+  }
+
+  body .nav-btn,
+  body:has(#timerScreen.active) .nav-btn {
+    align-content: center;
+    min-height: 68px;
+    padding: 9px 5px;
+    border-radius: 12px;
+    font-size: 13px;
+  }
+
+  body .nav-btn span,
+  body:has(#timerScreen.active) .nav-btn span {
+    font-size: 10px;
+  }
+
+  .shop-category-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

@@ -6,7 +6,7 @@
   "start_url": "./?source=pwa",
   "scope": "./",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "any",
   "background_color": "#edf7ef",
   "theme_color": "#edf7ef",
   "categories": ["education", "productivity"],
