@@ -9919,6 +9919,7 @@ input:focus {
   z-index: 2;
   display: grid;
   gap: 8px;
+  margin-inline: 6px;
 }
 
 .tank-reward-vessel {
@@ -10106,6 +10107,59 @@ input:focus {
 .tank-reward-backdrop.is-result .tank-reward-coins {
   opacity: 1;
   transform: scale(1);
+}
+
+.tank-reward-bonus {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 4px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #dec675;
+  color: #775415;
+}
+
+.tank-reward-bonus[hidden] {
+  display: none;
+}
+
+.tank-reward-bonus-label {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.tank-reward-bonus strong {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 12px;
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.25;
+}
+
+.tank-reward-bonus strong > span {
+  white-space: nowrap;
+}
+
+.tank-reward-bonus > span:last-child {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.tank-reward-backdrop.has-coin-bonus .tank-reward-card {
+  border-color: #d7b04e;
+}
+
+.tank-reward-backdrop.has-coin-bonus .tank-reward-fill {
+  background: linear-gradient(90deg, #f2d975, #e7b747);
+}
+
+.tank-reward-backdrop.has-coin-bonus .tank-reward-coins {
+  max-width: 100%;
+  flex-wrap: wrap;
+  opacity: 1;
 }
 
 .tank-reward-sparks,

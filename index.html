@@ -23,7 +23,7 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
   <title>Flowl</title>
-  <link rel="stylesheet" href="style.css?v=pwa-46">
+  <link rel="stylesheet" href="style.css?v=pwa-47">
   <script>
     (() => {
       const measurementId = "G-EE6MQ7M7Z2";
@@ -461,6 +461,11 @@
         <span id="studyTankRewardMessage">記録した時間がタンクにたまります</span>
       </div>
       <span id="studyTankRewardCoins" class="tank-reward-coins">+0 coin</span>
+      <div id="studyTankRewardBonus" class="tank-reward-bonus" hidden>
+        <span class="tank-reward-bonus-label">ラッキーボーナス！</span>
+        <strong id="studyTankRewardBonusMultiplier"></strong>
+        <span id="studyTankRewardBonusDetail"></span>
+      </div>
       <span class="tank-reward-sparks" aria-hidden="true">
         <i></i><i></i><i></i><i></i><i></i><i></i>
       </span>
@@ -519,6 +524,6 @@
     </button>
   </nav>
 
-  <script src="app.js?v=pwa-46"></script>
+  <script src="app.js?v=pwa-47"></script>
 </body>
 </html>
