@@ -35,6 +35,9 @@ workflows:
             "$CM_BUILD_DIR/ios/App/Podfile"
           sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = 14.0;/IPHONEOS_DEPLOYMENT_TARGET = 15.0;/g' \
             "$CM_BUILD_DIR/ios/App/App.xcodeproj/project.pbxproj"
+          # Version 1.0 is already approved; updates must use a higher marketing version.
+          sed -i '' 's/MARKETING_VERSION = 1.0;/MARKETING_VERSION = 1.1;/g' \
+            "$CM_BUILD_DIR/ios/App/App.xcodeproj/project.pbxproj"
           cp "$CM_BUILD_DIR/app-icon.png" \
             "$CM_BUILD_DIR/ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png"
           # Keep iPhone and iPad enabled. The responsive web UI supplies a dedicated
