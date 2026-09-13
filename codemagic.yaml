@@ -29,6 +29,12 @@ workflows:
         script: |
           npx cap add ios
           npx cap sync ios
+          # Apple requires iOS 15.0 or later for App Store uploads from Spring 2027.
+          # The iOS project is generated during CI, so apply the target after sync.
+          sed -i '' "s/platform :ios, '14.0'/platform :ios, '15.0'/" \
+            "$CM_BUILD_DIR/ios/App/Podfile"
+          sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = 14.0;/IPHONEOS_DEPLOYMENT_TARGET = 15.0;/g' \
+            "$CM_BUILD_DIR/ios/App/App.xcodeproj/project.pbxproj"
           cp "$CM_BUILD_DIR/app-icon.png" \
             "$CM_BUILD_DIR/ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png"
           # Keep iPhone and iPad enabled. The responsive web UI supplies a dedicated
