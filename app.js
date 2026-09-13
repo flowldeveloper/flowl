@@ -8,12 +8,13 @@ const STUDY_TANK_MIN_ANIMATION_MS = 800;
 const STUDY_TANK_MAX_ANIMATION_MS = 10000;
 const STUDY_TANK_MIN_ANIMATION_MINUTES = 10;
 const STUDY_TANK_COIN_BONUSES = [
-  { threshold: 0.0001, multiplier: 12 },
-  { threshold: 0.0011, multiplier: 6 },
-  { threshold: 0.0211, multiplier: 1.6 },
-  { threshold: 0.1011, multiplier: 1.3 },
+  { threshold: 0.0001, multiplier: 3 },
+  { threshold: 0.0011, multiplier: 2.5 },
+  { threshold: 0.0211, multiplier: 1.2 },
+  { threshold: 0.1011, multiplier: 1.1 },
 ];
 const STUDY_TANK_ITEM_CHANCE = 0.001;
+const STUDY_SPECIAL_COIN_MULTIPLIER = 2.5;
 const STUDY_REWARD_ENTRANCES = ["fly", "twirl", "rise"];
 const MAX_STORED_SESSIONS = 5000;
 const WEEKLY_SUBJECT_COLORS = [
@@ -1667,7 +1668,6 @@ function buildStudyTankCoinReward(previousTotalMinutes, addedMinutes, random = M
   const completedTanks = Math.floor(((previous % STUDY_TANK_CAPACITY_MINUTES) + minutes)
     / STUDY_TANK_CAPACITY_MINUTES);
   const baseCoins = minutes > 0 ? getEarnedCoins(minutes) : 0;
-  const tankCoins = getEarnedCoins(STUDY_TANK_CAPACITY_MINUTES);
   const bonuses = [];
 
   // Roll once per newly completed tank, never per submission or animation frame.
@@ -1675,11 +1675,25 @@ function buildStudyTankCoinReward(previousTotalMinutes, addedMinutes, random = M
     const roll = random();
     const tier = STUDY_TANK_COIN_BONUSES.find(({ threshold }) => roll >= 0 && roll < threshold);
     if (!tier) continue;
-    bonuses.push({ tank, multiplier: tier.multiplier, coins: Math.round(tankCoins * (tier.multiplier - 1)) });
+    bonuses.push({ tank, multiplier: tier.multiplier });
   }
 
-  const bonusCoins = bonuses.reduce((sum, bonus) => sum + bonus.coins, 0);
-  return { baseCoins, bonusCoins, bonuses, completedTanks, coinsEarned: baseCoins + bonusCoins };
+  // Apply only the best event once to this record's total base reward.
+  // This keeps long sessions rewarding without multiplying the whole wallet or stacking rolls.
+  const appliedMultiplier = bonuses.reduce((best, bonus) => Math.max(best, bonus.multiplier), 1);
+  const bonusCoins = bonuses.length > 0 ? Math.round(baseCoins * (appliedMultiplier - 1)) : 0;
+  return {
+    baseCoins,
+    bonusCoins,
+    bonuses: bonuses.map((bonus) => ({
+      ...bonus,
+      applied: bonus.multiplier === appliedMultiplier,
+      coins: bonus.multiplier === appliedMultiplier ? bonusCoins : 0,
+    })),
+    appliedMultiplier,
+    completedTanks,
+    coinsEarned: baseCoins + bonusCoins,
+  };
 }
 
 function buildStudyTankItemReward(completedTanks, inventory, random = Math.random) {
@@ -2876,7 +2890,7 @@ function addStudySession(minutes, subject, mode = "manual", requestedDate = getT
   const previousTotalMinutes = state.totalMinutes;
   const coinReward = buildStudyTankCoinReward(previousTotalMinutes, safeMinutes);
   const tankDrops = buildStudyTankItemReward(coinReward.completedTanks, state.inventory);
-  const hasSpecialReward = coinReward.bonuses.some((bonus) => bonus.multiplier >= 5) || tankDrops.length > 0;
+  const hasSpecialReward = coinReward.bonuses.some((bonus) => bonus.multiplier >= STUDY_SPECIAL_COIN_MULTIPLIER) || tankDrops.length > 0;
   const earnedCoins = coinReward.coinsEarned;
   const normalizedSubject = subject || "集中学習";
   const createdAt = new Date().toISOString();
@@ -3160,7 +3174,7 @@ function formatStudyTankMultiplier(multiplier) {
 
 function revealStudyTankSpecial(session, completedTanks, newDrop = null, newBonus = null) {
   if (!studyTankRewardSpecial || !studyTankRewardPet) return;
-  const rareBonus = (session.tankBonuses || []).some((bonus) => bonus.tank <= completedTanks && bonus.multiplier >= 5);
+  const rareBonus = (session.tankBonuses || []).some((bonus) => bonus.tank <= completedTanks && bonus.multiplier >= STUDY_SPECIAL_COIN_MULTIPLIER);
   const drops = (session.tankDrops || []).filter((drop) => drop.tank <= completedTanks);
   if (!rareBonus && drops.length === 0) return;
 
@@ -3228,7 +3242,7 @@ function appendStudyTankBonusEvent(bonus) {
   row.dataset.tank = String(bonus.tank);
   badge.textContent = "NEW";
   multiplier.textContent = `×${formatStudyTankMultiplier(bonus.multiplier)}`;
-  detail.textContent = `${bonus.tank}本目・+${bonus.coins} coin`;
+  detail.textContent = `${bonus.tank}本目・${bonus.applied ? "今回の合計に適用" : "倍率抽選"}`;
   row.append(badge, multiplier, detail);
   studyTankRewardBonusFeed.append(row);
   studyTankRewardBonusFeed.scrollTop = studyTankRewardBonusFeed.scrollHeight;
@@ -3237,7 +3251,7 @@ function appendStudyTankBonusEvent(bonus) {
 function renderStudyTankCoinBonus(bonuses, options = {}) {
   if (!studyTankRewardBonus || bonuses.length === 0) return;
   const latest = bonuses[bonuses.length - 1];
-  const totalBonus = bonuses.reduce((sum, bonus) => sum + bonus.coins, 0);
+  const totalBonus = bonuses.reduce((max, bonus) => Math.max(max, Number(bonus.coins) || 0), 0);
   const tiers = STUDY_TANK_COIN_BONUSES.map(({ multiplier }) => {
     const count = bonuses.filter((bonus) => bonus.multiplier === multiplier).length;
     return count ? `×${formatStudyTankMultiplier(multiplier)}：${count}本` : "";
@@ -3255,8 +3269,8 @@ function renderStudyTankCoinBonus(bonuses, options = {}) {
     studyTankRewardBonusMultiplier.textContent = `COIN ×${formatStudyTankMultiplier(latest.multiplier)}`;
   }
   studyTankRewardBonusDetail.textContent = options.final
-    ? `10分ぶんのコインが増量！ 合計 +${totalBonus} coin`
-    : `${latest.tank}本目の10分ぶんが増量！ +${latest.coins} coin`;
+    ? `今回の合計コインに倍率を適用・ボーナス +${totalBonus} coin`
+    : `${latest.tank}本目の倍率を確認・今回の合計に適用`;
 }
 
 function finishStudyTankReward(token, previousTotalMinutes, addedMinutes, session) {
@@ -3336,7 +3350,9 @@ function showStudyTankReward(previousTotalMinutes, session) {
       revealStudyTankSpecial(session, completedTanks, drop);
     });
     renderStudyTankCoinBonus(revealed);
-    studyTankRewardCoins.textContent = `+${baseCoins + revealed.reduce((sum, bonus) => sum + bonus.coins, 0)} coin`;
+    const revealedMultiplier = revealed.reduce((best, bonus) => Math.max(best, bonus.multiplier), 1);
+    const revealedBonusCoins = revealed.length > 0 ? Math.round(baseCoins * (revealedMultiplier - 1)) : 0;
+    studyTankRewardCoins.textContent = `+${baseCoins + revealedBonusCoins} coin`;
     if (newBonuses.length > 0) playTankCoinBonusSound();
     if (newDrops.length > 0) playTankRewardCompleteSound();
     return true;
