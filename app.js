@@ -8,10 +8,10 @@ const STUDY_TANK_MIN_ANIMATION_MS = 800;
 const STUDY_TANK_MAX_ANIMATION_MS = 10000;
 const STUDY_TANK_MIN_ANIMATION_MINUTES = 10;
 const STUDY_TANK_COIN_BONUSES = [
-  { threshold: 0.0001, multiplier: 10 },
-  { threshold: 0.0011, multiplier: 5 },
-  { threshold: 0.0211, multiplier: 1.5 },
-  { threshold: 0.1011, multiplier: 1.2 },
+  { threshold: 0.0001, multiplier: 12 },
+  { threshold: 0.0011, multiplier: 6 },
+  { threshold: 0.0211, multiplier: 1.6 },
+  { threshold: 0.1011, multiplier: 1.3 },
 ];
 const STUDY_TANK_ITEM_CHANCE = 0.001;
 const STUDY_REWARD_ENTRANCES = ["fly", "twirl", "rise"];
@@ -777,6 +777,7 @@ const studyTankRewardCoins = document.getElementById("studyTankRewardCoins");
 const studyTankRewardBonus = document.getElementById("studyTankRewardBonus");
 const studyTankRewardBonusMultiplier = document.getElementById("studyTankRewardBonusMultiplier");
 const studyTankRewardBonusDetail = document.getElementById("studyTankRewardBonusDetail");
+const studyTankRewardBonusFeed = document.getElementById("studyTankRewardBonusFeed");
 const studyTankRewardSpecial = document.getElementById("studyTankRewardSpecial");
 const studyTankRewardPet = document.getElementById("studyTankRewardPet");
 const studyTankRewardSpecialText = document.getElementById("studyTankRewardSpecialText");
@@ -3153,7 +3154,11 @@ function closeStudyTankReward() {
   }, 180);
 }
 
-function revealStudyTankSpecial(session, completedTanks) {
+function formatStudyTankMultiplier(multiplier) {
+  return Number(multiplier).toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
+}
+
+function revealStudyTankSpecial(session, completedTanks, newDrop = null, newBonus = null) {
   if (!studyTankRewardSpecial || !studyTankRewardPet) return;
   const rareBonus = (session.tankBonuses || []).some((bonus) => bonus.tank <= completedTanks && bonus.multiplier >= 5);
   const drops = (session.tankDrops || []).filter((drop) => drop.tank <= completedTanks);
@@ -3168,29 +3173,65 @@ function revealStudyTankSpecial(session, completedTanks) {
     studyTankRewardSpecial.hidden = false;
     studyTankReward.classList.add("has-special-reward");
   }
-  studyTankRewardSpecialText.textContent = drops.length > 0
-    ? "特別な贈りもの、届いたよ！" : "わあ！特別なボーナスだよ！";
+  if (newDrop && shopItems[newDrop.itemId]) {
+    studyTankRewardSpecialText.textContent = `「${shopItems[newDrop.itemId].name}」を見つけたよ！`;
+  } else if (newBonus) {
+    studyTankRewardSpecialText.textContent = `COIN ×${formatStudyTankMultiplier(newBonus.multiplier)} の特別ボーナスだよ！`;
+  } else {
+    studyTankRewardSpecialText.textContent = drops.length > 0
+      ? "特別な贈りもの、届いたよ！" : "わあ！特別なボーナスだよ！";
+  }
 }
 
-function renderStudyTankDrops(session) {
+function renderStudyTankDrop(drop, { isNew = false } = {}) {
+  if (!studyTankRewardDrops || !shopItems[drop.itemId]?.rewardOnly) return;
+  const item = shopItems[drop.itemId];
+  studyTankRewardDrops.querySelectorAll(".tank-reward-drop.is-new").forEach((row) => row.classList.remove("is-new"));
+  const row = document.createElement("div");
+  const detail = document.createElement("div");
+  const name = document.createElement("strong");
+  const label = document.createElement("span");
+  const badge = document.createElement("em");
+  row.className = `tank-reward-drop${isNew ? " is-new" : ""}`;
+  row.dataset.item = drop.itemId;
+  row.dataset.tank = String(drop.tank);
+  name.textContent = item.name;
+  badge.className = "tank-reward-drop-new";
+  badge.textContent = "NEW";
+  label.textContent = `タンク${drop.tank}本目・限定${categoryLabels[getItemCategory(item)]}・クローゼットに追加済み`;
+  detail.append(badge, name, label);
+  row.append(createItemIcon(item), detail);
+  studyTankRewardDrops.append(row);
+  studyTankRewardDrops.hidden = false;
+  row.scrollIntoView({ block: "nearest" });
+}
+
+function renderStudyTankDrops(session, maxTank = Infinity) {
   if (!studyTankRewardDrops) return;
-  const drops = (session.tankDrops || []).filter(({ itemId }) => shopItems[itemId]?.rewardOnly);
-  studyTankRewardDrops.replaceChildren();
-  studyTankRewardDrops.hidden = drops.length === 0;
-  drops.forEach(({ itemId }) => {
-    const item = shopItems[itemId];
-    const row = document.createElement("div");
-    const detail = document.createElement("div");
-    const name = document.createElement("strong");
-    const label = document.createElement("span");
-    row.className = "tank-reward-drop";
-    row.dataset.item = itemId;
-    name.textContent = item.name;
-    label.textContent = `限定${categoryLabels[getItemCategory(item)]}・クローゼットに追加済み`;
-    detail.append(name, label);
-    row.append(createItemIcon(item), detail);
-    studyTankRewardDrops.append(row);
+  const drops = (session.tankDrops || []).filter(({ itemId, tank }) => shopItems[itemId]?.rewardOnly && tank <= maxTank);
+  drops.forEach((drop) => {
+    if (!studyTankRewardDrops.querySelector(`[data-tank="${drop.tank}"][data-item="${drop.itemId}"]`)) {
+      renderStudyTankDrop(drop, { isNew: true });
+    }
   });
+  studyTankRewardDrops.hidden = drops.length === 0;
+}
+
+function appendStudyTankBonusEvent(bonus) {
+  if (!studyTankRewardBonusFeed) return;
+  studyTankRewardBonusFeed.querySelectorAll(".tank-reward-bonus-event.is-new").forEach((row) => row.classList.remove("is-new"));
+  const row = document.createElement("div");
+  const badge = document.createElement("em");
+  const multiplier = document.createElement("strong");
+  const detail = document.createElement("span");
+  row.className = "tank-reward-bonus-event is-new";
+  row.dataset.tank = String(bonus.tank);
+  badge.textContent = "NEW";
+  multiplier.textContent = `×${formatStudyTankMultiplier(bonus.multiplier)}`;
+  detail.textContent = `${bonus.tank}本目・+${bonus.coins} coin`;
+  row.append(badge, multiplier, detail);
+  studyTankRewardBonusFeed.append(row);
+  studyTankRewardBonusFeed.scrollTop = studyTankRewardBonusFeed.scrollHeight;
 }
 
 function renderStudyTankCoinBonus(bonuses, options = {}) {
@@ -3199,7 +3240,7 @@ function renderStudyTankCoinBonus(bonuses, options = {}) {
   const totalBonus = bonuses.reduce((sum, bonus) => sum + bonus.coins, 0);
   const tiers = STUDY_TANK_COIN_BONUSES.map(({ multiplier }) => {
     const count = bonuses.filter((bonus) => bonus.multiplier === multiplier).length;
-    return count ? `×${multiplier.toFixed(1)}：${count}本` : "";
+    return count ? `×${formatStudyTankMultiplier(multiplier)}：${count}本` : "";
   }).filter(Boolean);
 
   studyTankRewardBonus.hidden = false;
@@ -3211,7 +3252,7 @@ function renderStudyTankCoinBonus(bonuses, options = {}) {
       return tier;
     }));
   } else {
-    studyTankRewardBonusMultiplier.textContent = `COIN ×${latest.multiplier.toFixed(1)}`;
+    studyTankRewardBonusMultiplier.textContent = `COIN ×${formatStudyTankMultiplier(latest.multiplier)}`;
   }
   studyTankRewardBonusDetail.textContent = options.final
     ? `10分ぶんのコインが増量！ 合計 +${totalBonus} coin`
@@ -3277,14 +3318,27 @@ function showStudyTankReward(previousTotalMinutes, session) {
   const bonuses = session.tankBonuses || [];
   const baseCoins = earnedCoins - (session.tankBonusCoins || 0);
   let revealedBonusCount = 0;
+  let revealedDropCount = 0;
   const revealBonuses = (completedTanks) => {
-    revealStudyTankSpecial(session, completedTanks);
     const revealed = bonuses.filter((bonus) => bonus.tank <= completedTanks);
-    if (revealed.length === revealedBonusCount) return false;
+    const newBonuses = revealed.slice(revealedBonusCount);
+    const drops = (session.tankDrops || []).filter((drop) => drop.tank <= completedTanks && shopItems[drop.itemId]?.rewardOnly);
+    const newDrops = drops.slice(revealedDropCount);
+    if (newBonuses.length === 0 && newDrops.length === 0) return false;
     revealedBonusCount = revealed.length;
+    revealedDropCount = drops.length;
+    newBonuses.forEach((bonus) => {
+      appendStudyTankBonusEvent(bonus);
+      revealStudyTankSpecial(session, completedTanks, null, bonus);
+    });
+    newDrops.forEach((drop) => {
+      renderStudyTankDrop(drop, { isNew: true });
+      revealStudyTankSpecial(session, completedTanks, drop);
+    });
     renderStudyTankCoinBonus(revealed);
     studyTankRewardCoins.textContent = `+${baseCoins + revealed.reduce((sum, bonus) => sum + bonus.coins, 0)} coin`;
-    playTankCoinBonusSound();
+    if (newBonuses.length > 0) playTankCoinBonusSound();
+    if (newDrops.length > 0) playTankRewardCompleteSound();
     return true;
   };
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -3292,6 +3346,9 @@ function showStudyTankReward(previousTotalMinutes, session) {
   studyTankReward.hidden = false;
   studyTankReward.classList.remove("show", "is-result", "has-coin-bonus", "has-special-reward");
   if (studyTankRewardBonus) studyTankRewardBonus.hidden = true;
+  if (studyTankRewardBonusFeed) studyTankRewardBonusFeed.replaceChildren();
+  if (studyTankRewardBonusMultiplier) studyTankRewardBonusMultiplier.replaceChildren();
+  if (studyTankRewardBonusDetail) studyTankRewardBonusDetail.textContent = "";
   if (studyTankRewardSpecial) studyTankRewardSpecial.hidden = true;
   if (studyTankRewardDrops) {
     studyTankRewardDrops.hidden = true;

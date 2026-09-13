@@ -10151,6 +10151,67 @@ input:focus {
   line-height: 1.5;
 }
 
+.tank-reward-bonus-feed {
+  display: grid;
+  gap: 4px;
+  max-height: 108px;
+  margin-top: 2px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.tank-reward-bonus-event {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+  min-height: 27px;
+  padding: 3px 6px;
+  border: 1px solid #ead9a4;
+  border-radius: 8px;
+  background: rgba(255, 251, 232, 0.84);
+  font-size: 11px;
+  line-height: 1.2;
+  transition: border-color 180ms ease, background 180ms ease;
+}
+
+.tank-reward-bonus-event.is-new {
+  border-color: #d89f2a;
+  background: #fff4c5;
+}
+
+.tank-reward-bonus-event em,
+.tank-reward-drop-new {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 17px;
+  padding: 1px 4px;
+  border-radius: 5px;
+  background: #d89f2a;
+  color: #fffdf1;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+}
+
+.tank-reward-bonus-event strong {
+  display: block;
+  font-size: 15px;
+  line-height: 1;
+}
+
+.tank-reward-bonus-event span {
+  min-width: 0;
+  color: #775415;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .tank-reward-backdrop.has-coin-bonus .tank-reward-card {
   border-color: #d7b04e;
 }
@@ -10270,6 +10331,19 @@ input:focus {
   line-height: 1.4;
 }
 
+.tank-reward-drop > div > .tank-reward-drop-new {
+  margin-right: 5px;
+  vertical-align: 2px;
+  opacity: 0;
+  transform: translateY(2px);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.tank-reward-drop.is-new > div > .tank-reward-drop-new {
+  opacity: 1;
+  transform: none;
+}
+
 .tank-reward-drop div > span {
   margin-top: 3px;
   font-size: 11px;
@@ -10298,6 +10372,11 @@ input:focus {
 .tank-reward-backdrop.is-result .tank-reward-special .pet::before,
 .tank-reward-backdrop.is-result .tank-reward-special .pet::after {
   animation: none !important;
+}
+
+.tank-reward-backdrop.is-result .tank-reward-owl-entry {
+  animation: none !important;
+  transform: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
