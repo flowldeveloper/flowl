@@ -12335,3 +12335,99 @@ body.study-focus-active {
     font-size: 10px;
   }
 }
+
+/* Complete the remaining reward and seasonal furniture render paths. */
+.pet-stage[data-furniture="readingLampStand"]::before {
+  right: 18px;
+  bottom: var(--furniture-floor);
+  width: 48px;
+  height: 92px;
+  border: 3px solid rgba(108, 84, 54, 0.78);
+  border-radius: 22px 22px 8px 8px;
+  background:
+    radial-gradient(ellipse at 50% 18%, #ffe29a 0 34%, transparent 35%),
+    linear-gradient(90deg, transparent 0 47%, #8d7654 47% 53%, transparent 53%);
+  box-shadow:
+    0 18px 0 -8px rgba(76, 61, 44, 0.24),
+    0 8px 12px rgba(76, 61, 44, 0.12),
+    0 0 18px rgba(243, 182, 63, 0.26);
+}
+
+.pet-stage[data-furniture="readingLampStand"]::after {
+  right: 2px;
+  bottom: calc(var(--furniture-floor) + 48px);
+  width: 72px;
+  height: 44px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(255, 226, 154, 0.32), transparent 68%);
+}
+
+.pet-stage[data-furniture="rewardStarHourglass"]::before {
+  right: 18px;
+  bottom: var(--furniture-floor);
+  width: 46px;
+  height: 76px;
+  border: 4px solid #6c5436;
+  border-radius: 8px;
+  background:
+    linear-gradient(38deg, transparent 0 43%, #f3b63f 44% 56%, transparent 57%),
+    linear-gradient(142deg, transparent 0 43%, #f3b63f 44% 56%, transparent 57%),
+    linear-gradient(#fffdf8 0 48%, #8cc7e8 49% 100%);
+  box-shadow: 0 18px 0 -8px rgba(76, 61, 44, 0.24), 0 8px 12px rgba(76, 61, 44, 0.12);
+}
+
+.pet-stage[data-furniture="rewardStarHourglass"]::after {
+  right: 10px;
+  bottom: calc(var(--furniture-floor) + 80px);
+  width: 62px;
+  height: 10px;
+  border-radius: 999px;
+  background: #f3b63f;
+  box-shadow: 0 76px 0 #f3b63f;
+}
+
+.item-illustration.reward-comet-coat::before,
+.item-illustration.reward-moon-ribbon::before,
+.item-illustration.reward-star-hourglass::before,
+.item-illustration.reward-meteor-observatory::before {
+  content: "";
+  position: absolute;
+  display: block;
+}
+
+.item-illustration.reward-comet-coat::before {
+  inset: 12% 14% 14%;
+  border: 3px solid #6c5436;
+  border-radius: 18px 18px 12px 12px;
+  background: linear-gradient(135deg, #9d4d5d, #d9816e 58%, #f3b63f);
+  box-shadow: inset 0 -8px 0 rgba(76, 61, 44, 0.16);
+}
+
+.item-illustration.reward-moon-ribbon::before {
+  left: 20%;
+  top: 20%;
+  width: 60%;
+  height: 52%;
+  border-radius: 50% 18% 50% 18%;
+  background: #79b8aa;
+  box-shadow: 13px 14px 0 -2px #f3d77e, -10px 17px 0 -5px #79b8aa;
+  transform: rotate(-12deg);
+}
+
+.item-illustration.reward-star-hourglass::before {
+  left: 27%;
+  top: 13%;
+  width: 46%;
+  height: 70%;
+  border: 3px solid #6c5436;
+  border-radius: 7px;
+  background: linear-gradient(38deg, transparent 0 43%, #f3b63f 44% 56%, transparent 57%), linear-gradient(142deg, transparent 0 43%, #f3b63f 44% 56%, transparent 57%), linear-gradient(#fffdf8 0 48%, #8cc7e8 49% 100%);
+  box-shadow: 0 8px 0 -5px rgba(76, 61, 44, 0.24);
+}
+
+.item-illustration.reward-meteor-observatory::before {
+  inset: 10%;
+  border: 3px solid #6c5436;
+  border-radius: 12px;
+  background: radial-gradient(circle at 72% 24%, #fff1c7 0 12%, transparent 13%), radial-gradient(circle at 26% 28%, #fffdf8 0 3%, transparent 4%), linear-gradient(#53678e 0 55%, #d8bd8b 56% 100%);
+}
