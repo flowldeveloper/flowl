@@ -15,6 +15,8 @@ const STUDY_TANK_COIN_BONUSES = [
 ];
 const STUDY_TANK_ITEM_CHANCE = 0.001;
 const STUDY_SPECIAL_COIN_MULTIPLIER = 2.5;
+const SHOP_PRICE_VALUE_FACTOR = 1.03;
+const SHOP_PRICE_STEP = 5;
 const STUDY_REWARD_ENTRANCES = ["fly", "twirl", "rise"];
 const MAX_STORED_SESSIONS = 5000;
 const WEEKLY_SUBJECT_COLORS = [
@@ -2062,7 +2064,9 @@ function getItemCategory(item) {
 }
 
 function getItemPrice(item) {
-  return item?.price ?? item?.cost ?? 0;
+  const basePrice = Number(item?.price ?? item?.cost ?? 0);
+  if (!Number.isFinite(basePrice) || basePrice <= 0 || item?.rewardOnly) return Math.max(0, basePrice || 0);
+  return Math.ceil((basePrice * SHOP_PRICE_VALUE_FACTOR) / SHOP_PRICE_STEP) * SHOP_PRICE_STEP;
 }
 
 function getRarityRank(item) {
