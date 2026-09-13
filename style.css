@@ -11926,3 +11926,412 @@ body.study-focus-active {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
+
+/* Monthly limited shop: seasonal, quieter than tank rewards, but clearly special. */
+.monthly-shop-section {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 10px;
+  margin: 0 0 14px;
+  padding: 12px;
+  border: 2px solid rgba(243, 182, 63, 0.42);
+  border-radius: 12px;
+  background: linear-gradient(135deg, #fffdf8 0%, #fff8e6 52%, #eef7ed 100%);
+  box-shadow: 0 8px 18px rgba(112, 119, 60, 0.08);
+}
+
+.monthly-shop-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.monthly-shop-heading > div {
+  min-width: 0;
+}
+
+.monthly-shop-heading p {
+  margin: 0 0 2px;
+  color: #9a7830;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.monthly-shop-heading h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1.2;
+}
+
+.monthly-shop-heading span {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.monthly-shop-heading > strong {
+  flex: 0 0 auto;
+  min-width: 42px;
+  padding: 7px 9px;
+  border: 1px solid rgba(243, 182, 63, 0.42);
+  border-radius: 999px;
+  color: #76571b;
+  background: #fff1c7;
+  font-size: 13px;
+  text-align: center;
+}
+
+.monthly-shop-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+
+.monthly-shop-item {
+  min-height: 0;
+  border-color: rgba(243, 182, 63, 0.62);
+  background:
+    radial-gradient(circle at 92% 12%, rgba(255, 241, 199, 0.62) 0 14%, transparent 15%),
+    linear-gradient(135deg, #fffdf8 0%, #fff8e8 60%, #edf7ed 100%);
+}
+
+.monthly-shop-item::before {
+  opacity: 0.34;
+  background: linear-gradient(115deg, transparent 0 35%, rgba(255, 255, 255, 0.7) 46%, transparent 58%);
+}
+
+.monthly-shop-item .price-badge {
+  color: #70531e;
+  background: #ffe9a9;
+}
+
+.monthly-shop-item .preview-item-btn {
+  border-color: rgba(243, 182, 63, 0.54);
+  background: #fff1c7;
+}
+
+/* The added item art uses the same CSS illustration system as existing items. */
+.item-illustration.item-art {
+  position: relative;
+}
+
+.item-illustration.wear-autumn-cardigan::before,
+.item-illustration.wear-evening-book-vest::before,
+.item-illustration.wear-moon-festival-robe::before,
+.item-illustration.monthly-new-year-cape::before,
+.item-illustration.monthly-fresh-cape::before,
+.item-illustration.monthly-harvest-cape::before {
+  left: 13%;
+  top: 20%;
+  width: 74%;
+  height: 63%;
+  border: 3px solid #6c5436;
+  border-radius: 18px 18px 12px 12px;
+  clip-path: polygon(12% 0, 88% 0, 100% 100%, 0 100%);
+  box-shadow: inset -6px -6px 0 rgba(76, 61, 44, 0.12);
+}
+
+.item-illustration.wear-autumn-cardigan::before { background: linear-gradient(90deg, #d69563 0 43%, #ffe2af 43% 57%, #c87850 57% 100%); }
+.item-illustration.wear-evening-book-vest::before { background: linear-gradient(90deg, #456e81 0 44%, #ffe6af 44% 56%, #385c72 56% 100%); }
+.item-illustration.wear-moon-festival-robe::before { background: radial-gradient(circle at 72% 28%, #fff1c7 0 8%, transparent 9%), linear-gradient(135deg, #59658e, #8e7ab5 58%, #e1b96f); }
+.item-illustration.monthly-new-year-cape::before { background: linear-gradient(135deg, #df8061, #f4c670 54%, #b7d7c0); }
+.item-illustration.monthly-fresh-cape::before { background: linear-gradient(135deg, #8fcf91, #d9e5a7 54%, #6cae8c); }
+.item-illustration.monthly-harvest-cape::before { background: linear-gradient(135deg, #c87c4a, #f0c36e 54%, #8eaa70); }
+
+.item-illustration.wear-autumn-cardigan::after,
+.item-illustration.wear-evening-book-vest::after,
+.item-illustration.monthly-new-year-cape::after,
+.item-illustration.monthly-fresh-cape::after,
+.item-illustration.monthly-harvest-cape::after {
+  left: 47%;
+  top: 40%;
+  width: 6%;
+  height: 6%;
+  border-radius: 50%;
+  background: #fff1c7;
+  box-shadow: 0 10px 0 #fff1c7;
+}
+
+.item-illustration.wear-moon-festival-robe::after {
+  right: 12%;
+  top: 12%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff1c7;
+  box-shadow: -23px 27px 0 -3px #fffdf8;
+}
+
+.item-illustration.wear-acorn-pin::before,
+.item-illustration.wear-maple-hairpin::before,
+.item-illustration.wear-winter-moon-crown::before,
+.item-illustration.monthly-heart-pin::before,
+.item-illustration.monthly-rain-pin::before,
+.item-illustration.monthly-moon-beret::before {
+  left: 22%;
+  top: 22%;
+  width: 56%;
+  height: 50%;
+}
+
+.item-illustration.wear-acorn-pin::before {
+  border-radius: 48% 48% 58% 58%;
+  background: linear-gradient(#8f7148 0 34%, #c9965a 34% 100%);
+  box-shadow: 0 -7px 0 -2px #6faa74;
+}
+
+.item-illustration.wear-maple-hairpin::before {
+  background: #e18b55;
+  clip-path: polygon(50% 0, 64% 28%, 94% 18%, 79% 49%, 100% 64%, 66% 67%, 60% 100%, 43% 72%, 10% 85%, 26% 55%, 0 38%, 36% 31%);
+  filter: drop-shadow(0 2px 0 rgba(108, 84, 54, 0.38));
+}
+
+.item-illustration.wear-winter-moon-crown::before {
+  border: 3px solid #6c5436;
+  border-radius: 6px 6px 11px 11px;
+  background: linear-gradient(135deg, #dceaf6, #f2d27c);
+  clip-path: polygon(0 100%, 0 32%, 22% 53%, 38% 0, 50% 50%, 63% 0, 80% 53%, 100% 32%, 100% 100%);
+}
+
+.item-illustration.monthly-heart-pin::before {
+  background: #e78b8d;
+  clip-path: polygon(50% 94%, 8% 50%, 8% 25%, 25% 8%, 50% 28%, 75% 8%, 92% 25%, 92% 50%);
+  filter: drop-shadow(0 2px 0 rgba(108, 84, 54, 0.35));
+}
+
+.item-illustration.monthly-rain-pin::before {
+  width: 36%;
+  left: 32%;
+  border-radius: 50% 50% 58% 58%;
+  background: linear-gradient(#b7e7ed, #6eb6d1);
+  transform: rotate(18deg);
+}
+
+.item-illustration.monthly-moon-beret::before {
+  top: 28%;
+  height: 38%;
+  border-radius: 55% 55% 14px 14px;
+  background: linear-gradient(135deg, #6b719b, #b8add7);
+  box-shadow: inset -5px -5px 0 rgba(76, 61, 44, 0.12);
+}
+
+.item-illustration.monthly-moon-beret::after {
+  right: 12%;
+  top: 12%;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff1c7;
+  box-shadow: -16px 8px 0 -3px #fffdf8;
+}
+
+.item-illustration.furniture-tea-set::before,
+.item-illustration.furniture-reading-lamp::before,
+.item-illustration.furniture-winter-globe::before,
+.item-illustration.monthly-spring-tea::before,
+.item-illustration.monthly-star-desk::before,
+.item-illustration.monthly-ginkgo-lamp::before {
+  left: 12%;
+  bottom: 18%;
+  width: 76%;
+  height: 22%;
+  border: 3px solid #6c5436;
+  border-radius: 7px;
+  background: #c9965a;
+  box-shadow: 0 7px 0 -4px rgba(76, 61, 44, 0.28);
+}
+
+.item-illustration.furniture-tea-set::after,
+.item-illustration.monthly-spring-tea::after {
+  left: 30%;
+  top: 22%;
+  width: 38%;
+  height: 38%;
+  border: 3px solid #6c5436;
+  border-radius: 50%;
+  background: #f1c2b0;
+  box-shadow: 12px 9px 0 -3px #fff1c7;
+}
+
+.item-illustration.furniture-reading-lamp::after,
+.item-illustration.monthly-ginkgo-lamp::after {
+  left: 42%;
+  top: 14%;
+  width: 16%;
+  height: 56%;
+  border-radius: 999px;
+  background: linear-gradient(#ffe29a 0 40%, #8d7654 41% 100%);
+  box-shadow: 0 0 0 7px rgba(255, 226, 154, 0.2);
+}
+
+.item-illustration.furniture-winter-globe::after {
+  left: 24%;
+  top: 15%;
+  width: 52%;
+  height: 48%;
+  border: 3px solid #6c5436;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff1c7 0 7%, transparent 8%), linear-gradient(135deg, #92c9df, #687aa7);
+}
+
+.item-illustration.monthly-star-desk::after {
+  left: 46%;
+  top: 10%;
+  width: 12%;
+  height: 48%;
+  background: #fff1c7;
+  clip-path: polygon(50% 0, 62% 34%, 100% 40%, 68% 58%, 78% 100%, 50% 72%, 22% 100%, 32% 58%, 0 40%, 38% 34%);
+}
+
+.item-illustration.background-autumn-sunset::before,
+.item-illustration.background-maple-library::before,
+.item-illustration.background-winter-solstice::before,
+.item-illustration.background-monthly-flower-window::before,
+.item-illustration.background-monthly-seaside-window::before,
+.item-illustration.background-monthly-holy-sky::before {
+  inset: 8px;
+  border: 3px solid rgba(108, 84, 54, 0.42);
+  border-radius: 12px;
+}
+
+.item-illustration.background-autumn-sunset::before { background: linear-gradient(#efb26d 0 48%, #b87c5b 49% 100%); }
+.item-illustration.background-maple-library::before { background: repeating-linear-gradient(90deg, #8f7148 0 7px, #f1c173 7px 14px, #9cbf9b 14px 22px); }
+.item-illustration.background-winter-solstice::before { background: radial-gradient(circle at 74% 23%, #fff1c7 0 14%, transparent 15%), linear-gradient(#4d628c 0 55%, #edf5f6 56% 100%); }
+.item-illustration.background-monthly-flower-window::before { background: radial-gradient(circle at 22% 25%, #ef9fae 0 11%, transparent 12%), radial-gradient(circle at 72% 18%, #f4c3cf 0 9%, transparent 10%), linear-gradient(#f8dbe4 0 55%, #d5e7c5 56% 100%); }
+.item-illustration.background-monthly-seaside-window::before { background: radial-gradient(circle at 78% 20%, #fff1c7 0 12%, transparent 13%), repeating-linear-gradient(0deg, #f6e0ad 0 5px, #78b9d3 5px 12px); }
+.item-illustration.background-monthly-holy-sky::before { background: radial-gradient(circle at 24% 22%, #fff1c7 0 4%, transparent 5%), radial-gradient(circle at 72% 30%, #fffdf8 0 3%, transparent 4%), linear-gradient(#59628d 0 56%, #d7c39d 57% 100%); }
+
+/* Keep the new wearables on the body/around the head without covering the face. */
+.equipment-item.wear-autumn-cardigan,
+.equipment-item.wear-evening-book-vest,
+.equipment-item.wear-moon-festival-robe,
+.equipment-item.monthly-new-year-cape,
+.equipment-item.monthly-fresh-cape,
+.equipment-item.monthly-harvest-cape {
+  --item-width: 62%;
+  --item-height: 48%;
+}
+
+.equipment-item.wear-autumn-cardigan::before,
+.equipment-item.wear-evening-book-vest::before,
+.equipment-item.wear-moon-festival-robe::before,
+.equipment-item.monthly-new-year-cape::before,
+.equipment-item.monthly-fresh-cape::before,
+.equipment-item.monthly-harvest-cape::before {
+  inset: 0 4%;
+  border: 4px solid #6c5436;
+  border-radius: 30px 30px 34px 34px / 26px 26px 42px 42px;
+  clip-path: polygon(16% 1%, 84% 1%, 98% 92%, 82% 100%, 18% 100%, 2% 92%);
+  box-shadow: inset 10px 0 0 rgba(255, 253, 248, 0.12), inset -12px -14px 0 rgba(70, 92, 62, 0.13), 0 6px 9px rgba(83, 62, 38, 0.12);
+}
+
+.equipment-item.wear-autumn-cardigan::before { background: linear-gradient(90deg, #d69563 0 44%, #ffe2af 44% 56%, #c87850 56% 100%); }
+.equipment-item.wear-evening-book-vest::before { background: linear-gradient(90deg, #456e81 0 45%, #ffe6af 45% 55%, #385c72 55% 100%); }
+.equipment-item.wear-moon-festival-robe::before { background: radial-gradient(circle at 72% 28%, #fff1c7 0 8%, transparent 9%), linear-gradient(135deg, #59658e, #8e7ab5 58%, #e1b96f); }
+.equipment-item.monthly-new-year-cape::before { background: linear-gradient(135deg, #df8061, #f4c670 54%, #b7d7c0); }
+.equipment-item.monthly-fresh-cape::before { background: linear-gradient(135deg, #8fcf91, #d9e5a7 54%, #6cae8c); }
+.equipment-item.monthly-harvest-cape::before { background: linear-gradient(135deg, #c87c4a, #f0c36e 54%, #8eaa70); }
+
+.equipment-item.wear-acorn-pin,
+.equipment-item.wear-maple-hairpin,
+.equipment-item.wear-winter-moon-crown,
+.equipment-item.monthly-rain-pin,
+.equipment-item.monthly-moon-beret {
+  --item-width: 38%;
+  --item-height: 22%;
+}
+
+.equipment-item.monthly-heart-pin {
+  --item-width: 24%;
+  --item-height: 20%;
+}
+
+.equipment-item.wear-acorn-pin::before { left: 28%; top: 15%; width: 44%; height: 66%; border-radius: 48% 48% 58% 58%; background: linear-gradient(#8f7148 0 34%, #c9965a 34% 100%); box-shadow: 0 -9px 0 -3px #6faa74; }
+.equipment-item.wear-maple-hairpin::before { left: 25%; top: 8%; width: 50%; height: 76%; background: #e18b55; clip-path: polygon(50% 0, 64% 28%, 94% 18%, 79% 49%, 100% 64%, 66% 67%, 60% 100%, 43% 72%, 10% 85%, 26% 55%, 0 38%, 36% 31%); }
+.equipment-item.wear-winter-moon-crown::before { left: 16%; top: 8%; width: 68%; height: 76%; border: 3px solid #6c5436; background: linear-gradient(135deg, #dceaf6, #f2d27c); clip-path: polygon(0 100%, 0 32%, 22% 53%, 38% 0, 50% 50%, 63% 0, 80% 53%, 100% 32%, 100% 100%); }
+.equipment-item.monthly-heart-pin::before { left: 25%; top: 8%; width: 50%; height: 76%; background: #e78b8d; clip-path: polygon(50% 94%, 8% 50%, 8% 25%, 25% 8%, 50% 28%, 75% 8%, 92% 25%, 92% 50%); }
+.equipment-item.monthly-rain-pin::before { left: 36%; top: 5%; width: 28%; height: 88%; border-radius: 50% 50% 58% 58%; background: linear-gradient(#b7e7ed, #6eb6d1); transform: rotate(18deg); }
+.equipment-item.monthly-moon-beret::before { left: 8%; top: 20%; width: 84%; height: 58%; border-radius: 55% 55% 14px 14px; background: linear-gradient(135deg, #6b719b, #b8add7); }
+
+/* Stage furniture/backgrounds are selected by stable item ids, preserving saved data. */
+.pet-stage[data-furniture="teaSet"]::before,
+.pet-stage[data-furniture="monthlySpringTea"]::before,
+.pet-stage[data-furniture="monthlyStarDesk"]::before,
+.pet-stage[data-furniture="monthlyGinkgoLamp"]::before {
+  left: 18px;
+  bottom: var(--furniture-floor, 22px);
+  width: 72px;
+  height: 32px;
+  border: 3px solid rgba(108, 84, 54, 0.78);
+  border-radius: 8px;
+  background: linear-gradient(#ddb77f 0 48%, #b8814c 49% 100%);
+  box-shadow: 0 18px 0 -8px rgba(76, 61, 44, 0.24), 0 8px 12px rgba(76, 61, 44, 0.12);
+}
+
+.pet-stage[data-furniture="teaSet"]::after,
+.pet-stage[data-furniture="monthlySpringTea"]::after {
+  left: 40px;
+  bottom: calc(var(--furniture-floor, 22px) + 22px);
+  width: 30px;
+  height: 24px;
+  border: 3px solid #6c5436;
+  border-radius: 50%;
+  background: #f1c2b0;
+  box-shadow: 19px 6px 0 -5px #fff1c7;
+}
+
+.pet-stage[data-furniture="monthlyStarDesk"]::after {
+  left: 49px;
+  bottom: calc(var(--furniture-floor, 22px) + 26px);
+  width: 16px;
+  height: 38px;
+  background: #fff1c7;
+  clip-path: polygon(50% 0, 62% 34%, 100% 40%, 68% 58%, 78% 100%, 50% 72%, 22% 100%, 32% 58%, 0 40%, 38% 34%);
+}
+
+.pet-stage[data-furniture="monthlyGinkgoLamp"]::after {
+  right: 18px;
+  bottom: var(--furniture-floor, 22px);
+  width: 38px;
+  height: 92px;
+  border-radius: 50% 50% 7px 7px;
+  background: linear-gradient(#ffe29a 0 38%, #8d7654 39% 100%);
+  box-shadow: 0 16px 0 rgba(76, 61, 44, 0.12), 0 0 18px rgba(243, 182, 63, 0.24);
+}
+
+.pet-stage[data-furniture="winterGlobe"]::before {
+  right: 18px;
+  bottom: var(--furniture-floor, 22px);
+  width: 70px;
+  height: 82px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 32%, #fff1c7 0 9%, transparent 10%), linear-gradient(135deg, #90cbe0, #687aa7);
+  box-shadow: 0 18px 0 -8px rgba(76, 61, 44, 0.24), 0 0 0 3px #6c5436;
+}
+
+.pet-stage[data-background="autumnSunset"] { background: linear-gradient(#efb26d 0 48%, #b87c5b 49% 100%); }
+.pet-stage[data-background="mapleLibrary"] { background: repeating-linear-gradient(90deg, #8f7148 0 10px, #f1c173 10px 20px, #9cbf9b 20px 32px), linear-gradient(#f1c173 0 55%, #b9856a 56% 100%); }
+.pet-stage[data-background="winterSolsticeSky"] { background: radial-gradient(circle at 78% 19%, #fff1c7 0 10%, transparent 11%), radial-gradient(circle at 25% 22%, #fffdf8 0 2%, transparent 3%), linear-gradient(#4d628c 0 56%, #edf5f6 57% 100%); }
+.pet-stage[data-background="monthlyFlowerWindow"] { background: radial-gradient(circle at 18% 24%, #ef9fae 0 9%, transparent 10%), radial-gradient(circle at 72% 18%, #f4c3cf 0 8%, transparent 9%), linear-gradient(#f8dbe4 0 56%, #d5e7c5 57% 100%); }
+.pet-stage[data-background="monthlySeasideWindow"] { background: radial-gradient(circle at 78% 18%, #fff1c7 0 10%, transparent 11%), repeating-linear-gradient(0deg, #f6e0ad 0 8px, #78b9d3 8px 20px); }
+.pet-stage[data-background="monthlyHolySky"] { background: radial-gradient(circle at 24% 22%, #fff1c7 0 2%, transparent 3%), radial-gradient(circle at 72% 30%, #fffdf8 0 1.5%, transparent 2.5%), linear-gradient(#59628d 0 56%, #d7c39d 57% 100%); }
+
+@media (max-width: 520px) {
+  .monthly-shop-section {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .monthly-shop-heading h2 {
+    font-size: 15px;
+  }
+
+  .monthly-shop-heading span {
+    font-size: 10px;
+  }
+}

@@ -23,8 +23,8 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
   <title>Flowl</title>
-  <link rel="stylesheet" href="style.css?v=pwa-51">
-  <link rel="stylesheet" href="reward-art.css?v=pwa-51">
+  <link rel="stylesheet" href="style.css?v=pwa-52">
+  <link rel="stylesheet" href="reward-art.css?v=pwa-52">
   <script>
     (() => {
       const measurementId = "G-EE6MQ7M7Z2";
@@ -435,6 +435,17 @@
             <button id="shopPreviewAction" type="button" disabled>選択</button>
           </div>
         </div>
+        <section id="monthlyShopSection" class="monthly-shop-section" aria-labelledby="monthlyShopTitle" hidden>
+          <div class="monthly-shop-heading">
+            <div>
+              <p>Monthly Limited</p>
+              <h2 id="monthlyShopTitle">今月限定アイテム</h2>
+              <span>季節に合わせて毎月入れ替わる特別なアイテム</span>
+            </div>
+            <strong id="monthlyShopMonth"></strong>
+          </div>
+          <div id="monthlyShopList" class="monthly-shop-list"></div>
+        </section>
         <div id="shopList" class="shop-list"></div>
       </article>
     </section>
@@ -534,6 +545,6 @@
     </button>
   </nav>
 
-  <script src="app.js?v=pwa-51"></script>
+  <script src="app.js?v=pwa-52"></script>
 </body>
 </html>

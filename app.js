@@ -568,7 +568,114 @@ const shopItems = {
   },
 };
 
+// A small seasonal expansion keeps the existing shop data format and purchase flow intact.
+Object.assign(shopItems, {
+  autumnCardigan: {
+    name: "秋色の読書カーディガン", category: "clothing", rarity: "common", price: 75,
+    description: "夕暮れの図書室に似合う、やわらかな秋色のカーディガン。",
+    assetClass: "wear-autumn-cardigan", layer: "clothing", anchor: "body", offsetX: 0, offsetY: 12, scale: 1, rotation: 0,
+  },
+  eveningBookVest: {
+    name: "夕映えの本ベスト", category: "clothing", rarity: "rare", price: 560,
+    description: "小さな本の刺繍が光る、秋の夕方のためのベスト。",
+    assetClass: "wear-evening-book-vest", layer: "clothing", anchor: "body", offsetX: 0, offsetY: 12, scale: 1.05, rotation: 0,
+  },
+  moonFestivalRobe: {
+    name: "月見のしずくローブ", category: "clothing", rarity: "legendary", price: 2400,
+    description: "月明かりを静かに映す、季節の夜に似合うローブ。",
+    assetClass: "wear-moon-festival-robe", layer: "clothing", anchor: "body", offsetX: 0, offsetY: 12, scale: 1.06, rotation: 0,
+  },
+  acornPin: {
+    name: "どんぐりのしおりピン", category: "accessory", accessorySlot: "head", rarity: "common", price: 75,
+    description: "秋の机にちょこんと置いたような、どんぐりの髪飾り。",
+    assetClass: "wear-acorn-pin", layer: "head", anchor: "head", offsetX: -16, offsetY: 2, scale: 0.78, rotation: -8,
+  },
+  mapleHairpin: {
+    name: "紅葉のヘアピン", category: "accessory", accessorySlot: "head", rarity: "rare", price: 580,
+    description: "ひとひらの紅葉が、勉強中の横顔を彩るピン。",
+    assetClass: "wear-maple-hairpin", layer: "head", anchor: "head", offsetX: 16, offsetY: 3, scale: 0.78, rotation: 12,
+  },
+  winterMoonCrown: {
+    name: "冬月の小さな冠", category: "accessory", accessorySlot: "head", rarity: "legendary", price: 2500,
+    description: "冬の月を思わせる、控えめにきらめく小さな冠。",
+    assetClass: "wear-winter-moon-crown", layer: "head", anchor: "head", offsetX: 0, offsetY: -5, scale: 0.86, rotation: 0,
+  },
+  teaSet: {
+    name: "秋待ちティーセット", category: "furniture", rarity: "common", price: 85,
+    description: "ひと息つく時間をつくる、小さなティーセット。", assetClass: "furniture-tea-set",
+  },
+  readingLampStand: {
+    name: "読書灯スタンド", category: "furniture", rarity: "rare", price: 620,
+    description: "本を照らすあたたかな灯りのスタンド。", assetClass: "furniture-reading-lamp",
+  },
+  winterGlobe: {
+    name: "冬空の地球儀", category: "furniture", rarity: "legendary", price: 2900,
+    description: "雪の夜空を映す、静かな学習机の地球儀。", assetClass: "furniture-winter-globe",
+  },
+  autumnSunset: {
+    name: "秋暮れの窓辺", category: "background", rarity: "common", price: 90,
+    description: "長い影と夕焼けが広がる、落ち着いた窓辺。", assetClass: "background-autumn-sunset",
+  },
+  mapleLibrary: {
+    name: "紅葉の図書室", category: "background", rarity: "rare", price: 650,
+    description: "窓の外の紅葉を眺められる、静かな図書室。", assetClass: "background-maple-library",
+  },
+  winterSolsticeSky: {
+    name: "冬至の星空", category: "background", rarity: "legendary", price: 2950,
+    description: "深い夜空と雪明かりに包まれる、冬至の背景。", assetClass: "background-winter-solstice",
+  },
+  monthlyNewYearCape: {
+    name: "初日の出ケープ", category: "clothing", rarity: "epic", price: 3000, fixedPrice: true, monthlyOnly: true, monthlyMonth: 1,
+    description: "新しい年の朝に似合う、日の出色の月限定ケープ。", assetClass: "monthly-new-year-cape", layer: "clothing", anchor: "body", offsetX: 0, offsetY: 12, scale: 1.03, rotation: 0,
+  },
+  monthlyHeartPin: {
+    name: "雪解けハートブローチ", category: "accessory", accessorySlot: "neck", rarity: "epic", price: 3000, fixedPrice: true, monthlyOnly: true, monthlyMonth: 2,
+    description: "春を待つ気持ちを小さく結んだ、月限定ブローチ。", assetClass: "monthly-heart-pin", layer: "neck", anchor: "neck", offsetX: 0, offsetY: 10, scale: 0.84, rotation: 0,
+  },
+  monthlySpringTea: {
+    name: "春待ちティーセット", category: "furniture", rarity: "epic", price: 3000, fixedPrice: true, monthlyOnly: true, monthlyMonth: 3,
+    description: "桜色の湯気が見える、春の月限定ティーセット。", assetClass: "monthly-spring-tea",
+  },
+  monthlyFlowerWindow: {
+    name: "花明かりの窓", category: "background", rarity: "epic", price: 3000, fixedPrice: true, monthlyOnly: true, monthlyMonth: 4,
+    description: "花びらとやわらかな光が舞う、春の月限定背景。", assetClass: "monthly-flower-window",
+  },
+  monthlyFreshCape: {
+    name: "若葉の風ケープ", category: "clothing", rarity: "epic", price: 3000, fixedPrice: true, monthlyOnly: true, monthlyMonth: 5,
+    description: "新緑の風をまとった、初夏の月限定ケープ。", assetClass: "monthly-fresh-cape", layer: "clothing", anchor: "body", offsetX: 0, offsetY: 12, scale: 1.02, rotation: 0,
+  },
+  monthlyRainPin: {
+    name: "雨音しずくピン", category: "accessory", accessorySlot: "head", rarity: "epic", price: 3000, fixedPrice: true, monthlyOnly: true, monthlyMonth: 6,
+    description: "雨粒のように光る、梅雨の月限定ヘアピン。", assetClass: "monthly-rain-pin", layer: "head", anchor: "head", offsetX: 15, offsetY: 2, scale: 0.8, rotation: 10,
+  },
+  monthlyStarDesk: {
+    name: "七夕の星机", category: "furniture", rarity: "epic", price: 3000, fixedPrice: true, monthlyOnly: true, monthlyMonth: 7,
+    description: "短冊と星を飾れる、夏の月限定の小さな机。", assetClass: "monthly-star-desk",
+  },
+  monthlySeasideWindow: {
+    name: "夏夜の海辺", category: "background", rarity: "epic", price: 3000, fixedPrice: true, monthlyOnly: true, monthlyMonth: 8,
+    description: "波音と月明かりを感じる、夏の月限定背景。", assetClass: "monthly-seaside-window",
+  },
+  monthlyMoonBeret: {
+    name: "お月見うさぎベレー", category: "accessory", accessorySlot: "head", rarity: "epic", price: 3000, fixedPrice: true, monthlyOnly: true, monthlyMonth: 9,
+    description: "月見だんごと夜空を思わせる、秋の月限定ベレー。", assetClass: "monthly-moon-beret", layer: "head", anchor: "head", offsetX: -3, offsetY: -4, scale: 0.9, rotation: -4,
+  },
+  monthlyHarvestCape: {
+    name: "収穫祭のケープ", category: "clothing", rarity: "epic", price: 3000, fixedPrice: true, monthlyOnly: true, monthlyMonth: 10,
+    description: "木の実色のリボンを結んだ、秋の月限定ケープ。", assetClass: "monthly-harvest-cape", layer: "clothing", anchor: "body", offsetX: 0, offsetY: 12, scale: 1.02, rotation: 0,
+  },
+  monthlyGinkgoLamp: {
+    name: "銀杏の読書灯", category: "furniture", rarity: "epic", price: 3000, fixedPrice: true, monthlyOnly: true, monthlyMonth: 11,
+    description: "銀杏色の光で机を照らす、秋の月限定ランプ。", assetClass: "monthly-ginkgo-lamp",
+  },
+  monthlyHolySky: {
+    name: "聖夜の星空", category: "background", rarity: "epic", price: 3000, fixedPrice: true, monthlyOnly: true, monthlyMonth: 12,
+    description: "静かな星明かりに包まれる、冬の月限定背景。", assetClass: "monthly-holy-sky",
+  },
+});
+
 const STUDY_TANK_REWARD_ITEM_IDS = Object.keys(shopItems).filter((id) => shopItems[id].rewardOnly);
+const MONTHLY_ITEM_IDS = Object.keys(shopItems).filter((id) => shopItems[id].monthlyOnly);
 
 const rarityLabels = {
   common: "Common",
@@ -752,6 +859,9 @@ const subjectStudyList = document.getElementById("subjectStudyList");
 const prevWeekBtn = document.getElementById("prevWeekBtn");
 const nextWeekBtn = document.getElementById("nextWeekBtn");
 const shopList = document.getElementById("shopList");
+const monthlyShopSection = document.getElementById("monthlyShopSection");
+const monthlyShopList = document.getElementById("monthlyShopList");
+const monthlyShopMonth = document.getElementById("monthlyShopMonth");
 const inventoryList = document.getElementById("inventoryList");
 const shopPreviewStage = document.getElementById("shopPreviewStage");
 const shopPreviewPet = document.getElementById("shopPreviewPet");
@@ -2065,7 +2175,7 @@ function getItemCategory(item) {
 
 function getItemPrice(item) {
   const basePrice = Number(item?.price ?? item?.cost ?? 0);
-  if (!Number.isFinite(basePrice) || basePrice <= 0 || item?.rewardOnly) return Math.max(0, basePrice || 0);
+  if (!Number.isFinite(basePrice) || basePrice <= 0 || item?.rewardOnly || item?.fixedPrice) return Math.max(0, basePrice || 0);
   return Math.ceil((basePrice * SHOP_PRICE_VALUE_FACTOR) / SHOP_PRICE_STEP) * SHOP_PRICE_STEP;
 }
 
@@ -5216,8 +5326,79 @@ function renderInventory() {
   });
 }
 
+function getCurrentMonthlyItem() {
+  const month = new Date().getMonth() + 1;
+  const id = MONTHLY_ITEM_IDS.find((itemId) => shopItems[itemId].monthlyMonth === month) || MONTHLY_ITEM_IDS[0];
+  return id ? [id, shopItems[id], month] : null;
+}
+
+function createShopItemCard(id, item, { monthly = false } = {}) {
+  const card = document.createElement("div");
+  const body = document.createElement("div");
+  const icon = createItemIcon(item);
+  const itemTitle = document.createElement("h3");
+  const meta = document.createElement("div");
+  const type = document.createElement("span");
+  const rarity = document.createElement("span");
+  const price = document.createElement("span");
+  const slot = document.createElement("span");
+  const button = document.createElement("button");
+  const isOwned = state.inventory[id] > 0;
+  const isEquipped = isItemEquipped(id);
+  const canBuy = state.coins >= getItemPrice(item);
+
+  card.className = `shop-item category-${getItemCategory(item)} rarity-${item.rarity}${monthly ? " monthly-shop-item" : ""}`;
+  card.dataset.item = id;
+  card.classList.toggle("owned", isOwned);
+  card.classList.toggle("equipped", isEquipped);
+  card.classList.toggle("locked", !isOwned && !canBuy);
+  card.classList.toggle("selected", selectedShopItemId === id);
+  itemTitle.textContent = item.name;
+  meta.className = "shop-meta";
+  type.className = "type-badge";
+  rarity.className = `rarity-badge rarity-${item.rarity}`;
+  price.className = "price-badge";
+  slot.className = "slot-badge";
+  type.textContent = categoryLabels[getItemCategory(item)];
+  rarity.textContent = rarityLabels[item.rarity];
+  price.textContent = `${getItemPrice(item)} coin`;
+  slot.textContent = getItemSlotLabel(item);
+  button.type = "button";
+  button.className = "preview-item-btn";
+  button.dataset.item = id;
+  button.disabled = false;
+  button.textContent = isOwned
+    ? (isEquipped ? "装備中" : "購入済み")
+    : selectedShopItemId === id
+      ? "表示中"
+      : "確認";
+  button.title = isOwned ? "購入済み" : "プレビュー";
+
+  meta.append(type, rarity);
+  if (getItemCategory(item) === "accessory") meta.append(slot);
+  meta.append(price);
+  body.append(icon, meta, itemTitle);
+  card.append(body, button);
+  return card;
+}
+
+function renderMonthlyShop() {
+  if (!monthlyShopSection || !monthlyShopList) return;
+  const current = getCurrentMonthlyItem();
+  if (!current) {
+    monthlyShopSection.hidden = true;
+    return;
+  }
+
+  const [id, item, month] = current;
+  monthlyShopSection.hidden = false;
+  monthlyShopMonth.textContent = `${month}月`;
+  monthlyShopList.replaceChildren(createShopItemCard(id, item, { monthly: true }));
+}
+
 function renderShop() {
   shopList.innerHTML = "";
+  renderMonthlyShop();
   const tabs = document.createElement("div");
 
   tabs.className = "shop-category-tabs";
@@ -5225,7 +5406,7 @@ function renderShop() {
 
   shopCategoryOrder.forEach((category) => {
     const entries = Object.entries(shopItems)
-      .filter(([, item]) => !item.rewardOnly && getItemCategory(item) === category)
+      .filter(([, item]) => !item.rewardOnly && !item.monthlyOnly && getItemCategory(item) === category)
       .sort(sortItemEntries);
     const tab = document.createElement("button");
     const label = document.createElement("span");
@@ -5248,7 +5429,7 @@ function renderShop() {
 
   shopCategoryOrder.forEach((category) => {
     const entries = Object.entries(shopItems)
-      .filter(([, item]) => !item.rewardOnly && getItemCategory(item) === category)
+      .filter(([, item]) => !item.rewardOnly && !item.monthlyOnly && getItemCategory(item) === category)
       .sort(sortItemEntries);
     const section = document.createElement("section");
     const heading = document.createElement("div");
@@ -5265,56 +5446,7 @@ function renderShop() {
     list.className = "shop-category-list";
     heading.append(title, count);
 
-    entries.forEach(([id, item]) => {
-      const card = document.createElement("div");
-      const body = document.createElement("div");
-      const icon = createItemIcon(item);
-      const itemTitle = document.createElement("h3");
-      const meta = document.createElement("div");
-      const type = document.createElement("span");
-      const rarity = document.createElement("span");
-      const price = document.createElement("span");
-      const slot = document.createElement("span");
-      const button = document.createElement("button");
-      const isOwned = state.inventory[id] > 0;
-      const isEquipped = isItemEquipped(id);
-      const cost = getItemPrice(item);
-      const canBuy = state.coins >= cost;
-
-      card.className = `shop-item category-${category} rarity-${item.rarity}`;
-      card.dataset.item = id;
-      card.classList.toggle("owned", isOwned);
-      card.classList.toggle("equipped", isEquipped);
-      card.classList.toggle("locked", !isOwned && !canBuy);
-      card.classList.toggle("selected", selectedShopItemId === id);
-      itemTitle.textContent = item.name;
-      meta.className = "shop-meta";
-      type.className = "type-badge";
-      rarity.className = `rarity-badge rarity-${item.rarity}`;
-      price.className = "price-badge";
-      slot.className = "slot-badge";
-      type.textContent = categoryLabels[category];
-      rarity.textContent = rarityLabels[item.rarity];
-      price.textContent = `${cost} coin`;
-      slot.textContent = getItemSlotLabel(item);
-      button.type = "button";
-      button.className = "preview-item-btn";
-      button.dataset.item = id;
-      button.disabled = false;
-      button.textContent = isOwned
-        ? "購入済み"
-        : selectedShopItemId === id
-          ? "表示中"
-          : "確認";
-      button.title = isOwned ? "購入済み" : "プレビュー";
-
-      meta.append(type, rarity);
-      if (category === "accessory") meta.append(slot);
-      meta.append(price);
-      body.append(icon, meta, itemTitle);
-      card.append(body, button);
-      list.appendChild(card);
-    });
+    entries.forEach(([id, item]) => list.appendChild(createShopItemCard(id, item)));
 
     section.append(heading, list);
     shopList.appendChild(section);
@@ -5784,6 +5916,18 @@ shopList.addEventListener("click", (event) => {
     return;
   }
 
+  const card = event.target.closest(".shop-item");
+  if (!card) return;
+
+  const itemId = card.dataset.item;
+  if (!shopItems[itemId]) return;
+
+  selectedShopItemId = itemId;
+  render();
+  scrollShopPreviewIntoView();
+});
+
+monthlyShopSection?.addEventListener("click", (event) => {
   const card = event.target.closest(".shop-item");
   if (!card) return;
 
