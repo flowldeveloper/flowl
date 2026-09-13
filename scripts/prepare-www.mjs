@@ -8,6 +8,7 @@ const files = [
   "index.html",
   "privacy.html",
   "style.css",
+  "reward-art.css",
   "app.js",
   "manifest.webmanifest",
   "sw.js",

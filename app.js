@@ -8,9 +8,13 @@ const STUDY_TANK_MIN_ANIMATION_MS = 800;
 const STUDY_TANK_MAX_ANIMATION_MS = 10000;
 const STUDY_TANK_MIN_ANIMATION_MINUTES = 10;
 const STUDY_TANK_COIN_BONUSES = [
-  { threshold: 0.02, multiplier: 1.5 },
-  { threshold: 0.10, multiplier: 1.2 },
+  { threshold: 0.0001, multiplier: 10 },
+  { threshold: 0.0011, multiplier: 5 },
+  { threshold: 0.0211, multiplier: 1.5 },
+  { threshold: 0.1011, multiplier: 1.2 },
 ];
+const STUDY_TANK_ITEM_CHANCE = 0.001;
+const STUDY_REWARD_ENTRANCES = ["fly", "twirl", "rise"];
 const MAX_STORED_SESSIONS = 5000;
 const WEEKLY_SUBJECT_COLORS = [
   "#4f9d69",
@@ -537,7 +541,31 @@ const shopItems = {
     iconClass: "background-icon rarity-icon-legendary",
     assetClass: "background-underwater-temple",
   },
+  rewardCometCoat: {
+    name: "流星刺繍の燕尾服", category: "clothing", rarity: "legendary", rewardOnly: true,
+    description: "10分タンクから届く限定服。金の流星を縫い込んだ、深紅の燕尾服。",
+    assetClass: "reward-comet-coat", layer: "clothing", anchor: "body",
+    offsetX: 0, offsetY: 12, scale: 1, rotation: 0,
+  },
+  rewardMoonRibbon: {
+    name: "月結びのリボン", category: "accessory", accessorySlot: "head", rarity: "legendary", rewardOnly: true,
+    description: "10分タンクから届く限定アクセサリー。三日月を結んだ青緑のリボン。",
+    assetClass: "reward-moon-ribbon", layer: "head", anchor: "head",
+    offsetX: -8, offsetY: -9, scale: 1, rotation: -8,
+  },
+  rewardStarHourglass: {
+    name: "星砂の砂時計", category: "furniture", rarity: "legendary", rewardOnly: true,
+    description: "10分タンクから届く限定家具。星砂をたたえた、金の台座の砂時計。",
+    assetClass: "reward-star-hourglass",
+  },
+  rewardMeteorObservatory: {
+    name: "流星の天文台", category: "background", rarity: "legendary", rewardOnly: true,
+    description: "10分タンクから届く限定背景。大きな天窓から流星群を眺める天文台。",
+    assetClass: "reward-meteor-observatory",
+  },
 };
+
+const STUDY_TANK_REWARD_ITEM_IDS = Object.keys(shopItems).filter((id) => shopItems[id].rewardOnly);
 
 const rarityLabels = {
   common: "Common",
@@ -749,6 +777,11 @@ const studyTankRewardCoins = document.getElementById("studyTankRewardCoins");
 const studyTankRewardBonus = document.getElementById("studyTankRewardBonus");
 const studyTankRewardBonusMultiplier = document.getElementById("studyTankRewardBonusMultiplier");
 const studyTankRewardBonusDetail = document.getElementById("studyTankRewardBonusDetail");
+const studyTankRewardSpecial = document.getElementById("studyTankRewardSpecial");
+const studyTankRewardPet = document.getElementById("studyTankRewardPet");
+const studyTankRewardSpecialText = document.getElementById("studyTankRewardSpecialText");
+const studyTankRewardDrops = document.getElementById("studyTankRewardDrops");
+const studyTankRewardDone = document.getElementById("studyTankRewardDone");
 const growthStageLabel = document.getElementById("growthStageLabel");
 const growthNextLabel = document.getElementById("growthNextLabel");
 const growthProgress = document.getElementById("growthProgress");
@@ -821,6 +854,7 @@ let studyTankRewardAnimationFrame = null;
 let studyTankRewardCloseTimer = null;
 let studyTankRewardHideTimer = null;
 let studyTankRewardToken = 0;
+let studyTankRewardPreviousFocus = null;
 let animationTimer = null;
 let timerBeatId = 0;
 let studyReactionTimer = null;
@@ -1647,6 +1681,21 @@ function buildStudyTankCoinReward(previousTotalMinutes, addedMinutes, random = M
   return { baseCoins, bonusCoins, bonuses, completedTanks, coinsEarned: baseCoins + bonusCoins };
 }
 
+function buildStudyTankItemReward(completedTanks, inventory, random = Math.random) {
+  const pool = STUDY_TANK_REWARD_ITEM_IDS.filter((id) => !inventory[id]);
+  const drops = [];
+  const count = Number.isFinite(completedTanks)
+    ? Math.min(DAILY_STUDY_LIMIT_MINUTES / STUDY_TANK_CAPACITY_MINUTES, Math.max(0, Math.floor(completedTanks))) : 0;
+  for (let tank = 1; tank <= count; tank += 1) {
+    const roll = random();
+    if (roll < 0 || roll >= STUDY_TANK_ITEM_CHANCE || !Number.isFinite(roll) || pool.length === 0) continue;
+    // Reuse the successful roll to choose uniformly without consuming another draw.
+    const index = Math.min(pool.length - 1, Math.floor(roll / STUDY_TANK_ITEM_CHANCE * pool.length));
+    drops.push({ tank, itemId: pool.splice(index, 1)[0] });
+  }
+  return drops;
+}
+
 function formatStudyDuration(minutes) {
   const totalMinutes = Math.max(0, Math.round(minutes));
   const hours = Math.floor(totalMinutes / 60);
@@ -2100,9 +2149,9 @@ function getItemMetaText(itemId, options = {}) {
     rarityLabels[item.rarity],
   ];
 
-  if (options.includePrice) labels.push(`${getItemPrice(item)} coin`);
+  if (options.includePrice) labels.push(item.rewardOnly ? "タンク限定" : `${getItemPrice(item)} coin`);
   if (options.includeState) {
-    labels.push(isItemEquipped(itemId) ? "装備中" : state.inventory[itemId] ? "購入済み" : "未購入");
+    labels.push(isItemEquipped(itemId) ? "装備中" : state.inventory[itemId] ? (item.rewardOnly ? "獲得済み" : "購入済み") : "未所持");
   }
 
   return labels.filter(Boolean).join(" / ");
@@ -2825,6 +2874,8 @@ function addStudySession(minutes, subject, mode = "manual", requestedDate = getT
 
   const previousTotalMinutes = state.totalMinutes;
   const coinReward = buildStudyTankCoinReward(previousTotalMinutes, safeMinutes);
+  const tankDrops = buildStudyTankItemReward(coinReward.completedTanks, state.inventory);
+  const hasSpecialReward = coinReward.bonuses.some((bonus) => bonus.multiplier >= 5) || tankDrops.length > 0;
   const earnedCoins = coinReward.coinsEarned;
   const normalizedSubject = subject || "集中学習";
   const createdAt = new Date().toISOString();
@@ -2839,6 +2890,9 @@ function addStudySession(minutes, subject, mode = "manual", requestedDate = getT
     coins: earnedCoins,
     tankBonusCoins: coinReward.bonusCoins,
     tankBonuses: coinReward.bonuses,
+    tankDrops,
+    rewardEntrance: hasSpecialReward
+      ? STUDY_REWARD_ENTRANCES[Math.floor(Math.random() * STUDY_REWARD_ENTRANCES.length)] : null,
   };
 
   const previousState = state;
@@ -2847,6 +2901,7 @@ function addStudySession(minutes, subject, mode = "manual", requestedDate = getT
     subjects: [...state.subjects],
     sessions: [...state.sessions],
     claimedLevelRewards: [...state.claimedLevelRewards],
+    inventory: { ...state.inventory },
   };
 
   if (subject) {
@@ -2857,6 +2912,7 @@ function addStudySession(minutes, subject, mode = "manual", requestedDate = getT
   state.sessions = state.sessions.slice(0, MAX_STORED_SESSIONS);
   state.totalMinutes += safeMinutes;
   state.coins += earnedCoins;
+  tankDrops.forEach(({ itemId }) => { state.inventory[itemId] = 1; });
   grantLevelRewards();
 
   if (!saveState()) {
@@ -3093,7 +3149,48 @@ function closeStudyTankReward() {
   studyTankReward.classList.remove("show", "is-charging", "is-result");
   studyTankRewardHideTimer = window.setTimeout(() => {
     studyTankReward.hidden = true;
+    if (studyTankRewardPreviousFocus?.isConnected) studyTankRewardPreviousFocus.focus({ preventScroll: true });
   }, 180);
+}
+
+function revealStudyTankSpecial(session, completedTanks) {
+  if (!studyTankRewardSpecial || !studyTankRewardPet) return;
+  const rareBonus = (session.tankBonuses || []).some((bonus) => bonus.tank <= completedTanks && bonus.multiplier >= 5);
+  const drops = (session.tankDrops || []).filter((drop) => drop.tank <= completedTanks);
+  if (!rareBonus && drops.length === 0) return;
+
+  if (studyTankRewardSpecial.hidden) {
+    ensurePreviewSvg(studyTankRewardPet);
+    renderEquipment(studyTankRewardPet);
+    applyOwlExpressionState(studyTankRewardPet, "happy");
+    studyTankRewardSpecial.dataset.entrance = STUDY_REWARD_ENTRANCES.includes(session.rewardEntrance)
+      ? session.rewardEntrance : "fly";
+    studyTankRewardSpecial.hidden = false;
+    studyTankReward.classList.add("has-special-reward");
+  }
+  studyTankRewardSpecialText.textContent = drops.length > 0
+    ? "特別な贈りもの、届いたよ！" : "わあ！特別なボーナスだよ！";
+}
+
+function renderStudyTankDrops(session) {
+  if (!studyTankRewardDrops) return;
+  const drops = (session.tankDrops || []).filter(({ itemId }) => shopItems[itemId]?.rewardOnly);
+  studyTankRewardDrops.replaceChildren();
+  studyTankRewardDrops.hidden = drops.length === 0;
+  drops.forEach(({ itemId }) => {
+    const item = shopItems[itemId];
+    const row = document.createElement("div");
+    const detail = document.createElement("div");
+    const name = document.createElement("strong");
+    const label = document.createElement("span");
+    row.className = "tank-reward-drop";
+    row.dataset.item = itemId;
+    name.textContent = item.name;
+    label.textContent = `限定${categoryLabels[getItemCategory(item)]}・クローゼットに追加済み`;
+    detail.append(name, label);
+    row.append(createItemIcon(item), detail);
+    studyTankRewardDrops.append(row);
+  });
 }
 
 function renderStudyTankCoinBonus(bonuses, options = {}) {
@@ -3155,13 +3252,18 @@ function finishStudyTankReward(token, previousTotalMinutes, addedMinutes, sessio
     playTankCoinBonusSound();
   }
 
+  revealStudyTankSpecial(session, completedTanks);
+  renderStudyTankDrops(session);
+  studyTankRewardDone.hidden = false;
+
   clearTimeout(studyTankRewardCloseTimer);
-  studyTankRewardCloseTimer = window.setTimeout(closeStudyTankReward, bonuses.length > 0 ? 2600 : 1700);
+  studyTankRewardCloseTimer = null;
 }
 
 function showStudyTankReward(previousTotalMinutes, session) {
   if (!studyTankReward || !session) return;
 
+  studyTankRewardPreviousFocus = document.activeElement;
   cancelAnimationFrame(studyTankRewardAnimationFrame);
   clearTimeout(studyTankRewardCloseTimer);
   clearTimeout(studyTankRewardHideTimer);
@@ -3176,6 +3278,7 @@ function showStudyTankReward(previousTotalMinutes, session) {
   const baseCoins = earnedCoins - (session.tankBonusCoins || 0);
   let revealedBonusCount = 0;
   const revealBonuses = (completedTanks) => {
+    revealStudyTankSpecial(session, completedTanks);
     const revealed = bonuses.filter((bonus) => bonus.tank <= completedTanks);
     if (revealed.length === revealedBonusCount) return false;
     revealedBonusCount = revealed.length;
@@ -3187,8 +3290,14 @@ function showStudyTankReward(previousTotalMinutes, session) {
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   studyTankReward.hidden = false;
-  studyTankReward.classList.remove("show", "is-result", "has-coin-bonus");
+  studyTankReward.classList.remove("show", "is-result", "has-coin-bonus", "has-special-reward");
   if (studyTankRewardBonus) studyTankRewardBonus.hidden = true;
+  if (studyTankRewardSpecial) studyTankRewardSpecial.hidden = true;
+  if (studyTankRewardDrops) {
+    studyTankRewardDrops.hidden = true;
+    studyTankRewardDrops.replaceChildren();
+  }
+  if (studyTankRewardDone) studyTankRewardDone.hidden = true;
   studyTankReward.classList.add("is-charging");
   studyTankRewardMinutes.textContent = `+${safeAddedMinutes}分`;
   studyTankRewardTitle.textContent = "学習エネルギーを充填中";
@@ -3198,7 +3307,12 @@ function showStudyTankReward(previousTotalMinutes, session) {
   studyTankRewardCombo.classList.remove("show", "has-value");
   delete studyTankRewardCombo.dataset.digits;
 
-  requestAnimationFrame(() => studyTankReward.classList.add("show"));
+  requestAnimationFrame(() => {
+    if (token !== studyTankRewardToken) return;
+    studyTankReward.classList.add("show");
+    studyTankReward.querySelector(".tank-reward-card").scrollTop = 0;
+    studyTankRewardClose.focus({ preventScroll: true });
+  });
   playTankChargeStartSound();
 
   if (reduceMotion) {
@@ -4701,6 +4815,7 @@ function getPreviewActionText(itemId) {
   if (!item) return "選択";
   if (isItemEquipped(itemId)) return "外す";
   if (state.inventory[itemId]) return "装備";
+  if (item.rewardOnly) return "タンク限定";
   if (state.coins < getItemPrice(item)) return "コイン不足";
   return "購入";
 }
@@ -4712,7 +4827,7 @@ function updatePreviewAction(button, itemId) {
   const isOwned = Boolean(state.inventory[itemId]);
   const cost = getItemPrice(item);
 
-  button.disabled = !item || (!isOwned && state.coins < cost);
+  button.disabled = !item || (!isOwned && (item.rewardOnly || state.coins < cost));
   button.textContent = getPreviewActionText(itemId);
 }
 
@@ -4972,7 +5087,7 @@ function renderInventory() {
     const detailLabels = [
       categoryLabels[category],
       slotLabel,
-      rarityLabels[item.rarity],
+      item.rewardOnly ? "タンク限定" : rarityLabels[item.rarity],
     ].filter(Boolean);
 
     button.type = "button";
@@ -5033,7 +5148,7 @@ function renderShop() {
 
   shopCategoryOrder.forEach((category) => {
     const entries = Object.entries(shopItems)
-      .filter(([, item]) => getItemCategory(item) === category)
+      .filter(([, item]) => !item.rewardOnly && getItemCategory(item) === category)
       .sort(sortItemEntries);
     const tab = document.createElement("button");
     const label = document.createElement("span");
@@ -5056,7 +5171,7 @@ function renderShop() {
 
   shopCategoryOrder.forEach((category) => {
     const entries = Object.entries(shopItems)
-      .filter(([, item]) => getItemCategory(item) === category)
+      .filter(([, item]) => !item.rewardOnly && getItemCategory(item) === category)
       .sort(sortItemEntries);
     const section = document.createElement("section");
     const heading = document.createElement("div");
@@ -5439,6 +5554,17 @@ studyTankRewardClose?.addEventListener("click", (event) => {
   event.stopPropagation();
   closeStudyTankReward();
 });
+studyTankRewardDone?.addEventListener("click", closeStudyTankReward);
+studyTankReward?.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeStudyTankReward();
+  if (event.key !== "Tab") return;
+  const last = studyTankRewardDone.hidden ? studyTankRewardClose : studyTankRewardDone;
+  if (event.shiftKey && document.activeElement === studyTankRewardClose) {
+    event.preventDefault(); last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault(); studyTankRewardClose.focus();
+  }
+});
 
 subjectFields.forEach(({ input, menu, toggle }) => {
   input.addEventListener("focus", () => openSubjectMenu(input));
@@ -5525,6 +5651,7 @@ function applySelectedItem(itemId) {
 
   const isOwned = state.inventory[itemId] > 0;
   const category = getItemCategory(item);
+  if (item.rewardOnly && !isOwned) return false;
 
   if (isOwned) {
     const equipped = equipItem(itemId);

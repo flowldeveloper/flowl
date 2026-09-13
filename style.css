@@ -9842,8 +9842,11 @@ input:focus {
   position: relative;
   width: min(342px, 100%);
   min-height: 286px;
+  max-height: calc(100svh - max(16px, env(safe-area-inset-top)) - max(16px, env(safe-area-inset-bottom)));
   padding: 24px 20px 20px;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   border: 2px solid rgba(121, 194, 166, 0.78);
   border-radius: 8px;
   background:
@@ -10160,6 +10163,148 @@ input:focus {
   max-width: 100%;
   flex-wrap: wrap;
   opacity: 1;
+}
+
+.tank-reward-special {
+  position: relative;
+  display: grid;
+  grid-template-columns: 94px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  min-height: 96px;
+  margin-top: 8px;
+  padding-inline: 6px;
+  border-block: 1px solid #d3ba78;
+  color: #775415;
+  text-align: left;
+  overflow: hidden;
+}
+
+.tank-reward-special strong {
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.tank-reward-owl-entry {
+  width: 94px;
+  height: 96px;
+}
+
+.tank-reward-special .pet[data-asset="flowl-owl"] {
+  width: 90px;
+  height: 95px;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  transform: none;
+  animation: none;
+}
+
+.tank-reward-special[data-entrance="fly"] .tank-reward-owl-entry {
+  animation: reward-owl-fly 1100ms ease-out both;
+}
+
+.tank-reward-special[data-entrance="twirl"] .tank-reward-owl-entry {
+  animation: reward-owl-twirl 1100ms ease-out both;
+}
+
+.tank-reward-special[data-entrance="rise"] .tank-reward-owl-entry {
+  animation: reward-owl-rise 1100ms ease-out both;
+}
+
+@keyframes reward-owl-fly {
+  0% { opacity: 0; transform: translate(-100%, -25%) rotate(-18deg); }
+  65% { opacity: 1; transform: translate(6%, 0) rotate(6deg); }
+  100% { opacity: 1; transform: none; }
+}
+
+@keyframes reward-owl-twirl {
+  0% { opacity: 0; transform: scale(0.35) rotate(-180deg); }
+  70% { opacity: 1; transform: scale(1.08) rotate(12deg); }
+  100% { opacity: 1; transform: none; }
+}
+
+@keyframes reward-owl-rise {
+  0% { opacity: 0; transform: translateY(95%) scale(0.7); }
+  60% { opacity: 1; transform: translateY(-8%) scale(1.04); }
+  100% { opacity: 1; transform: none; }
+}
+
+.tank-reward-backdrop.has-special-reward .tank-reward-card {
+  border-color: #be9652;
+  background: linear-gradient(150deg, #fffae9, #f4fff8 70%, #e6f4ff);
+}
+
+.tank-reward-backdrop.has-special-reward .tank-reward-bonus strong {
+  color: #946024;
+}
+
+.tank-reward-drops {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 6px;
+  margin-top: 8px;
+  text-align: left;
+}
+
+.tank-reward-drop {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.tank-reward-drop .item-illustration {
+  width: 48px;
+  height: 48px;
+}
+
+.tank-reward-drop strong,
+.tank-reward-drop span {
+  display: block;
+}
+
+.tank-reward-drop strong {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.tank-reward-drop div > span {
+  margin-top: 3px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #627668;
+}
+
+.tank-reward-done {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 12px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.tank-reward-special[hidden],
+.tank-reward-drops[hidden],
+.tank-reward-done[hidden] {
+  display: none;
+}
+
+/* The result settles into a still frame for screenshots. */
+.tank-reward-backdrop.is-result .tank-reward-special .pet *,
+.tank-reward-backdrop.is-result .tank-reward-special .pet::before,
+.tank-reward-backdrop.is-result .tank-reward-special .pet::after {
+  animation: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tank-reward-special .tank-reward-owl-entry,
+  .tank-reward-special .pet * {
+    animation: none !important;
+  }
 }
 
 .tank-reward-sparks,

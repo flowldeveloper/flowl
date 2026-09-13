@@ -23,7 +23,8 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
   <title>Flowl</title>
-  <link rel="stylesheet" href="style.css?v=pwa-47">
+  <link rel="stylesheet" href="style.css?v=pwa-48">
+  <link rel="stylesheet" href="reward-art.css?v=pwa-48">
   <script>
     (() => {
       const measurementId = "G-EE6MQ7M7Z2";
@@ -445,7 +446,7 @@
   </section>
 
   <div id="studyTankReward" class="tank-reward-backdrop" hidden>
-    <section class="tank-reward-card" role="status" aria-live="assertive" aria-atomic="true">
+    <section class="tank-reward-card" role="dialog" aria-modal="true" aria-labelledby="studyTankRewardTitle">
       <button id="studyTankRewardClose" class="tank-reward-close" type="button" aria-label="充填演出を閉じる" title="閉じる">&times;</button>
       <span class="tank-reward-kicker">STUDY CHARGE</span>
       <strong id="studyTankRewardMinutes" class="tank-reward-minutes">+0分</strong>
@@ -456,7 +457,7 @@
         <strong id="studyTankRewardLevel" class="tank-reward-level">0 / 10分</strong>
       </div>
       <div id="studyTankRewardCombo" class="tank-reward-combo" aria-hidden="true"></div>
-      <div class="tank-reward-result">
+      <div class="tank-reward-result" role="status" aria-live="polite">
         <strong id="studyTankRewardTitle">学習エネルギーを充填中</strong>
         <span id="studyTankRewardMessage">記録した時間がタンクにたまります</span>
       </div>
@@ -466,6 +467,14 @@
         <strong id="studyTankRewardBonusMultiplier"></strong>
         <span id="studyTankRewardBonusDetail"></span>
       </div>
+      <div id="studyTankRewardSpecial" class="tank-reward-special" hidden>
+        <div class="tank-reward-owl-entry" aria-hidden="true">
+          <div id="studyTankRewardPet" class="pet stage-grown" data-asset="flowl-owl"></div>
+        </div>
+        <strong id="studyTankRewardSpecialText"></strong>
+      </div>
+      <div id="studyTankRewardDrops" class="tank-reward-drops" hidden></div>
+      <button id="studyTankRewardDone" class="tank-reward-done" type="button" hidden>とじる</button>
       <span class="tank-reward-sparks" aria-hidden="true">
         <i></i><i></i><i></i><i></i><i></i><i></i>
       </span>
@@ -524,6 +533,6 @@
     </button>
   </nav>
 
-  <script src="app.js?v=pwa-47"></script>
+  <script src="app.js?v=pwa-48"></script>
 </body>
 </html>
